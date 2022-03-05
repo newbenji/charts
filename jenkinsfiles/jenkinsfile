@@ -14,23 +14,29 @@ podTemplate(containers: [
 
         stage('Test helm') {
             container('helm') {
-                stage('helm version') {
+                stage('Prepare') {
                     sh '''
                     apk add git
                     # helm version
                     helm plugin install https://github.com/chartmuseum/helm-push
+                    helm repo add chartmuseum https://chartmuseum.newbenji.dk
                     # ls -al
                     # pwd
-                    helm lint newbenji.dk
-                    helm package newbenji.dk
-                    helm repo add chartmuseum https://chartmuseum.newbenji.dk
-                    # helm repo update
-                    # helm repo list
-                    # helm search repo --versions
-                    helm cm-push --force newbenji.dk/ chartmuseum
-                    # ls -al
                     '''
                 }
+
+
+                 stage('Helm lint') {
+                    sh 'helm lint newbenji.dk'
+                 }
+
+                 stage('Helm lint') {
+                    sh 'helm package newbenji.dk'
+                 }
+
+                 stage('Helm lint') {
+                    sh 'helm cm-push --force newbenji.dk/ chartmuseum'
+                 }
             }
         }
 
