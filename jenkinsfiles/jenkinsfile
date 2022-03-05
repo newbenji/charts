@@ -19,6 +19,7 @@ podTemplate(containers: [
                     helm version
                     ls -al
                     pwd
+                    helm lint newbenji.dk
                     '''
                 }
             }
