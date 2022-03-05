@@ -21,6 +21,10 @@ podTemplate(containers: [
                     pwd
                     helm lint newbenji.dk
                     helm package newbenji.dk
+                    helm registry login https://chartmuseum.newbenji.dk
+                    helm repo update
+                    helm repo list
+                    helm search repo
                     ls -al
                     '''
                 }
