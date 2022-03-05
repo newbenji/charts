@@ -20,6 +20,8 @@ podTemplate(containers: [
                     ls -al
                     pwd
                     helm lint newbenji.dk
+                    helm package newbenji.dk
+                    ls -al
                     '''
                 }
             }
