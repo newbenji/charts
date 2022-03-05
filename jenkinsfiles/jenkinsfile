@@ -25,6 +25,7 @@ podTemplate(containers: [
                     helm repo update
                     helm repo list
                     helm search repo --versions
+                    helm push newbenji.dk https://chartmuseum.newbenji.dk
                     ls -al
                     '''
                 }
