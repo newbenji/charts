@@ -3,6 +3,14 @@ podTemplate(containers: [
   ]) {
 
     node(POD_LABEL) {
+           checkout([
+              $class: 'GitSCM',
+              branches: [[name: '*/main']],
+              doGenerateSubmoduleConfigurations: false,
+              extensions: [[$class: 'CleanCheckout']],
+              submoduleCfg: [],
+              userRemoteConfigs: [[credentialsId: 'github_newbenji', url: 'https://github.com/newbenji/charts.git']]
+             ])
 
         stage('Test helm') {
             container('helm') {
