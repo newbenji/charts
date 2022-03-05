@@ -16,6 +16,7 @@ podTemplate(containers: [
             container('helm') {
                 stage('helm version') {
                     sh '''
+                    apk add git
                     helm version
                     helm plugin install https://github.com/chartmuseum/helm-push
                     ls -al
