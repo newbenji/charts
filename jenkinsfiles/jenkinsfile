@@ -9,6 +9,8 @@ podTemplate(containers: [
                 stage('helm version') {
                     sh '''
                     helm version
+                    ls -al
+                    pwd
                     '''
                 }
             }
