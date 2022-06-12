@@ -1,6 +1,9 @@
+#!/usr/bin/env groovy
+
 podTemplate(containers: [
     containerTemplate(name: 'helm', image: 'alpine/helm:3.1.1', command: 'sleep', args: '99d')
-  ]) {
+    ]
+    ) {
 
     node(POD_LABEL) {
            checkout([
@@ -24,7 +27,6 @@ podTemplate(containers: [
                     # pwd
                     '''
                 }
-
 
                  stage('Helm lint') {
                     sh 'helm lint newbenji.dk'
