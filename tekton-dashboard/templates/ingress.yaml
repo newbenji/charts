@@ -2,6 +2,12 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    nginx.ingress.kubernetes.io/whitelist-source-range: 192.168.1.0/24
   name: tekton-dashboard
 spec:
   rules:
@@ -14,3 +20,7 @@ spec:
             name: tekton-dashboard
             port:
               number: 9097
+  tls:
+  - hosts:
+    - tekton.newbenji.dk
+    secretName: tekton-newbenji-dk
