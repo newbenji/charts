@@ -29,3 +29,6 @@ dependencies:
 - name: jenkins-x-crds
   version: "3.0.12"
   repository: "https://jenkins-x-charts.github.io/repo"
+- name: jx-pipelines-visualizer
+  version: "1.8.2"
+  repository: "https://jenkins-x-charts.github.io/repo"
