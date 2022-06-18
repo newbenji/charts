@@ -1,0 +1,6 @@
+dependencies:
+- name: jenkins-x-crds
+  repository: https://jenkins-x-charts.github.io/repo
+  version: 3.0.12
+digest: sha256:290a9ce8faa0a27f4ee275249707007254a0ca37c358ce1b76c85202a7ceedf1
+generated: "2022-06-18T16:56:14.0978109+02:00"
