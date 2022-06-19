@@ -48,6 +48,9 @@ jxboot-helm-file-resources:
   jxRequirementsVault:
     enabled: false
 
+  jxRequirements:
+    repository: ''
+
   sourceRepositoriesEnvKey: true
 
   # pipeline:
