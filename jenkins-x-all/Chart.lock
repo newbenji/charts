@@ -1,9 +1,12 @@
 dependencies:
+- name: jxboot-helmfile-resources
+  repository: https://jenkins-x-charts.github.io/repo
+  version: 1.1.141
 - name: jenkins-x-crds
   repository: https://jenkins-x-charts.github.io/repo
   version: 3.0.12
 - name: jx-pipelines-visualizer
   repository: https://jenkins-x-charts.github.io/repo
   version: 1.8.2
-digest: sha256:c7f2f2efaf9e316cffb04e496df881901d4484f53779226ffa98edbf6c370466
-generated: "2022-06-18T17:01:08.9280465+02:00"
+digest: sha256:5c3a352e9333d8a8969c9d733b573a70052316d0c31e5cd4cc472fa5e2da9df2
+generated: "2022-06-19T10:42:10.3844631+02:00"
