@@ -42,7 +42,7 @@ jxRequirementsVault:
   enabled: false
   
 
-jxboot-helm-file-resources:
+jxboot-helmfile-resources:
   versions:
     jx: 3.2.374
 
