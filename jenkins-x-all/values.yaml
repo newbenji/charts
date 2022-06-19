@@ -49,7 +49,7 @@ jxboot-helm-file-resources:
     enabled: false
 
   jxRequirements:
-    repository: ''
+    repository: bucketrepo
 
   sourceRepositoriesEnvKey: true
 
