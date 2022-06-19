@@ -2,6 +2,7 @@ jxRequirements:
   autoUpdate:
     enabled: false
     schedule: ""
+  repository: bucketrepo
 #   cluster:
 #     chartRepository: http://bucketrepo.jx.svc.cluster.local/bucketrepo/charts
 #     clusterName: kind
