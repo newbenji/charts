@@ -45,6 +45,9 @@ jxboot-helm-file-resources:
   versions:
     jx: 3.2.374
 
+  jxRequirementsVault:
+    enabled: false
+
   sourceRepositoriesEnvKey: true
 
   # pipeline:
