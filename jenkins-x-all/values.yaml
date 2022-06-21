@@ -18,10 +18,10 @@ jxRequirements:
 #   - key: dev
 #   - key: staging
 #   - key: production
-#   ingress:
-#     domain: change.me
-#     kind: ingress
-#     namespaceSubDomain: -jx.
+  ingress:
+    domain: newbenji.dk
+    kind: ingress
+    namespaceSubDomain: -jx.
 #     tls:
 #       email: ""
 #       enabled: false
