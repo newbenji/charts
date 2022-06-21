@@ -35,3 +35,7 @@ dependencies:
 - name: jx-pipelines-visualizer
   version: "1.8.2"
   repository: "https://jenkins-x-charts.github.io/repo"
+- name: jx-preview
+  version: 0.0.209
+  repository: "https://jenkins-x-charts.github.io/repo"
+  
