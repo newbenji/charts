@@ -58,6 +58,7 @@ jx-pipelines-visualizer:
       - jenkins-x.newbenji.dk
     tls: 
       enabled: true 
+      secrets: 
 #       secrets:
 # #        b64encodedCertificate: false
 # #        b64encodedCertificateKey: false
