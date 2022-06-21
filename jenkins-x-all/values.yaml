@@ -45,17 +45,25 @@ jxRequirementsVault:
 jx-pipelines-visualizer:
   ingress:
     enabled: true 
-  apiVersion: networking.k8s.io/v1
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: 'true'
-    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
-    nginx.ingress.kubernetes.io/whitelist-source-range: 192.168.1.1/24
-  hosts:
-    - jenkins-x.newbenji.dk
-  tls: 
-    enabled: true 
+    apiVersion: networking.k8s.io/v1
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt
+      # kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: 'true'
+      nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+      nginx.ingress.kubernetes.io/whitelist-source-range: 192.168.1.1/24
+    labels: 
+      benji: tester
+    hosts:
+      - jenkins-x.newbenji.dk
+    tls: 
+      enabled: true 
+#       secrets:
+# #        b64encodedCertificate: false
+# #        b64encodedCertificateKey: false
+#         hosts:
+#           jenkins-x.newbenji.dk
+#         # secretName: artifacthub-tls-secret
 
 jxboot-helmfile-resources:
   versions:
