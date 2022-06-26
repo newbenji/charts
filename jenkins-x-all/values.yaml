@@ -31,4 +31,4 @@ jx-preview:
   something: true
 
 jx-build-controller:
-  name: jx-build-controller
+  nameOverride: jx-build-controller
