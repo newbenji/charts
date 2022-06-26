@@ -3,6 +3,8 @@ jenkins-x-crds:
   something: true
 
 jx-pipelines-visualizer:
+  config:
+    pipelineTraceURLTemplate: https://grafana.newbenji.dk/explore?left=%5B%22now%22,%22now%22,%22Tempo%22,%7B%22query%22:%22{{.TraceID}}%22%7D%5D
   ingress:
     enabled: false 
     apiVersion: networking.k8s.io/v1
@@ -30,5 +32,6 @@ jx-pipelines-visualizer:
 jx-preview:
   something: true
 
+# override dosnt work
 jx-build-controller:
-  nameOverride: jx-build-controller
+  fullnameOverride: jx-build-controller
