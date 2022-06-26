@@ -29,3 +29,6 @@ jx-pipelines-visualizer:
 
 jx-preview:
   something: true
+
+jx-build-controller:
+  name: jx-build-controller
