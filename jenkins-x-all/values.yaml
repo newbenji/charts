@@ -3,6 +3,7 @@ jenkins-x-crds:
   something: true
 
 jx-pipelines-visualizer:
+  fullnameOverride: jx-pipelines-visualizer
   config:
     pipelineTraceURLTemplate: https://grafana.newbenji.dk/explore?left=%5B%22now%22,%22now%22,%22Tempo%22,%7B%22query%22:%22{{.TraceID}}%22%7D%5D
   ingress:
