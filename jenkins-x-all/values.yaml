@@ -1,6 +1,6 @@
 
 jenkins-x-crds:
-  something: true
+  fullnameOverride: jenkins-x-crds
 
 jx-pipelines-visualizer:
   fullnameOverride: jx-pipelines-visualizer
@@ -31,8 +31,8 @@ jx-pipelines-visualizer:
 #         # secretName: artifacthub-tls-secret
 
 jx-preview:
-  something: true
-
+  fullnameOverride: jx-preview
+  
 # override dosnt work
 jx-build-controller:
   fullnameOverride: jx-build-controller
