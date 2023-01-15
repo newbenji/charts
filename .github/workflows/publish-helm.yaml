@@ -34,7 +34,7 @@ jobs:
         with:
           username: ${{ secrets.GITEA_USERNAME }}
           password: ${{ secrets.GITEA_TOKEN }}
-          registry-url: ${{ secrets.GITEA_URI}}
+          registry-url: https://gitea.newbenji.dk/api/packages/newbenji/helm/api/charts
           force: true
           chart-folder: 'charts/home-assistant/'
 
