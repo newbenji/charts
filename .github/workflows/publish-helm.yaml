@@ -36,7 +36,7 @@ jobs:
           password: ${{ secrets.GITEA_TOKEN }}
           registry-url: ${{ secrets.GITEA_URI}}
           force: true
-          chart-folder: chart
+          chart-folder: charts
 
       # - name: Run chart-releaser
       #   uses: helm/chart-releaser-action@v1.5.0
