@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'charts/home-assistant/**''
+      - 'charts/home-assistant/**'
 jobs:
   release:
     permissions:
