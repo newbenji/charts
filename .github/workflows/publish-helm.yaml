@@ -27,8 +27,19 @@ jobs:
         with:
           version: v3.10.0
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.5.0
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          # CR_SKIP_EXISTING: true
+
+
+      - name: Push Helm Chart to ChartMuseum
+        uses: bsord/helm-push@4.2.0
+        with:
+          username: ${{ secrets.GITEA_USERNAME }}
+          password: ${{ secrets.GITEA_TOKEN }}
+          registry-url: ${{ secrets.GITEA_URI}}
+          force: true
+          chart-folder: chart
+
+      # - name: Run chart-releaser
+      #   uses: helm/chart-releaser-action@v1.5.0
+      #   env:
+      #     CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      #     # CR_SKIP_EXISTING: true
