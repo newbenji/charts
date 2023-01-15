@@ -1,14 +1,14 @@
 apiVersion: v2
 name: home-assistant
 description: |
-  HomeAssistant is an open source home automation that puts local control and privacy first. 
-  Powered by a worldwide community of tinkerers and DIY enthusiasts. 
-  Perfect to run on a Raspberry Pi or a local server.
+  HomeAssistant is an open source home automation that puts local control and privacy first.
+  Powered by a worldwide community of tinkerers and DIY enthusiasts.
+  Perfect to run on a Raspberry Pi or a local server. :-D
 type: application
 version: 0.0.1
 appVersion: "2023.1.4"
 icon: https://github.com/home-assistant/assets/blob/master/logo/logo-pretty.png?raw=true
-keywords: 
+keywords:
   - homeassistant
   - home-assistant
   - smart home
@@ -23,4 +23,3 @@ annotations:
       url: https://github.com/home-assistant
     - name: Helm Repo
       url: https://gitlab.com/alexander-chernov/helm/home-assistant
-
