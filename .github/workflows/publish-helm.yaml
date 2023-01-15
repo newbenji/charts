@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'charts/home-assistant/**'
+#    paths:
+#      - 'charts/home-assistant/**'
 
 jobs:
   release:
