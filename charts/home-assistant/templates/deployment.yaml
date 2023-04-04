@@ -68,7 +68,7 @@ spec:
           imagePullPolicy: {{ .Values.vscode.image.pullPolicy }}
           workingDir: {{ .Values.vscode.hassConfig }}
           args:
-            - --allow-http
+            # - --allow-http
             - --port={{ .Values.vscode.service.port }}
             {{- if not ( .Values.vscode.password ) }}
             - --no-auth
