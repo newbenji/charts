@@ -23,6 +23,8 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "home-assistant.serviceAccountName" . }}
+      strategy:
+        type: Recreate
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       hostNetwork: {{ .Values.hostNetwork }}
