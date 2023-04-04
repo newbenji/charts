@@ -106,7 +106,7 @@ spec:
           securityContext:
             runAsUser: {{ default 0 .Values.runAsUser }}
           {{- if and ( .Values.runAsUser ) ( .Values.fsGroup ) }}
-          {{- if not ( eq .Values.runAsUser 0.0)) }}
+          {{- if not ( eq .Values.runAsUser 0.0) }}
             fsGroup: {{ .Values.fsGroup }}
           {{- end }}
           {{- end }}
