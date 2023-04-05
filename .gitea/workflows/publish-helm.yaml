@@ -28,12 +28,11 @@ jobs:
         with:
           version: v3.11.2
 
-      - name: prepare apt
-        run: |
-          apt-get -q update
-          apt install -y lsb-release
-          ls -al /opt
-
+      # - name: prepare apt
+      #   run: |
+      #     apt-get -q update
+      #     apt install -y lsb-release
+      #     ls -al /opt
 
       - uses: https://github.com/actions/setup-python@v4
         with:
