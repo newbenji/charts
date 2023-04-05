@@ -29,10 +29,13 @@ jobs:
           version: v3.11.2
 
 
-      # - name: prepare apt
-      #   run: |
-      #     ls -al /opt/hostedtoolcache/Python/
-
+      - name: prepare apt
+        run: |
+          ls -al /opt/
+          ls -al /opt/github
+          ls -al '/opt/github/actions-runner'
+          ls -al '/opt/github/actions-runner/_work'
+          ls -al '/opt/github/actions-runner/_work/_tool'
       # - name: prepare apt
       #   run: |
       #     apt-get -q update
