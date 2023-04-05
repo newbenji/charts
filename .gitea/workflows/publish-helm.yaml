@@ -62,7 +62,7 @@ jobs:
 
 
       - name: Run (list-changed)
-        id: list-changed-s
+        # id: list-changed-s
         run: |
           ct list-changed --target-branch ${{ github.event.repository.default_branch }}
 
