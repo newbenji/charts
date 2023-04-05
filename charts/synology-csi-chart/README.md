@@ -7,7 +7,7 @@ This is a
 It has been forked from the original resource manifests bundled with the Synology CSI Driver in order to resolve some
 issues and to benefit from the advanced resource management features of Helm.
 
-## Features
+## Features..
 
 + Customizable images, image pull policies and image tags for all CSI containers.
 + Customizable parameters for `StorageClass` and `VolumeSnapshotClass` resources.
