@@ -33,7 +33,7 @@ jobs:
           apt-get -q update
           apt install -y lsb-release
           ls -al /opt
-          lsb_release
+
 
       - uses: https://github.com/actions/setup-python@v4
         with:
