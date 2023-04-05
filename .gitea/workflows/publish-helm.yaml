@@ -32,7 +32,6 @@ jobs:
       - name: prepare apt
         run: |
           ls -al /opt/
-          ls -al /opt/github
           ls -al /opt/hostedtoolcache
           # ls -al '/opt/github/actions-runner'
           # ls -al '/opt/github/actions-runner/_work'
