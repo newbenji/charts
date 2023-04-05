@@ -47,8 +47,8 @@ jobs:
           python-version: '3.9'
           check-latest: true
           # cache: "pip"
-        env:
-          AGENT_TOOLSDIRECTORY: '/opt/github/actions-runner/_work/_tool'
+        # env:
+          # AGENT_TOOLSDIRECTORY: '/opt/github/actions-runner/_work/_tool'
 
 
       - name: Set up chart-testing
