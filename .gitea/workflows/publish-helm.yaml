@@ -1,5 +1,5 @@
 name: Release Charts Benji
-
+run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
 # https://blog.gitea.io/2023/03/hacking-on-gitea-actions/
 
 on:
@@ -10,11 +10,11 @@ on:
 #      - 'charts/home-assistant/**'
 
 jobs:
-  release:
+  Explore-Gitea-Actions:
     permissions:
       contents: write
       # runs-on: ubuntu-latest
-      runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04
     # runs-on: ubuntu-20.04
     steps:
       - name: Checkout
