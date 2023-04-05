@@ -28,7 +28,7 @@ jobs:
 
       - name: prepare apt
         run: |
-          sudo apt install lsb-release
+          apt install lsb-release
 
       - uses: https://github.com/actions/setup-python@v4
         with:
