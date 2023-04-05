@@ -54,10 +54,7 @@ jobs:
           ls -al /opt/
           ls -al /opt/hostedtoolcache
           ls -al /opt/hostedtoolcache/Python
-
-          # ls -al '/opt/github/actions-runner'
-          # ls -al '/opt/github/actions-runner/_work'
-          # ls -al '/opt/github/actions-runner/_work/_tool'
+          env
       # - name: prepare apt
 
       - name: Set up chart-testing
