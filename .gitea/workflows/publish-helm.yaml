@@ -28,6 +28,11 @@ jobs:
         with:
           version: v3.11.2
 
+
+      - name: prepare apt
+        run: |
+          ls -al /opt/hostedtoolcache/Python/
+
       # - name: prepare apt
       #   run: |
       #     apt-get -q update
