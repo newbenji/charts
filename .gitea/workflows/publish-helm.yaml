@@ -43,6 +43,10 @@ jobs:
         with:
           python-version: "3.10.10"
           check-latest: true
+          cache: "pip"
+        env:
+          AGENT_TOOLSDIRECTORY: '/opt/github/actions-runner/_work/_tool'
+
 
       - name: Set up chart-testing
         uses: https://github.com/helm/chart-testing-action@v2.4.0
