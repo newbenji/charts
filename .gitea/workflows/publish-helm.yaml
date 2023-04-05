@@ -34,9 +34,9 @@ jobs:
           ls -al /opt/
           ls -al /opt/github
           ls -al /opt/hostedtoolcache
-          ls -al '/opt/github/actions-runner'
-          ls -al '/opt/github/actions-runner/_work'
-          ls -al '/opt/github/actions-runner/_work/_tool'
+          # ls -al '/opt/github/actions-runner'
+          # ls -al '/opt/github/actions-runner/_work'
+          # ls -al '/opt/github/actions-runner/_work/_tool'
       # - name: prepare apt
       #   run: |
       #     apt-get -q update
