@@ -11,10 +11,10 @@ on:
 
 jobs:
   Explore-Gitea-Actions:
-    permissions:
-      contents: write
+    # permissions:
+    #   contents: write
       # runs-on: ubuntu-latest
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     # runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -33,6 +33,7 @@ jobs:
           apt-get -q update
           apt install -y lsb-release
           ls -al /opt
+          lsb_release
 
       - uses: https://github.com/actions/setup-python@v4
         with:
