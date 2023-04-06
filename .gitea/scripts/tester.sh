@@ -58,7 +58,7 @@ lookup_changed_charts() {
     local depth=$(( $(tr "/" "\n" <<< "$charts_dir" | sed '/^\(\.\)*$/d' | wc -l) + 1 ))
     echo "depth: ${depth[*]}"
     echo ""
-    local fields="1-${depth}"
+    local fields="2-${depth}"
     echo "fields: ${fields[*]}"
     echo  ""
     cut -d '/' -f "$fields" <<< "$changed_files" | uniq | filter_charts
