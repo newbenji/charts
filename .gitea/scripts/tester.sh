@@ -55,7 +55,7 @@ lint_chart() {
     # output=$(helm lint --quiet "${chart}" 2>/dev/null)
     output=$(helm lint --quiet "${chart}")
     echo "-"
-    echo $output
+    echo "${output}"
     # echo "Packaging chart '$chart'..."
     # cr package "${args[@]}"
 }
