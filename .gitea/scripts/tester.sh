@@ -31,33 +31,43 @@ main () {
 
     echo "Changed dirs: ${changed_charts[*]}"
 
-     for chart in "${changed_charts[@]}"; do
-                if [[ -d "$chart" ]]; then
-                    lint_chart "$chart"
-                else
-                    echo "Chart '$chart' no longer exists in repo. Skipping it..."
-                fi
-            done
+    for chart in "${changed_charts[@]}"; do
+        if [[ -d "$chart" ]]; then
+            lint_chart "$chart"
+        else
+            echo "Chart '$chart' no longer exists in repo. Skipping it..."
+        fi
+    done
+
+    for chart in "${changed_charts[@]}"; do
+        if [[ -d "$chart" ]]; then
+            package_chart"$chart"
+        else
+            echo "Chart '$chart' no longer exists in repo. Skipping it..."
+        fi
+    done
+
 
     popd > /dev/null
+}
+
+package_chart() {
+    local chart="$1"
+
+    # output=$(helm lint --quiet "${chart}" 2>/dev/null)
+    output=$(helm package "${chart}")
+
+    $output
 }
 
 
 lint_chart() {
     local chart="$1"
-    echo "in lint"
-    echo "${chart}"
 
-    local args=("$chart" --package-path .cr-release-packages)
-    # if [[ -n "$config" ]]; then
-        # args+=(--config "$config")
-#    0 fi
     # output=$(helm lint --quiet "${chart}" 2>/dev/null)
     output=$(helm lint "${chart}")
-    echo "-"
-    echo "${output}"
-    # echo "Packaging chart '$chart'..."
-    # cr package "${args[@]}"
+
+    $output
 }
 
 lookup_latest_tag() {
