@@ -27,13 +27,13 @@ jobs:
         with:
           version: v3.11.2
 
-      - uses: https://github.com/actions/setup-python@v4
-        with:
-          python-version: '3.9'
-          check-latest: true
-          # cache: "pip"
-        # env:
-          # AGENT_TOOLSDIRECTORY: '/opt/github/actions-runner/_work/_tool'
+      # - uses: https://github.com/actions/setup-python@v4
+      #   with:
+      #     python-version: '3.9'
+      #     check-latest: true
+      #     # cache: "pip"
+      #   # env:
+      #     # AGENT_TOOLSDIRECTORY: '/opt/github/actions-runner/_work/_tool'
       - name: after python
         run: |
           ls -al /opt/
