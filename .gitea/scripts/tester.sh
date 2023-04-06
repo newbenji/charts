@@ -39,13 +39,13 @@ main () {
         fi
     done
 
-    # for chart in "${changed_charts[@]}"; do
-    #     if [[ -d "$chart" ]]; then
-    #         package_chart "$chart"
-    #     else
-    #         echo "Chart '$chart' no longer exists in repo. Skipping it..."
-    #     fi
-    # done
+    for chart in "${changed_charts[@]}"; do
+        if [[ -d "$chart" ]]; then
+            package_chart "$chart"
+        else
+            echo "Chart '$chart' no longer exists in repo. Skipping it..."
+        fi
+    done
 
 
     popd > /dev/null
@@ -57,7 +57,7 @@ package_chart() {
     # output=$(helm lint --quiet "${chart}" 2>/dev/null)
     output=$(helm package "${chart}")
 
-    $output
+    # $output
 }
 
 

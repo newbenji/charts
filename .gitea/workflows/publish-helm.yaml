@@ -63,6 +63,7 @@ jobs:
           pwd
           ls -al
           ls -al charts
+          ls -al charts/synology-csi-chart
       #     ct list-changed --target-branch ${{ github.event.repository.default_branch }}
 
       # - name: Run chart-testing (list-changed)
