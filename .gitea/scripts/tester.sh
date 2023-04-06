@@ -67,7 +67,7 @@ lint_chart() {
     # output=$(helm lint --quiet "${chart}" 2>/dev/null)
     output=$(helm lint "${chart}")
 
-    $output
+    echo $output
 }
 
 lookup_latest_tag() {
