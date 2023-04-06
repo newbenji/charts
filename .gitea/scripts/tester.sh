@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# https://github.com/helm/chart-releaser-action/blob/main/cr.sh
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -7,25 +9,51 @@ set -o pipefail
 echo "Tester BASH SCRIPT"
 
 
+
+
 main () {
 
     local charts_dir=charts
     local repo_root
     local latest_tag
+    local skip_packaging=false
+    local mark_as_latest=true
 
     repo_root=$(git rev-parse --show-toplevel)
+    pushd "$repo_root" > /dev/null
 
     latest_tag=$(lookup_latest_tag)
 
-    echo "DIR OF REPO $repo_root"
-
-
     local changed_charts=()
+
     echo "Discovering changed charts since '$latest_tag'..."
     readarray -t changed_charts <<< "$(lookup_changed_charts "$latest_tag")"
 
     echo "Changed dirs: ${changed_charts[*]}"
 
+     for chart in "${changed_charts[@]}"; do
+                if [[ -d "$chart" ]]; then
+                    lint_chart "$chart"
+                else
+                    echo "Chart '$chart' no longer exists in repo. Skipping it..."
+                fi
+            done
+
+    popd > /dev/null
+}
+
+
+lint_chart() {
+    local chart="$1"
+    echo "${chart}"
+
+    local args=("$chart" --package-path .cr-release-packages)
+    # if [[ -n "$config" ]]; then
+        # args+=(--config "$config")
+#    0 fi
+
+    # echo "Packaging chart '$chart'..."
+    # cr package "${args[@]}"
 }
 
 lookup_latest_tag() {
@@ -63,6 +91,54 @@ lookup_changed_charts() {
     echo "fields: ${fields[*]}"
     echo  ""
     cut -d '/' -f "$fields" <<< "$changed_files" | uniq | filter_charts
+}
+
+show_help() {
+cat << EOF
+Usage: $(basename "$0") <options>
+    -h, --help               Display help
+    -d, --charts-dir         The charts directory (default: charts)
+    -s, --skip-packaging     Skip the packaging step (run your own packaging before using the releaser)
+    -l, --mark-as-latest     Mark the created GitHub release as 'latest' (default: false)
+EOF
+}
+
+parse_command_line() {
+    while :; do
+        case "${1:-}" in
+            -h|--help)
+                show_help
+                exit
+                ;;
+            -d|--charts-dir)
+                if [[ -n "${2:-}" ]]; then
+                    charts_dir="$2"
+                    shift
+                else
+                    echo "ERROR: '-d|--charts-dir' cannot be empty." >&2
+                    show_help
+                    exit 1
+                fi
+                ;;
+            -s|--skip-packaging)
+                if [[ -n "${2:-}" ]]; then
+                    skip_packaging="$2"
+                    shift
+                fi
+                ;;
+            -l|--mark-as-latest)
+                if [[ -n "${2:-}" ]]; then
+                    mark_as_latest="$2"
+                    shift
+                fi
+                ;;
+            *)
+                break
+                ;;
+        esac
+
+        shift
+    done
 }
 
 main "$@"
