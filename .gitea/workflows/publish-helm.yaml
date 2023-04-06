@@ -22,25 +22,10 @@ jobs:
         with:
           fetch-depth: 0
 
-
       - name: Set up Helm
         uses: https://github.com/azure/setup-helm@v3
         with:
           version: v3.11.2
-
-
-      - name: prepare apt
-        run: |
-          ls -al /opt/
-          ls -al /opt/hostedtoolcache
-          # ls -al '/opt/github/actions-runner'
-          # ls -al '/opt/github/actions-runner/_work'
-          # ls -al '/opt/github/actions-runner/_work/_tool'
-      # - name: prepare apt
-      #   run: |
-      #     apt-get -q update
-      #     apt install -y lsb-release
-      #     ls -al /opt
 
       - uses: https://github.com/actions/setup-python@v4
         with:
@@ -60,6 +45,12 @@ jobs:
       - name: Set up chart-testing
         uses: https://github.com/helm/chart-testing-action@v2.4.0
 
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.5.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_SKIP_PACKAGING: true
 
       - name: Run (list-changed)
         # id: list-changed-s
