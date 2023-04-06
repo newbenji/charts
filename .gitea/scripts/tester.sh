@@ -24,7 +24,7 @@ main () {
     echo "Discovering changed charts since '$latest_tag'..."
     readarray -t changed_charts <<< "$(lookup_changed_charts "$latest_tag")"
 
-    echo "Changed dirs: $changed_charts"
+    echo "Changed dirs: $changed_charts[*]"
 
 }
 
