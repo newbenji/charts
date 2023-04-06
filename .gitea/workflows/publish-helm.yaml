@@ -51,11 +51,11 @@ jobs:
           chmod +x "${GITHUB_WORKSPACE}/.gitea/scripts/tester.sh"
           "${GITHUB_WORKSPACE}/.gitea/scripts/tester.sh"
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.5.0
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_SKIP_PACKAGING: true
+      # - name: Run chart-releaser
+      #   uses: helm/chart-releaser-action@v1.5.0
+      #   env:
+      #     CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      #     CR_SKIP_PACKAGING: true
 
       - name: Run (list-changed)
         # id: list-changed-s
