@@ -72,6 +72,11 @@ jobs:
           ls -al
           ls -al charts
           ls -al charts/synology-csi-chart
+      - name: Create git tag
+        run: |
+          git tag "benjitester"
+      - name: Push git tag
+        run: git push origin
       #     ct list-changed --target-branch ${{ github.event.repository.default_branch }}
 
       # - name: Run chart-testing (list-changed)
