@@ -1,5 +1,7 @@
 name: Release Charts Benji
 
+# https://blog.gitea.io/2023/03/hacking-on-gitea-actions/
+
 on:
   push:
     branches:
