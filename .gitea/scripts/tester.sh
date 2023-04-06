@@ -52,7 +52,7 @@ lint_chart() {
     # if [[ -n "$config" ]]; then
         # args+=(--config "$config")
 #    0 fi
-    output=(helm --quiet lint "${chart}" 2>/dev/null)
+    output=$(helm --quiet lint "${chart}" 2>/dev/null)
     echo output
     # echo "Packaging chart '$chart'..."
     # cr package "${args[@]}"
