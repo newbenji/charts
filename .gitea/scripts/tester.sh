@@ -51,14 +51,14 @@ main () {
     popd > /dev/null
 }
 
-# package_chart() {
-#     local chart="$1"
+package_chart() {
+    local chart="$1"
 
-#     # output=$(helm lint --quiet "${chart}" 2>/dev/null)
-#     output=$(helm package "${chart}")
+    # output=$(helm lint --quiet "${chart}" 2>/dev/null)
+    output=$(helm package "${chart}")
 
-#     $output
-# }
+    $output
+}
 
 
 lint_chart() {
@@ -67,7 +67,7 @@ lint_chart() {
     # output=$(helm lint --quiet "${chart}" 2>/dev/null)
     output=$(helm lint "${chart}")
 
-    echo $output
+    echo "${output}"
 }
 
 lookup_latest_tag() {
