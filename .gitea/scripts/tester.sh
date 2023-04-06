@@ -45,6 +45,7 @@ main () {
 
 lint_chart() {
     local chart="$1"
+    echo "in lint"
     echo "${chart}"
 
     local args=("$chart" --package-path .cr-release-packages)
