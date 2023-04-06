@@ -50,6 +50,9 @@ jobs:
         run: |
           chmod +x "${GITHUB_WORKSPACE}/.gitea/scripts/tester.sh"
           "${GITHUB_WORKSPACE}/.gitea/scripts/tester.sh"
+        env:
+          HELM_REPO_URL: ${{ secrets.HELM_REPO_URL }}
+
 
       # - name: Run chart-releaser
       #   uses: helm/chart-releaser-action@v1.5.0
