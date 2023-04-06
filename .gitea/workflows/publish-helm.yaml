@@ -38,7 +38,7 @@ jobs:
         run: |
           ls -al /opt/
           ls -al /opt/hostedtoolcache
-          ls -al /opt/hostedtoolcache/Python
+          # ls -al /opt/hostedtoolcache/Python
           env
       # - name: prepare apt
 
