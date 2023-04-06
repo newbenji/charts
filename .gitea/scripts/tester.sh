@@ -22,7 +22,9 @@ main () {
 
     local changed_charts=()
     echo "Discovering changed charts since '$latest_tag'..."
+    readarray -t changed_charts <<< "$(lookup_changed_charts "$latest_tag")"
 
+    echo "Changed dirs: $changed_charts"
 
 }
 
@@ -32,6 +34,31 @@ lookup_latest_tag() {
     if ! git describe --tags --abbrev=0 HEAD~ 2> /dev/null; then
         git rev-list --max-parents=0 --first-parent HEAD
     fi
+}
+
+
+filter_charts() {
+    while read -r chart; do
+        [[ ! -d "$chart" ]] && continue
+        local file="$chart/Chart.yaml"
+        if [[ -f "$file" ]]; then
+            echo "$chart"
+        else
+           echo "WARNING: $file is missing, assuming that '$chart' is not a Helm chart. Skipping." 1>&2
+        fi
+    done
+}
+
+lookup_changed_charts() {
+    local commit="$1"
+
+    local changed_files
+    changed_files=$(git diff --find-renames --name-only "$commit" -- "$charts_dir")
+
+    local depth=$(( $(tr "/" "\n" <<< "$charts_dir" | sed '/^\(\.\)*$/d' | wc -l) + 1 ))
+    local fields="1-${depth}"
+
+    cut -d '/' -f "$fields" <<< "$changed_files" | uniq | filter_charts
 }
 
 main "$@"
