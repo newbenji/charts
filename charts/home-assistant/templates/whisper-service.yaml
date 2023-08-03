@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whisper
+  labels:
+
+spec:
+  selector:
+    {{- include "home-assistant.selectorLabelsWhisper" . | nindent 4 }}
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 10300
+      targetPort: whisper

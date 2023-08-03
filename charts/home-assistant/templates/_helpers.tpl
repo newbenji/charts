@@ -48,7 +48,20 @@ Selector labels
 {{- define "home-assistant.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "home-assistant.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: home-assistant
 {{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "home-assistant.selectorLabelsWhisper" -}}
+app.kubernetes.io/name: {{ include "home-assistant.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: whisper
+{{- end }}
+
+
+
 
 {{/*
 Create the name of the service account to use

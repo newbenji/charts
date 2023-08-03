@@ -4,6 +4,7 @@ metadata:
   name: {{ include "home-assistant.fullname" . }}
   labels:
     {{- include "home-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: home-assistant
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
