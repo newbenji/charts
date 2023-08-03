@@ -38,7 +38,7 @@ securityContext: {}
 
 homeAssistant:
   persistence:
-    volumeName: pvc-6fa054bc-a616-473a-ba1d-4925c832fb33
+    volumeName:
 
 service:
   type: ClusterIP
