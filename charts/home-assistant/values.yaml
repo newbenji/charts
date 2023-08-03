@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+replicaCount: 0
 
 image:
   repository: homeassistant/home-assistant
@@ -35,6 +35,10 @@ securityContext: {}
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
+
+homeAssistant:
+  persistence:
+    volumeName: pvc-6fa054bc-a616-473a-ba1d-4925c832fb33
 
 service:
   type: ClusterIP

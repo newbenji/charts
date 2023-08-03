@@ -14,5 +14,7 @@ spec:
   resources:
     requests:
       storage: {{ .Values.persistence.size | quote }}
+  {{- if .Values.homeAssistant.persistence.volumeneName }}
+  volumeneName: {{ .Values.homeAssistant.persistence.volumeneName }}
   {{- end }}
-
+  {{- end }}
