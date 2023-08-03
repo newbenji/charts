@@ -47,8 +47,20 @@ main () {
         fi
     done
 
+    for chart in "${changed_charts[@]}"; do
+        if [[ -d "$chart" ]]; then
+            package_chart "$chart"
+        else
+            echo "Chart '$chart' no longer exists in repo. Skipping it..."
+        fi
+    done
 
     popd > /dev/null
+}
+
+upload_chart() {
+    local chart="$1"
+    output=$(helm push "${chart}" $)
 }
 
 package_chart() {
