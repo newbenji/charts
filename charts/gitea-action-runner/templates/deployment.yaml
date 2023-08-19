@@ -44,17 +44,8 @@ spec:
             - name: DOCKER_TLS_VERIFY
               value: "1"
             - name: GITEA_INSTANCE_URL
-              value: {{ .Values.act_runner.instance }}
-            # - name: GITEA_RUNNER_REGISTRATION_TOKEN
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: runner-secret
-            #       key: token
-            - name: DOCKER_TLS_CERTDIR
-              value: ""
-            - name: ACT_INSTANCE
-              value: {{ .Values.act_runner.instance }}
-            - name: ACT_TOKEN
+              value: value: {{ .Values.act_runner.instance }}
+            - name: GITEA_RUNNER_REGISTRATION_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: runner-secret
