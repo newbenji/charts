@@ -57,10 +57,6 @@ spec:
               value: ""
             - name: ACT_INSTANCE
               value: {{ .Values.act_runner.instance }}
-            - name: debug1
-              value: {{ .Values.persistence.enabled }}
-            - name: debug2
-              value: {{ .Values.persistence.create }}
             - name: ACT_TOKEN
               valueFrom:
                 secretKeyRef:
