@@ -1,5 +1,5 @@
 apiVersion: v2
-name: gitea_act_runner
+name: gitea_action_runner
 description: A Helm chart for Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
