@@ -22,3 +22,7 @@ version: 0.1.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "1.16.0"
+
+
+# https://gitea.com/vquie/act_runner-helm/src/branch/main/templates/deployment.yaml
+# https://gitea.com/gitea/act_runner/src/branch/main/examples/kubernetes/dind-docker.yaml
