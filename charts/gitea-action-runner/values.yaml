@@ -91,7 +91,6 @@ persistence:
     helm.sh/resource-policy: keep
 
 act_runner:
-  storageClass: "synology-csi-delete"
   instance: http://gitea-http.gitea.svc.cluster.local:3000
   token: somesecrettoken
   labels:

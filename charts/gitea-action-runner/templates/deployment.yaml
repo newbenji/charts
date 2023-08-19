@@ -57,7 +57,7 @@ spec:
             - name: ACT_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "gitea_action_runner.fullname" . }}-secret
+                  name: runner-secret
                   key: token
             - name: ACT_LABELS
               value: {{ join "," .Values.act_runner.labels }}
