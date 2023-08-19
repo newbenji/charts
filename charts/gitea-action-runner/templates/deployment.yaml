@@ -50,9 +50,6 @@ spec:
                 secretKeyRef:
                   name: runner-secret
                   key: token
-
-            - name: DOCKER_HOST
-              value: "tcp://localhost:2375"
             - name: DOCKER_TLS_CERTDIR
               value: ""
             - name: ACT_INSTANCE
