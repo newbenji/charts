@@ -61,9 +61,23 @@ tolerations: []
 
 affinity: {}
 
+
+## @section Persistence
+#
+## @param persistence.enabled Enable persistent storage
+## @param persistence.create Whether to create the persistentVolumeClaim for shared storage
+## @param persistence.mount Whether the persistentVolumeClaim should be mounted (even if not created)
+## @param persistence.claimName Use an existing claim to store repository information
+## @param persistence.size Size for persistence to store repo information
+## @param persistence.accessModes AccessMode for persistence
+## @param persistence.labels Labels for the persistence volume claim to be created
+## @param persistence.annotations.helm.sh/resource-policy Resource policy for the persistence volume claim
+## @param persistence.storageClass Name of the storage class to use
+## @param persistence.subPath Subdirectory of the volume to mount at
+## @param persistence.volumeName Name of persistent volume in PVC
 persistence:
   enabled: true
-  # create: true
+  create: true
   # mount: true
   claimName: gitea-runner
   size: 1Gi
@@ -74,7 +88,8 @@ persistence:
   subPath:
   volumeName:
   annotations:
-    helm.sh/resource-policy
+    helm.sh/resource-policy: keep
+
 act_runner:
   storageClass: "synology-csi-delete"
   instance: http://gitea-http.gitea.svc.cluster.local:3000
