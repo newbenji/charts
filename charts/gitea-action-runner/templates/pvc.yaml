@@ -1,18 +1,28 @@
----
-apiVersion: v1
+{{- if and .Values.persistence.enabled .Values.persistence.create }}
 kind: PersistentVolumeClaim
+apiVersion: v1
 metadata:
-  name: {{ include "gitea_action_runner.fullname" . }}-pvc
+  name: {{ .Values.persistence.claimName }}
+  namespace: {{ $.Release.Namespace }}
   labels:
     {{- include "gitea_action_runner.labels" . | nindent 4 }}
-  {{- with .Values.serviceAccount.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{ .Values.persistence.annotations | toYaml | indent 4 }}
 spec:
   accessModes:
-    - ReadWriteOnce
+  {{- if gt .Values.replicaCount 1.0 }}
+    - ReadWriteMany
+  {{- else }}
+    {{- .Values.persistence.accessModes | toYaml | nindent 4 }}
+  {{- end }}
+  volumeMode: Filesystem
+  {{- if .Values.persistence.storageClass }}
+  storageClassName: {{ .Values.persistence.storageClass }}
+  {{- end }}
+  {{- with .Values.persistence.volumeName }}
+  volumeName: {{ . }}
+  {{- end }}
   resources:
     requests:
-      storage: "1024Mi"
-  storageClassName: {{ .Values.act_runner.storageClass }}
+      storage: {{ .Values.persistence.size }}
+{{- end }}

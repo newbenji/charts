@@ -61,6 +61,20 @@ tolerations: []
 
 affinity: {}
 
+persistence:
+  enabled: true
+  # create: true
+  # mount: true
+  claimName: gitea-runner
+  size: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  labels: {}
+  storageClass:
+  subPath:
+  volumeName:
+  annotations:
+    helm.sh/resource-policy
 act_runner:
   storageClass: "synology-csi-delete"
   instance: http://gitea-http.gitea.svc.cluster.local:3000

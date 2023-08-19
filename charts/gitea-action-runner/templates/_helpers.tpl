@@ -34,7 +34,7 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "gitea_action_runner.labels" -}}
-helm.sh/chart: {{ include "gitea_act_runner.chart" . }}
+helm.sh/chart: {{ include "gitea_action_runner.chart" . }}
 {{ include "gitea_action_runner.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}

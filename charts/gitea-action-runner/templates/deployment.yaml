@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "gitea_act_runner.fullname" . }}
+  name: {{ include "gitea_action_runner.fullname" . }}
   labels:
-    {{- include "gitea_act_runner.labels" . | nindent 4 }}
+    {{- include "gitea_action_runner.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "gitea_act_runner.selectorLabels" . | nindent 6 }}
+      {{- include "gitea_action_runner.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "gitea_act_runner.selectorLabels" . | nindent 8 }}
+        {{- include "gitea_action_runner.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "gitea_act_runner.serviceAccountName" . }}
+      serviceAccountName: {{ include "gitea_action_runner.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -60,14 +60,14 @@ spec:
             - name: ACT_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "gitea_act_runner.fullname" . }}-secret
+                  name: {{ include "gitea_action_runner.fullname" . }}-secret
                   key: act-runner-token
             - name: ACT_LABELS
               value: {{ join "," .Values.act_runner.labels }}
           volumeMounts:
             - name: docker-certs
               mountPath: /certs
-            - name: runner-data
+            - name: data
               mountPath: /data
         - name: daemon
           securityContext:
@@ -84,10 +84,15 @@ spec:
               mountPath: /certs
       volumes:
         - name: docker-certs
-          emptyDir:
-        - name: {{ include "gitea_act_runner.fullname" . }}-pvc
+          emptyDir: {}
+        {{- if .Values.persistence.enabled }}
+        - name: data
           persistentVolumeClaim:
-            claimName: {{ include "gitea_act_runner.fullname" . }}-pvc
+            claimName: {{ .Values.persistence.claimName }}
+        {{- else if not .Values.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
