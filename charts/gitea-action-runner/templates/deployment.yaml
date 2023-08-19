@@ -45,6 +45,10 @@ spec:
               value: "1"
             - name: GITEA_INSTANCE_URL
               value: {{ .Values.act_runner.instance }}
+            {{- with .Values.act_runner.name }}
+            - name: GITEA_RUNNER_NAME
+              value: {{ . }}
+            {{- end }}
             - name: GITEA_RUNNER_REGISTRATION_TOKEN
               valueFrom:
                 secretKeyRef:
