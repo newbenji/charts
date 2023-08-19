@@ -93,7 +93,7 @@ persistence:
 act_runner:
   storageClass: "synology-csi-delete"
   instance: http://gitea-http.gitea.svc.cluster.local:3000
-  token: "coc5vqqbodCuQ3C7kdX5JiTfNZBLHjS5N7wu5mRV"
+  token: somesecrettoken
   labels:
     - "ubuntu-latest:docker://node:16-bullseye"
     - "ubuntu-22.04:docker://node:16-bullseye"
