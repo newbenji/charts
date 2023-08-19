@@ -58,7 +58,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ include "gitea_action_runner.fullname" . }}-secret
-                  key: act-runner-token
+                  key: token
             - name: ACT_LABELS
               value: {{ join "," .Values.act_runner.labels }}
           volumeMounts:
