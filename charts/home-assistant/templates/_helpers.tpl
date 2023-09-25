@@ -73,3 +73,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+{{- define "home-assistant.passwords" -}}
+somethingimportant: tester
+mere:
+  mere: 1
+{{- end }}
