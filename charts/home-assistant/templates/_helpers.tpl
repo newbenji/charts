@@ -77,10 +77,9 @@ Create the name of the service account to use
 
 {{- define "home-assistant.hadbsecret" -}}
 hadbconfig: {{ .Values.hadbconfig | quote }}
-
-{{- end }}
+{{ end }}
 
 {{- define "home-assistant.recorder" -}}
 {{ .Values.recorder | toYaml | indent 0 }}
 db_url: !secret hadbconfig
-{{- end }}
+{{ end }}
