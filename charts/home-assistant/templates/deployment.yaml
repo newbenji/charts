@@ -41,6 +41,9 @@ spec:
           {{- if .Values.persistence.additionalVolumes }}
             {{- .Values.persistence.additionalVolumes | toYaml | nindent 8}}
           {{- end }}
+        - name: secretFile
+          secret:
+            secretName: secrets
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -53,6 +56,9 @@ spec:
             {{- if .Values.persistence.additionalMounts }}
               {{- .Values.persistence.additionalMounts | toYaml | nindent 12 }}
             {{- end }}
+            - name: secretFile
+              mountPath: /configs
+              readOnly: true
           ports:
             - name: http
               containerPort: 8123
