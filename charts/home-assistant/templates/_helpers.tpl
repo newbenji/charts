@@ -80,5 +80,5 @@ hadbconfig: {{ .Values.hadbconfig | quote }}
 {{- end }}
 
 {{- define "home-assistant.recorder" -}}
-hadbconfig: {{ .Values.recorder }}
+hadbconfig: {{ .Values.recorder | toYaml }}
 {{- end }}
