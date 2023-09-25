@@ -75,6 +75,10 @@ Create the name of the service account to use
 {{- end }}
 
 
-{{- define "home-assistant.passwords" -}}
+{{- define "home-assistant.hadbsecret" -}}
 hadbconfig: {{ .Values.hadbconfig | quote }}
+{{- end }}
+
+{{- define "home-assistant.recorder" -}}
+hadbconfig: {{ .Values.recorder }}
 {{- end }}
