@@ -82,4 +82,5 @@ hadbconfig: {{ .Values.hadbconfig | quote }}
 
 {{- define "home-assistant.recorder" -}}
 {{ .Values.recorder | toYaml | indent 0 }}
+db_url: !secret hadbconfig
 {{- end }}
