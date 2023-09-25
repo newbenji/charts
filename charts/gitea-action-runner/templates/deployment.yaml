@@ -43,6 +43,8 @@ spec:
               value: /certs/client
             - name: DOCKER_TLS_VERIFY
               value: "1"
+            - name: TZ
+              value: {{ .Values.act_runner.timezone }}
             - name: GITEA_INSTANCE_URL
               value: {{ .Values.act_runner.instance }}
             {{- with .Values.act_runner.name }}
