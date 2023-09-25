@@ -76,5 +76,5 @@ Create the name of the service account to use
 
 
 {{- define "home-assistant.passwords" -}}
-hadbconfig: {{ .Values.hadbconfig }}
+hadbconfig: {{ .Values.hadbconfig | quote }}
 {{- end }}
