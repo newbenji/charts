@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: recorder
+  labels:
+    app.kubernetes.io/name: {{ include "home-assistant.name" . }}
+    helm.sh/chart: {{ include "home-assistant.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+type: Opaque
+data:
+  secrets.yaml: {{ include "home-assistant.hadbsecret" . | b64enc }}
+  config.yaml: {{ include "home-assistant.recorder" . | b64enc }}
