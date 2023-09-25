@@ -41,7 +41,7 @@ spec:
           {{- if .Values.persistence.additionalVolumes }}
             {{- .Values.persistence.additionalVolumes | toYaml | nindent 8}}
           {{- end }}
-        - name: secretFile
+        - name: secretfile
           secret:
             secretName: secrets
       containers:
@@ -56,7 +56,7 @@ spec:
             {{- if .Values.persistence.additionalMounts }}
               {{- .Values.persistence.additionalMounts | toYaml | nindent 12 }}
             {{- end }}
-            - name: secretFile
+            - name: secretfile
               mountPath: /configs
               readOnly: true
           ports:
