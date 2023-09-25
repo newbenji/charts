@@ -76,7 +76,5 @@ Create the name of the service account to use
 
 
 {{- define "home-assistant.passwords" -}}
-somethingimportant: tester
-mere:
-  mere: 1
+hadbconfig: {{ .Values.hadbconfig }}
 {{- end }}
