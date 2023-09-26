@@ -138,7 +138,18 @@ vscode:
 
 hadbconfig: "postgresql://homeassistant:****@postgresql.localhost/homeassistant"
 
-recorder:
-  purge_keep_days: 30
+
+
+config:
+  recorder:
+    purge_keep_days: 30
+  http:
+    use_x_forwarded_for: false
+    trusted_proxies: []
+      # - 192.168.0.0/22
+      # - 10.42.0.0/24
+      # - 10.42.1.0/24
+    ip_ban_enabled: false
+    login_attempts_threshold: 5
 
 #  db_url: "!secret hadbconfig"
