@@ -46,7 +46,7 @@ spec:
             secretName: recorder
         - name: httpconfig
           configMap:
-            secretName: config-http
+            name: config-http
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
