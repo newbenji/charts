@@ -44,6 +44,9 @@ spec:
         - name: recorder
           secret:
             secretName: recorder
+        - name: httpconfig
+          configMap:
+            secretName: config-http
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -58,6 +61,9 @@ spec:
             {{- end }}
             - name: recorder
               mountPath: /config/recorder
+              readOnly: true
+            - name: httpconfig
+              mountPath: /config/http
               readOnly: true
           ports:
             - name: http
