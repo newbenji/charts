@@ -9,5 +9,5 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 type: Opaque
 data:
-  secrets.yaml: {{ include "home-assistant.recorder_secret" . | b64enc }}
+  secrets.yaml: {{ include "home-assistant.recorder-secret" . | b64enc }}
   config.yaml: {{ include "home-assistant.recorder" . | b64enc }}
