@@ -40,6 +40,7 @@ jobs:
         uses: tj-actions/changed-files@v39.2.1
         with:
           # files: charts/*
+          sha: b3d2d9781cfa1e4566f2e6c4dde90512cf1cc392
           dir_names: "true"
 
       - name: List all changed files
