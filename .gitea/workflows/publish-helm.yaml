@@ -35,12 +35,12 @@ jobs:
       #   # env:
       #     # AGENT_TOOLSDIRECTORY: '/opt/github/actions-runner/_work/_tool'
 
-      # - name: Run changed-files with dir_names
-      #   # id: changed-files-dir-names
-      #   uses: tj-actions/changed-files@v39
-      #   with:
-      #     files: charts/*
-      #     dir_names: "true"
+      - name: Run changed-files with dir_names
+        # id: changed-files-dir-names
+        uses: tj-actions/changed-files@v39
+        with:
+          # files: charts/*
+          dir_names: "true"
 
       # - name: List all changed files
       #   run: |
