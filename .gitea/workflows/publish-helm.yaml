@@ -37,7 +37,7 @@ jobs:
 
       - name: Run changed-files with dir_names
         # id: changed-files-dir-names
-        uses: tj-actions/changed-files@v39
+        uses: tj-actions/changed-files@v39.2.1
         with:
           # files: charts/*
           dir_names: "true"
