@@ -39,13 +39,13 @@ jobs:
         id: changed-files-dir-names
         uses: tj-actions/changed-files@v39.2.1
         with:
-          files: charts/*
+          # files: charts/*
           dir_names: "true"
 
       - name: List all changed files
         run: |
           for file in ${{ steps.changed-files-dir-names.outputs.all_changed_files }}; do
-            echo "$dir was changed"
+            echo "$file was changed"
           done
 
       - name: after python
