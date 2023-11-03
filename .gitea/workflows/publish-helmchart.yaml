@@ -64,10 +64,10 @@ jobs:
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
           if [[ $CHARTMUSEUM_REPO_NAME ]]; then
-            echo ${CHARTMUSEUM_REPO_NAME}
-            echo ${CHARTMUSEUM_URL}
-            echo ${CHARTMUSEUM_URL1}
-            echo "helm repo add ${CHARTMUSEUM_REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}"
+            # echo ${CHARTMUSEUM_REPO_NAME}
+            # echo ${CHARTMUSEUM_URL}
+            # echo ${CHARTMUSEUM_URL1}
+            # echo "helm repo add ${CHARTMUSEUM_REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}"
             helm repo add ${CHARTMUSEUM_REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}
             helm repo update
             # --username=${CHARTMUSEUM_USER} --password=${CHARTMUSEUM_PASSWORD}
@@ -122,6 +122,8 @@ jobs:
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
             echo "linting $dir"
             helm package $dir
+            helm package
+            yq version
           done
           ls -al
 
