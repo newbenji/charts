@@ -23,11 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     # runs-on: ubuntu-20.04
     steps:
-      - name: Checkout
+      - name: Clone git repo
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
 
       - name: Set up Helm
         uses: https://github.com/azure/setup-helm@v3
@@ -54,14 +53,14 @@ jobs:
           dir_names_max_depth: "2"
           dir_names: "true"
 
-      - name: List all changed files
-        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
-        run: |
-          for file in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
-            echo "$file was changed"
-          done
+      # - name: List all changed files
+      #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+      #   run: |
+      #     for file in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+      #       echo "$file was changed"
+      #     done
 
-      - name: Add repo
+      - name: Setup helm chart repo
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
           if [[ $CHARTMUSEUM_REPO_NAME ]]; then
@@ -70,12 +69,13 @@ jobs:
             echo ${CHARTMUSEUM_URL1}
             echo "helm repo add ${CHARTMUSEUM_REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}"
             helm repo add ${CHARTMUSEUM_REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}
+            helm repo update
             # --username=${CHARTMUSEUM_USER} --password=${CHARTMUSEUM_PASSWORD}
           fi
-      - name: Update and list repo
-        run: |
-          helm repo update
-          helm search repo
+      # - name: Update and list repo
+      #   run: |
+      #     helm repo update
+      #     helm search repo
 
       # - name: Run chart-testing (lint)
       #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
@@ -109,12 +109,12 @@ jobs:
             # Go back to workspace main dir
             cd ${{ gitea.workspace }}
 
-      - name: Cat chart.yaml
-        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
-        run: |
-          for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
-            cat $dir/Chart.yaml
-          done
+      # - name: Cat chart.yaml
+      #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+      #   run: |
+      #     for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+      #       cat $dir/Chart.yaml
+      #     done
 
       - name: Run chart-package (package)
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
@@ -123,5 +123,6 @@ jobs:
             echo "linting $dir"
             helm package $dir
           done
+          ls -al
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
