@@ -93,6 +93,7 @@ jobs:
         with:
           cmd: |
             which yq
+            ls -al /usr/local/bin
             for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
               # Move in to chart dir
               cd ${{ gitea.workspace }}
