@@ -88,8 +88,10 @@ jobs:
         id: lookupSdkVersion
         if: github.ref_name == 'main'
         uses: mikefarah/yq@master
-        run: yq --version
-        # with:
+        # run: yq --version
+        with:
+          cmd: |
+            yq --version
           # cmd: yq '.' 'Chart.yaml'
 
       - name: Cat chart.yaml
