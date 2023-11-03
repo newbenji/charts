@@ -86,11 +86,12 @@ jobs:
       - run: echo "The name of your branch is ${{ gitea.ref_name }} and your repository is ${{ gitea.repository }}."
       - name: set
         id: lookupSdkVersion
-        if: github.ref == 'refs/heads/develop'
+        if: github.ref_name == 'main'
         uses: mikefarah/yq@master
         with:
-          cmd: yq '.renutil.version' 'config.yml'
+          cmd: yq '.' 'Chart.yaml'
 
+      - run: cat $dir/Chart.yaml
 
       - name: Run chart-package (package)
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
