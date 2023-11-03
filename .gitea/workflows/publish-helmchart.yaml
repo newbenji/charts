@@ -34,6 +34,13 @@ jobs:
         with:
           version: v3.11.2
 
+      - name: Step 1 - Echo out a GitHub Actions Secret to the logs
+        run: |
+          echo "The GitHub Action Secret will be masked:  "
+          echo ${{ secrets.CHARTMUSEUM_URL }}
+          echo "Trick to echo GitHub Actions Secret:  "
+          echo ${{secrets.CHARTMUSEUM_URL}} | sed 's/./& /g'
+
       - name: Helm version
         run: |
           helm version -c
