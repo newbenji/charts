@@ -86,7 +86,7 @@ jobs:
       - run: echo "The name of your branch is ${{ gitea.ref_name }} and your repository is ${{ gitea.repository }}."
       - name: set
         id: lookupSdkVersion
-        if: github.ref_name == 'main'
+        if: github.ref_name == 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         uses: mikefarah/yq@master
         # run: yq --version
         with:
@@ -94,7 +94,7 @@ jobs:
             for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
               cd ${{ gitea.workspace }}
               cd $dir
-              ls -al
+              yq -i '(.annotations | select(has("artifacthub.io/prerelease"))."artifacthub.io/prerelease") |= "true"' Chart.yaml
               yq '.' 'Chart.yaml'
               echo "------------------"
             done
