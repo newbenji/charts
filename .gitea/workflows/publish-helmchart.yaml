@@ -94,10 +94,11 @@ jobs:
             for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
               cd ${{ gitea.workspace }}
               cd $dir
+              ls -al
               yq '.' 'Chart.yaml'
               echo "------------------"
             done
-            yq --helm
+            yq --help
             cd ${{ gitea.workspace }}
           # cmd: yq '.' 'Chart.yaml'
 
