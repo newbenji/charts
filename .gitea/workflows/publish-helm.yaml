@@ -5,7 +5,7 @@ run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
 on:
   push:
     branches:
-      - main
+      - test
   #  paths:
     #  - 'charts/home-assistantxx/**'
 
@@ -50,38 +50,47 @@ jobs:
             echo "$file was changed"
           done
 
-
       - name: Run chart-testing (lint)
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
             echo "linting $dir"
-            helm lint $dir
+            helm lint --quiet $dir
           done
 
-      - name: after python
+
+
+      - name: Run chart-package (package)
+        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
-          ls -al /opt/
-          ls -al /opt/hostedtoolcache
-          # ls -al /opt/hostedtoolcache/Python
-          echo "-----------------"
-          echo $HELM_REPO_URL
-          echo "-----------------"
-          env
-        env:
-          HELM_REPO_URL: ${{ secrets.HELM_REPO_URL }}
+          for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+            echo "linting $dir"
+            helm package --quiet $dir
+          done
+
+      # - name: after python
+      #   run: |
+      #     ls -al /opt/
+      #     ls -al /opt/hostedtoolcache
+      #     # ls -al /opt/hostedtoolcache/Python
+      #     echo "-----------------"
+      #     echo $HELM_REPO_URL
+      #     echo "-----------------"
+      #     env
+      #   env:
+      #     HELM_REPO_URL: ${{ secrets.HELM_REPO_URL }}
       # - name: prepare apt
 
       # - name: Set up chart-testing
       #   uses: https://github.com/helm/chart-testing-action@v2.4.0
 
 
-      - name: Crate Configfile for Chart Re
-        run: |
-          chmod +x "${GITHUB_WORKSPACE}/.gitea/scripts/tester.sh"
-          "${GITHUB_WORKSPACE}/.gitea/scripts/tester.sh"
-        env:
-          HELM_REPO_URL: ${{ secrets.HELM_REPO_URL }}
+      # - name: Crate Configfile for Chart Re
+      #   run: |
+      #     chmod +x "${GITHUB_WORKSPACE}/.gitea/scripts/tester.sh"
+      #     "${GITHUB_WORKSPACE}/.gitea/scripts/tester.sh"
+      #   env:
+      #     HELM_REPO_URL: ${{ secrets.HELM_REPO_URL }}
 
 
       # - name: Run chart-releaser

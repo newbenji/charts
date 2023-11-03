@@ -1,0 +1,69 @@
+name: Release Charts Benji
+run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
+# https://blog.gitea.io/2023/03/hacking-on-gitea-actions/
+
+on:
+  push:
+    branches:
+      - main
+   paths:
+     - 'charts/jellyfin/**'
+
+jobs:
+  Explore-Gitea-Actions:
+    permissions:
+      contents: write
+      # runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
+    # runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: https://github.com/azure/setup-helm@v3
+        with:
+          version: v3.11.2
+
+      # - uses: https://github.com/actions/setup-python@v4
+      #   with:
+      #     python-version: '3.9'
+      #     check-latest: true
+      #     # cache: "pip"
+      #   # env:
+      #     # AGENT_TOOLSDIRECTORY: '/opt/github/actions-runner/_work/_tool'
+
+      - name: Run changed-files with dir_names
+        id: changed-files-dir-names
+        uses: tj-actions/changed-files@v39.2.1
+        with:
+          files: charts/*
+          sha: b3d2d9781cfa1e4566f2e6c4dde90512cf1cc392
+          dir_names_max_depth: "2"
+          dir_names: "true"
+
+      - name: List all changed files
+        run: |
+          for file in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+            echo "$file was changed"
+          done
+
+      - name: Run chart-testing (lint)
+        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        run: |
+          for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+            echo "linting $dir"
+            helm lint --quiet $dir
+          done
+
+
+
+      - name: Run chart-package (package)
+        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        run: |
+          for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+            echo "linting $dir"
+            helm package --quiet $dir
+          done
