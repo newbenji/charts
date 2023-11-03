@@ -4,6 +4,7 @@ run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
 
 env:
   CHARTMUSEUM_URL: ${{ secrets.HELM_REPO_URL }}
+  CHARTMUSEUM_URL1: ${{ secrets.CHARTMUSEUM_URL }}
   CHARTMUSEUM_REPO_NAME: benji
   # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
   # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
@@ -57,6 +58,7 @@ jobs:
           if [[ $CHARTMUSEUM_REPO_NAME ]]; then
             echo ${CHARTMUSEUM_REPO_NAME}
             echo ${CHARTMUSEUM_URL}
+            echo ${CHARTMUSEUM_URL1}
             helm repo add ${CHARTMUSEUM_REPO_NAME} ${CHARTMUSEUM_URL}
             # --username=${CHARTMUSEUM_USER} --password=${CHARTMUSEUM_PASSWORD}
           fi
