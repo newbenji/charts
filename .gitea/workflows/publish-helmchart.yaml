@@ -105,7 +105,7 @@ jobs:
               # yq '.' 'Chart.yaml'
               # echo "------------------"
             done
-
+            which yq
             # Go back to workspace main dir
             cd ${{ gitea.workspace }}
 
@@ -123,7 +123,7 @@ jobs:
             echo "linting $dir"
             helm package $dir
             # helm package
-            yq version
+            # yq version
           done
           ls -al
 
