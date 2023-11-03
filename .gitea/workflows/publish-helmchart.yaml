@@ -126,7 +126,8 @@ jobs:
             echo "linting $dir"
             helm package $dir
             # helm package
-            yq version
+            /usr/local/bin/yq version
+            env
           done
           ls -al
 
