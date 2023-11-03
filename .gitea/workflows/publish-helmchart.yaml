@@ -83,6 +83,7 @@ jobs:
       #       helm lint --quiet $dir
       #     done
       - run: echo "The name of your branch is ${{ gitea.ref }} and your repository is ${{ gitea.repository }}."
+      - run: echo "The name of your branch is ${{ gitea.ref_name }} and your repository is ${{ gitea.repository }}."
       - name: set
         id: lookupSdkVersion
         if: github.ref == 'refs/heads/develop'
