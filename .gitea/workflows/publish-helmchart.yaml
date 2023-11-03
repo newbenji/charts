@@ -2,6 +2,12 @@ name: Release Charts Benji
 run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
 # https://blog.gitea.io/2023/03/hacking-on-gitea-actions/
 
+env:
+  CHARTMUSEUM_URL: ${{ secrets.CHARTMUSEUM_URL }}
+  CHARTMUSEUM_REPO_NAME: benji
+  # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
+  # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
+
 on:
   push:
     branches:
@@ -27,13 +33,9 @@ jobs:
         with:
           version: v3.11.2
 
-      # - uses: https://github.com/actions/setup-python@v4
-      #   with:
-      #     python-version: '3.9'
-      #     check-latest: true
-      #     # cache: "pip"
-      #   # env:
-      #     # AGENT_TOOLSDIRECTORY: '/opt/github/actions-runner/_work/_tool'
+      - name: Helm version
+        run: |
+          helm version -c
 
       - name: Run changed-files with dir_names
         id: changed-files-dir-names
@@ -49,6 +51,16 @@ jobs:
           for file in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
             echo "$file was changed"
           done
+
+      - name: Add repo
+        run: |
+          if [[ $CHARTMUSEUM_REPO_NAME ]]; then
+            helm repo add ${CHARTMUSEUM_REPO_NAME} ${CHARTMUSEUM_URL} --username=${CHARTMUSEUM_USER} --password=${CHARTMUSEUM_PASSWORD}
+          fi
+      - name: Update and list repo
+        run: |
+          helm dependency update .
+          helm search repo
 
       # - name: Run chart-testing (lint)
       #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
@@ -67,3 +79,5 @@ jobs:
             echo "linting $dir"
             helm package $dir
           done
+
+      - run: echo "🍏 This job's status is ${{ job.status }}."
