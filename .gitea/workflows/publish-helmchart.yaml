@@ -98,7 +98,7 @@ jobs:
               yq '.' 'Chart.yaml'
               echo "------------------"
             done
-            yq --help
+            yq help
             cd ${{ gitea.workspace }}
           # cmd: yq '.' 'Chart.yaml'
 
