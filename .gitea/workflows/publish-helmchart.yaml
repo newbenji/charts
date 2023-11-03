@@ -91,7 +91,11 @@ jobs:
         # run: yq --version
         with:
           cmd: |
-            yq --version
+            for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+              yq '.' '$dir/Chart.yaml'
+              echo "------------------"
+            done
+            yq --helm
           # cmd: yq '.' 'Chart.yaml'
 
       - name: Cat chart.yaml
