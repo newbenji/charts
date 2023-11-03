@@ -55,6 +55,8 @@ jobs:
       - name: Add repo
         run: |
           if [[ $CHARTMUSEUM_REPO_NAME ]]; then
+            echo ${CHARTMUSEUM_REPO_NAME}
+            echo ${CHARTMUSEUM_URL}
             helm repo add ${CHARTMUSEUM_REPO_NAME} ${CHARTMUSEUM_URL}
             # --username=${CHARTMUSEUM_USER} --password=${CHARTMUSEUM_PASSWORD}
           fi
