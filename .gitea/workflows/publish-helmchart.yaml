@@ -65,5 +65,5 @@ jobs:
         run: |
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
             echo "linting $dir"
-            helm package --quiet $dir
+            helm package $dir
           done
