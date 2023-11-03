@@ -66,8 +66,8 @@ jobs:
             echo ${CHARTMUSEUM_REPO_NAME}
             echo ${CHARTMUSEUM_URL}
             echo ${CHARTMUSEUM_URL1}
-            echo "helm repo add ${CHARTMUSEUM_REPO_NAME} ${CHARTMUSEUM_URL}"
-            helm repo add ${CHARTMUSEUM_REPO_NAME} ${CHARTMUSEUM_URL}
+            echo "helm repo add ${CHARTMUSEUM_REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}"
+            helm repo add ${CHARTMUSEUM_REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}
             # --username=${CHARTMUSEUM_USER} --password=${CHARTMUSEUM_PASSWORD}
           fi
       - name: Update and list repo
