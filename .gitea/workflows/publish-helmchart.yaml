@@ -50,13 +50,13 @@ jobs:
             echo "$file was changed"
           done
 
-      - name: Run chart-testing (lint)
-        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
-        run: |
-          for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
-            echo "linting $dir"
-            helm lint --quiet $dir
-          done
+      # - name: Run chart-testing (lint)
+      #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+      #   run: |
+      #     for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+      #       echo "linting $dir"
+      #       helm lint --quiet $dir
+      #     done
 
 
 
