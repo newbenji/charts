@@ -92,7 +92,7 @@ jobs:
         with:
           cmd: |
             for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
-              yq '.' '$dir/Chart.yaml'
+              yq '.' $dir/Chart.yaml
               echo "------------------"
             done
             yq --helm
