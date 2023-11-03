@@ -6,8 +6,8 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'charts/jellyfin/**'
+    # paths:
+    #   - 'charts/jellyfin/**'
 
 jobs:
   Explore-Gitea-Actions:
