@@ -72,7 +72,7 @@ jobs:
           fi
       - name: Update and list repo
         run: |
-          helm dependency update .
+          helm repo update
           helm search repo
 
       # - name: Run chart-testing (lint)
