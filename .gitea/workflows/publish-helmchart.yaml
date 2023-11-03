@@ -3,8 +3,7 @@ run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
 # https://blog.gitea.io/2023/03/hacking-on-gitea-actions/
 
 env:
-  CHARTMUSEUM_URL: ${{ secrets.HELM_REPO_URL }}
-  CHARTMUSEUM_URL1: ${{ secrets.CHARTMUSEUM_URL }}
+  CHARTMUSEUM_URL: ${{ secrets.CHARTMUSEUM_URL }}
   CHARTMUSEUM_REPO_NAME: benji
   # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
   # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
@@ -29,17 +28,18 @@ jobs:
         with:
           fetch-depth: 0
 
+
       - name: Set up Helm
         uses: https://github.com/azure/setup-helm@v3
         with:
           version: v3.11.2
 
-      - name: Step 1 - Echo out a GitHub Actions Secret to the logs
-        run: |
-          echo "The GitHub Action Secret will be masked:  "
-          echo ${{ secrets.CHARTMUSEUM_URL }}
-          echo "Trick to echo GitHub Actions Secret:  "
-          echo ${{secrets.CHARTMUSEUM_URL}} | sed 's/./& /g'
+      # - name: Step 1 - Echo out a GitHub Actions Secret to the logs
+      #   run: |
+      #     echo "The GitHub Action Secret will be masked:  "
+      #     echo ${{ secrets.CHARTMUSEUM_URL }}
+      #     echo "Trick to echo GitHub Actions Secret:  "
+      #     echo ${{secrets.CHARTMUSEUM_URL}} | sed 's/./& /g'
 
       - name: Helm version
         run: |
@@ -82,7 +82,13 @@ jobs:
       #       echo "linting $dir"
       #       helm lint --quiet $dir
       #     done
-
+      - run: echo "The name of your branch is ${{ gitea.ref }} and your repository is ${{ gitea.repository }}."
+      - name: set
+        id: lookupSdkVersion
+        if: github.ref == 'refs/heads/develop'
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.renutil.version' 'config.yml'
 
 
       - name: Run chart-package (package)
