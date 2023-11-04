@@ -106,6 +106,15 @@ jobs:
               helm package .
               chartVersion=$(yq e '.version'  Chart.yaml)
               chartPackage="${chartName}-${chartVersion}.tgz"
+
+              # Delete an existing package of the current version prior to upload (mimicking --force)
+              # curl -X DELETE -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/${chartName}/${chartVersion}"
+              curl -X DELETE "${CHARTMUSEUM_URL}/${chartName}/${chartVersion}"
+
+              # Upload the package
+              # curl --data-binary "@${chartPackage}" -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}"
+               curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}"
+
               helm push "${chartName}" "${REPO_NAME}"
               echo "Packagename: ${chartPackage}"
               helm
