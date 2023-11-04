@@ -115,7 +115,7 @@ jobs:
               # curl --data-binary "@${chartPackage}" -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}"
               curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}"
               ls -al
-
+              echo "curl --data-binary \"@${chartPackage}\" \"${CHARTMUSEUM_URL}\""
 
               # helm push "${chartName}" "${REPO_NAME}"
               echo "Packagename: ${chartPackage}"
