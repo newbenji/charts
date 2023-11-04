@@ -7,6 +7,7 @@ env:
   CHARTMUSEUM_REPO_NAME: benji
   # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
   # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
+  ACTIVE_CHARTS: ("jellyfin" "helloworld" )
 
 on:
   push:
@@ -35,11 +36,12 @@ jobs:
           version: v3.13.0
 
         # install yq
-      - uses: chrisdickinson/setup-yq@latest
+      - name: Setup YQ
+        uses: chrisdickinson/setup-yq@latest
         with:
           yq-version: v4.35.2
 
-      - name: Helm and yq version
+      - name: Versions on tools
         run: |
           helm version -c
           yq --version
@@ -52,8 +54,6 @@ jobs:
           sha: b3d2d9781cfa1e4566f2e6c4dde90512cf1cc392
           dir_names_max_depth: "2"
           dir_names: "true"
-
-
 
       - name: Setup helm chart repo
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
@@ -83,11 +83,10 @@ jobs:
 
             # Set prerelease to true if not main
             yq -i '(.annotations | select(has("artifacthub.io/prerelease"))."artifacthub.io/prerelease") |= "true"' Chart.yaml
-            yq '.' 'Chart.yaml'
-            echo "------------------"
+            # yq '.' 'Chart.yaml'
+            # echo "------------------"
           done
-          which yq
-          yq --version
+
           # Go back to workspace main dir
           cd ${{ gitea.workspace }}
 
@@ -95,10 +94,20 @@ jobs:
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+
+            base=`basename ${dir}`
+            echo $base
+
+            cd ${{ gitea.workspace }}
+            cd $dir
+
+
             echo "linting $dir"
             helm package $dir
+            ls -al
           done
-          ls -al
+          cd ${{ gitea.workspace }}
+
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
 
