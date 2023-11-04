@@ -75,46 +75,41 @@ jobs:
           yq --version
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
             # Move in to chart dir
-            cd ${{ gitea.workspace }}
-            cd $dir
+            cd "${{ gitea.workspace }}/${dir}"
 
             # Append alpha to release if not main
             sed -i '/^version: /s/$/-alpha/' Chart.yaml
 
             # Set prerelease to true if not main
             yq -i '(.annotations | select(has("artifacthub.io/prerelease"))."artifacthub.io/prerelease") |= "true"' Chart.yaml
-            # yq '.' 'Chart.yaml'
-            # echo "------------------"
           done
 
           # Go back to workspace main dir
-          cd ${{ gitea.workspace }}
+          cd "${{ gitea.workspace }}"
 
       - name: Run chart-package (package)
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
             cd "${{ gitea.workspace }}/${dir}"
-            yq '.name' 'Chart.yaml'
             chartName=$(yq e '.name'  Chart.yaml)
-            # cd $dir
+
             echo "Chartname: ${chartName}"
 
-            base=`basename ${dir}`
 
-            echo ${ACTIVE_CHARTS}
-
-            if [[ $(echo ${ACTIVE_CHARTS[@]} | fgrep -w $base) ]]
+            if [[ $(echo ${ACTIVE_CHARTS[@]} | fgrep -w $chartName) ]]
             then
               echo "in active charts"
-              echo $base
+              echo $chartName
 
 
               echo "linting $dir"
               helm package .
+
+              # jellyfin-0.1.0-alpha.tgz
               ls -al
             fi
-            echo $base
+            # echo $chartName
 
           done
           cd ${{ gitea.workspace }}
