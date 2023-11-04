@@ -103,10 +103,9 @@ jobs:
               chartVersion=$(yq e '.version'  Chart.yaml)
               chartPackage="${chartName}-${chartVersion}.tgz"
 
-              echo "Branch: ${{github.ref_name}}"
-
               # only if not branch main
               if [ "${{ github.ref_name }}" == "main" ]; then
+                echo "Since not in main, we delete a package first"
                 # Delete an existing package of the current version prior to upload (mimicking --force)
 
                 # curl -X DELETE -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts/${chartName}/${chartVersion}"
