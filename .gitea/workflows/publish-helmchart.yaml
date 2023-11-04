@@ -87,9 +87,7 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: |
-            which yq
-            cp /usr/bin/yq /usr/local/bin/yq
-            ls -al /usr/local/bin
+            yq --version
             for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
               # Move in to chart dir
               cd ${{ gitea.workspace }}
@@ -113,6 +111,7 @@ jobs:
       - uses: chrisdickinson/setup-yq@latest
       - name: Show folks how to run YQ2
         run: |
+          yq --version
           yq --help
 
       - name: Run chart-package (package)
