@@ -112,10 +112,10 @@ jobs:
               curl -X DELETE "${CHARTMUSEUM_URL}/${chartName}/${chartVersion}"
 
               # Upload the package
-              # curl --data-binary "@${chartPackage}" -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}"
+              # curl --data-binary "@${chartPackage}" -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts"
               curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}"
               ls -al
-              echo "curl --data-binary \"@${chartPackage}\" \"${CHARTMUSEUM_URL}\""
+              echo "curl --data-binary \"@${chartPackage}\" \"${CHARTMUSEUM_URL}/api/charts\""
 
               # helm push "${chartName}" "${REPO_NAME}"
               echo "Packagename: ${chartPackage}"
