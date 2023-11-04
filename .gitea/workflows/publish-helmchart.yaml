@@ -107,9 +107,9 @@ jobs:
             # Go back to workspace main dir
             cd ${{ gitea.workspace }}
 
-      - name: Show folks how to run YQ1
-        run: |
-          yq --help
+      # - name: Show folks how to run YQ1
+      #   run: |
+      #     yq --help
       - uses: chrisdickinson/setup-yq@latest
       - name: Show folks how to run YQ2
         run: |
