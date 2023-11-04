@@ -105,6 +105,9 @@ jobs:
 
               echo "linting $dir"
               helm package .
+              chartVersion=$(yq e '.version'  Chart.yaml)
+              chartPackage="${chartName}-${chartVersion}.tgz"
+              echo "Packagename: ${chartPackage}"
 
               # jellyfin-0.1.0-alpha.tgz
               ls -al
