@@ -4,7 +4,7 @@ run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
 
 env:
   CHARTMUSEUM_URL: ${{ secrets.CHARTMUSEUM_URL }}
-  CHARTMUSEUM_REPO_NAME: benji
+  REPO_NAME: benji
   # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
   # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
   ACTIVE_CHARTS: ("jellyfin" "hello-world" )
@@ -58,12 +58,12 @@ jobs:
       - name: Setup helm chart repo
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
-          if [[ $CHARTMUSEUM_REPO_NAME ]]; then
-            # echo ${CHARTMUSEUM_REPO_NAME}
+          if [[ $REPO_NAME ]]; then
+            # echo ${REPO_NAME}
             # echo ${CHARTMUSEUM_URL}
             # echo ${CHARTMUSEUM_URL1}
-            # echo "helm repo add ${CHARTMUSEUM_REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}"
-            helm repo add ${CHARTMUSEUM_REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}
+            # echo "helm repo add ${REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}"
+            helm repo add ${REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}
             helm repo update
             # --username=${CHARTMUSEUM_USER} --password=${CHARTMUSEUM_PASSWORD}
           fi
@@ -87,16 +87,15 @@ jobs:
           # Go back to workspace main dir
           cd "${{ gitea.workspace }}"
 
-      - name: Run chart-package (package)
+      - name: Package changed charts
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
             cd "${{ gitea.workspace }}/${dir}"
+
             chartName=$(yq e '.name'  Chart.yaml)
 
-            echo "Chartname: ${chartName}"
-
-
+            # Only run on some the charts for now
             if [[ $(echo ${ACTIVE_CHARTS[@]} | fgrep -w $chartName) ]]
             then
               echo "in active charts"
@@ -107,9 +106,9 @@ jobs:
               helm package .
               chartVersion=$(yq e '.version'  Chart.yaml)
               chartPackage="${chartName}-${chartVersion}.tgz"
+              helm push "${chartName}" "${REPO_NAME}"
               echo "Packagename: ${chartPackage}"
-
-              # jellyfin-0.1.0-alpha.tgz
+              helm
               ls -al
             fi
             # echo $chartName
