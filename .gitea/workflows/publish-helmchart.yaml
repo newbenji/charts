@@ -33,12 +33,7 @@ jobs:
         with:
           version: v3.13.0
 
-      # - name: Step 1 - Echo out a GitHub Actions Secret to the logs
-      #   run: |
-      #     echo "The GitHub Action Secret will be masked:  "
-      #     echo ${{ secrets.CHARTMUSEUM_URL }}
-      #     echo "Trick to echo GitHub Actions Secret:  "
-      #     echo ${{secrets.CHARTMUSEUM_URL}} | sed 's/./& /g'
+
 
       - name: Helm version
         run: |
@@ -111,13 +106,13 @@ jobs:
             which yq
             # Go back to workspace main dir
             cd ${{ gitea.workspace }}
-
-      # - name: Cat chart.yaml
-      #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
-      #   run: |
-      #     for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
-      #       cat $dir/Chart.yaml
-      #     done
+      - name: Show folks how to run YQ1:
+        run: |
+          yq --help
+      - uses: chrisdickinson/setup-yq@latest
+      - name: Show folks how to run YQ2:
+        run: |
+          yq --help
 
       - name: Run chart-package (package)
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
@@ -132,3 +127,17 @@ jobs:
           ls -al
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
+
+      # - name: Cat chart.yaml
+      #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+      #   run: |
+      #     for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+      #       cat $dir/Chart.yaml
+      #     done
+
+      # - name: Step 1 - Echo out a GitHub Actions Secret to the logs
+      #   run: |
+      #     echo "The GitHub Action Secret will be masked:  "
+      #     echo ${{ secrets.CHARTMUSEUM_URL }}
+      #     echo "Trick to echo GitHub Actions Secret:  "
+      #     echo ${{secrets.CHARTMUSEUM_URL}} | sed 's/./& /g'
