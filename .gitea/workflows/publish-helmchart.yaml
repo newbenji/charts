@@ -102,6 +102,7 @@ jobs:
               # echo "------------------"
             done
             which yq
+            yq --version
             # Go back to workspace main dir
             cd ${{ gitea.workspace }}
 
