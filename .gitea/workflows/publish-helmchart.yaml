@@ -114,8 +114,10 @@ jobs:
               # Upload the package
               # curl --data-binary "@${chartPackage}" -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}"
               curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}"
+              ls -al
 
-              helm push "${chartName}" "${REPO_NAME}"
+
+              # helm push "${chartName}" "${REPO_NAME}"
               echo "Packagename: ${chartPackage}"
               helm
               ls -al
