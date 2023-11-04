@@ -98,33 +98,28 @@ jobs:
             # Only run on some the charts for now
             if [[ $(echo ${ACTIVE_CHARTS[@]} | fgrep -w $chartName) ]]
             then
-              echo "in active charts"
-              echo $chartName
-
-
-              echo "linting $dir"
               helm package .
+
               chartVersion=$(yq e '.version'  Chart.yaml)
               chartPackage="${chartName}-${chartVersion}.tgz"
 
-              # Delete an existing package of the current version prior to upload (mimicking --force)
-              # curl -X DELETE -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts/${chartName}/${chartVersion}"
-              curl -X DELETE "${CHARTMUSEUM_URL}/api/charts/${chartName}/${chartVersion}"
+              if [[ ${{ github.ref_name }} == 'main' ]] then
+                # Delete an existing package of the current version prior to upload (mimicking --force)
+                # curl -X DELETE -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts/${chartName}/${chartVersion}"
+                curl -X DELETE "${CHARTMUSEUM_URL}/api/charts/${chartName}/${chartVersion}"
+              fi
 
               # Upload the package
               # curl --data-binary "@${chartPackage}" -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts"
               curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}/api/charts"
-              ls -al
-              echo "curl --data-binary \"@${chartPackage}\" \"${CHARTMUSEUM_URL}/api/charts\""
 
+              # chartmuseum dont support pust at the momemt from oci url
               # helm push "${chartName}" "${REPO_NAME}"
-              echo "Packagename: ${chartPackage}"
-              # helm
-              ls -al
+
             fi
-            # echo $chartName
 
           done
+          # Back to workspace path
           cd ${{ gitea.workspace }}
 
 
