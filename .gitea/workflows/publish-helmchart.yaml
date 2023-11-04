@@ -110,6 +110,8 @@ jobs:
       #   run: |
       #     yq --help
       - uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: v4.35.2
       - name: Show folks how to run YQ2
         run: |
           yq --version
