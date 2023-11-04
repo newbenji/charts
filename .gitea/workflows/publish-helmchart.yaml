@@ -119,7 +119,7 @@ jobs:
 
               # helm push "${chartName}" "${REPO_NAME}"
               echo "Packagename: ${chartPackage}"
-              helm
+              # helm
               ls -al
             fi
             # echo $chartName
