@@ -7,7 +7,7 @@ env:
   CHARTMUSEUM_REPO_NAME: benji
   # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
   # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
-  ACTIVE_CHARTS: ("jellyfin" "helloworld" )
+  ACTIVE_CHARTS: ("jellyfin" "hello-world" )
 
 on:
   push:
@@ -94,16 +94,20 @@ jobs:
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+            cd "${{ gitea.workspace }}/${dir}"
+            yq '.name' 'Chart.yaml'
+            chartName=$(yq e '.name'  Chart.yaml)
+            # cd $dir
+            echo "Chartname: ${chartName}"
 
             base=`basename ${dir}`
+
             echo ${ACTIVE_CHARTS}
 
             if [[ $(echo ${ACTIVE_CHARTS[@]} | fgrep -w $base) ]]
             then
               echo "in active charts"
               echo $base
-              cd ${{ gitea.workspace }}
-              cd $dir
 
 
               echo "linting $dir"
