@@ -113,7 +113,7 @@ jobs:
 
               # Upload the package
               # curl --data-binary "@${chartPackage}" -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts"
-              curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}}\/api\/charts"
+              curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}/api/charts"
               ls -al
               echo "curl --data-binary \"@${chartPackage}\" \"${CHARTMUSEUM_URL}/api/charts\""
 
