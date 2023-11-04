@@ -83,8 +83,8 @@ jobs:
 
             # Set prerelease to true if not main
             yq -i '(.annotations | select(has("artifacthub.io/prerelease"))."artifacthub.io/prerelease") |= "true"' Chart.yaml
-            # yq '.' 'Chart.yaml'
-            # echo "------------------"
+            yq '.' 'Chart.yaml'
+            echo "------------------"
           done
           which yq
           yq --version
