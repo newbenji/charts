@@ -106,7 +106,7 @@ jobs:
               echo "linting $dir"
               helm package .
               ls -al
-            done
+            fi
             echo $base
 
           done
