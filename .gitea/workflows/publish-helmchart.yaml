@@ -96,8 +96,11 @@ jobs:
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
 
             base=`basename ${dir}`
+            echo ${ACTIVE_CHARTS}
+
             if [[ $(echo ${ACTIVE_CHARTS[@]} | fgrep -w $base) ]]
             then
+              echo "in active charts"
               echo $base
               cd ${{ gitea.workspace }}
               cd $dir
