@@ -108,8 +108,8 @@ jobs:
               chartPackage="${chartName}-${chartVersion}.tgz"
 
               # Delete an existing package of the current version prior to upload (mimicking --force)
-              # curl -X DELETE -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/${chartName}/${chartVersion}"
-              curl -X DELETE "${CHARTMUSEUM_URL}/${chartName}/${chartVersion}"
+              # curl -X DELETE -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts/${chartName}/${chartVersion}"
+              curl -X DELETE "${CHARTMUSEUM_URL}/api/charts/${chartName}/${chartVersion}"
 
               # Upload the package
               # curl --data-binary "@${chartPackage}" -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts"
