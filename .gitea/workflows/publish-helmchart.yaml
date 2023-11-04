@@ -28,16 +28,21 @@ jobs:
         with:
           fetch-depth: 0
 
+        # Install helm
       - name: Set up Helm
         uses: https://github.com/azure/setup-helm@v3
         with:
           version: v3.13.0
 
+        # install yq
+      - uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: v4.35.2
 
-
-      - name: Helm version
+      - name: Helm and yq version
         run: |
           helm version -c
+          yq --version
 
       - name: Run changed-files with dir_names
         id: changed-files-dir-names
@@ -48,12 +53,7 @@ jobs:
           dir_names_max_depth: "2"
           dir_names: "true"
 
-      # - name: List all changed files
-      #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
-      #   run: |
-      #     for file in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
-      #       echo "$file was changed"
-      #     done
+
 
       - name: Setup helm chart repo
         if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
@@ -67,10 +67,47 @@ jobs:
             helm repo update
             # --username=${CHARTMUSEUM_USER} --password=${CHARTMUSEUM_PASSWORD}
           fi
-      # - name: Update and list repo
+
+      - name: Set alpha and prerelease for modified charts
+        id: alphaRelease
+        if: github.ref_name == 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        run: |
+          yq --version
+          for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+            # Move in to chart dir
+            cd ${{ gitea.workspace }}
+            cd $dir
+
+            # Append alpha to release if not main
+            sed -i '/^version: /s/$/-alpha/' Chart.yaml
+
+            # Set prerelease to true if not main
+            yq -i '(.annotations | select(has("artifacthub.io/prerelease"))."artifacthub.io/prerelease") |= "true"' Chart.yaml
+            # yq '.' 'Chart.yaml'
+            # echo "------------------"
+          done
+          which yq
+          yq --version
+          # Go back to workspace main dir
+          cd ${{ gitea.workspace }}
+
+      - name: Run chart-package (package)
+        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        run: |
+          for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+            echo "linting $dir"
+            helm package $dir
+          done
+          ls -al
+
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+
+      # - name: List all changed files
+      #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
       #   run: |
-      #     helm repo update
-      #     helm search repo
+      #     for file in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+      #       echo "$file was changed"
+      #     done
 
       # - name: Run chart-testing (lint)
       #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
@@ -81,55 +118,7 @@ jobs:
       #     done
       # - run: echo "The name of your branch is ${{ gitea.ref }} and your repository is ${{ gitea.repository }}."
       # - run: echo "The name of your branch is ${{ gitea.ref_name }} and your repository is ${{ gitea.repository }}."
-      - name: Set alpha and prerelease for modified charts
-        id: alphaRelease
-        if: github.ref_name == 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
-        uses: mikefarah/yq@master
-        with:
-          cmd: |
-            yq --version
-            for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
-              # Move in to chart dir
-              cd ${{ gitea.workspace }}
-              cd $dir
 
-              # Append alpha to release if not main
-              sed -i '/^version: /s/$/-alpha/' Chart.yaml
-
-              # Set prerelease to true if not main
-              yq -i '(.annotations | select(has("artifacthub.io/prerelease"))."artifacthub.io/prerelease") |= "true"' Chart.yaml
-              # yq '.' 'Chart.yaml'
-              # echo "------------------"
-            done
-            which yq
-            yq --version
-            # Go back to workspace main dir
-            cd ${{ gitea.workspace }}
-
-      # - name: Show folks how to run YQ1
-      #   run: |
-      #     yq --help
-      - uses: chrisdickinson/setup-yq@latest
-        with:
-          yq-version: v4.35.2
-      - name: Show folks how to run YQ2
-        run: |
-          yq --version
-          yq --help
-
-      - name: Run chart-package (package)
-        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
-        run: |
-          for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
-            echo "linting $dir"
-            helm package $dir
-            # helm package
-            /usr/local/bin/yq version
-            env
-          done
-          ls -al
-
-      - run: echo "🍏 This job's status is ${{ job.status }}."
 
       # - name: Cat chart.yaml
       #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
