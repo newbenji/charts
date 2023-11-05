@@ -11,8 +11,8 @@ env:
 
 on:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
     # paths:
     #   - 'charts/jellyfin/**'
 
@@ -70,7 +70,7 @@ jobs:
 
       - name: Set alpha and prerelease for modified charts if not main
         id: alphaRelease
-        if: github.ref_name == 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        if: github.ref_name != 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
           yq --version
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
@@ -84,7 +84,7 @@ jobs:
             yq -i '(.annotations | select(has("artifacthub.io/prerelease"))."artifacthub.io/prerelease") |= "true"' Chart.yaml
           done
 
-          # Go back to workspace main dir
+          # Go back to workspace dir
           cd "${{ gitea.workspace }}"
 
       - name: Package changed charts
@@ -104,7 +104,7 @@ jobs:
               chartPackage="${chartName}-${chartVersion}.tgz"
 
               # only if not branch main
-              if [ "${{ github.ref_name }}" == "main" ]; then
+              if [ "${{ github.ref_name }}" != "main" ]; then
                 echo "Since not in main, we delete a package first"
                 # Delete an existing package of the current version prior to upload (mimicking --force)
 
@@ -112,9 +112,9 @@ jobs:
                 curl -X DELETE "${CHARTMUSEUM_URL}/api/charts/${chartName}/${chartVersion}"
               fi
 
-              # Upload the package
+              # Upload the package since helm push dosnt work on chartmuseum yet
+              # prepared the command for user password
               # curl --data-binary "@${chartPackage}" -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts"
-              echo "curl --data-binary \"@${chartPackage}\" \"${CHARTMUSEUM_URL}/api/charts\""
               curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}/api/charts"
 
               # chartmuseum dont support pust at the momemt from oci url

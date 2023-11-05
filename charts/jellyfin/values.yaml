@@ -1,18 +1,19 @@
-# Default values for jellyfin.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
 
-replicaCount: 1
 
-image:
-  repository: nginx
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
 
-imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+
+publishedServerUrl: ""
+
+image:
+  repository: jellyfin/jellyfin
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: latest
+
+replicaCount: 1
+imagePullSecrets: []
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -26,35 +27,74 @@ serviceAccount:
 podAnnotations: {}
 
 podSecurityContext: {}
-  # fsGroup: 2000
+  # fsGroup: 64710
+  # runAsGroup: 64710
+  # runAsNonRoot: true
+  # runAsUser: 64710
+  # seccompProfile:
+  #   type: RuntimeDefault
 
-securityContext: {}
+securityContext:
+  privileged: true
+  # allowPrivilegeEscalation: false
   # capabilities:
   #   drop:
-  #   - ALL
+  #     - "ALL"
+  # readOnlyRootFilesystem: true
+  # runAsGroup: 64710
+  # runAsNonRoot: true
+  # runAsUser: 64710
+
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
+  # runAsGroup: 1000
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8096
+
+# ingress:
+#   enabled: false
+#   className: ""
+#   annotations: {}
+#     # kubernetes.io/ingress.class: nginx
+#     # kubernetes.io/tls-acme: "true"
+#   hosts:
+#     - host: chart-example.local
+#       paths:
+#         - path: /
+#           pathType: ImplementationSpecific
+#   tls: []
+#   #  - secretName: chart-example-tls
+#   #    hosts:
+#   #      - chart-example.local
+
 
 ingress:
+  # -- Enable ingress resource
   enabled: false
-  className: ""
+  # -- IngressClass that will be used to implement the Ingress
+  ingressClassName: ""
+  # -- Additional annotations for the Ingress resource. To enable certificate autogeneration, place here your cert-manager annotations.
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  # -- Default host for the ingress resource
+  hostname: jellyfin.local
+  # -- The Path to jellyfin. You may need to set this to '/*' in order to use this with ALB ingress controllers.
+  path: /
+  # -- Ingress path type
+  pathType: ImplementationSpecific
+  # -- Enable TLS configuration for the hostname defined at apiIngress.hostname parameter
+  tls: true
+  # -- The list of additional hostnames to be covered with this ingress record.
+  extraHosts: []
+  # -- Any additional paths that may need to be added to the ingress under the main host
+  extraPaths: []
+  # -- The tls configuration for additional hostnames to be covered with this ingress record.
+  extraTls: []
+  # -- Additional rules to be covered with this ingress record
+  extraRules: []
+
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -68,15 +108,36 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+## Persist data to a persistent volume
+persistence:
+  enabled: false
+  existingClaim:
+
+  ## jellyfin config data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  annotations: {}
+
+networkPolicy:
+  enabled: false
+
+# Not tested or supported yet
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}

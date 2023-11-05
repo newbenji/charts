@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jellyfin.fullname" . }}
+  labels:
+    {{- include "jellyfin.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "jellyfin.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "jellyfin.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "jellyfin.serviceAccountName" . }}
+      securityContext:
+        # privileged: true
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: JELLYFIN_PublishedServerUrl
+              value: {{ .Values.publishedServerUrl | quote }}
+            - name: TZ
+              value: "Europe/Copenhagen"
+          # - name: PGID
+          #   value: "\x36\x35\x35\x34\x31" # < ASCII code for '65541'
+          # - name: PUID
+          #   value: "\x31\x30\x34\x34" #< ACII code for '1044'
+          ports:
+            - name: http
+              containerPort: 8096
+              protocol: TCP
+            - containerPort: 8920
+              name: https-tcp
+              protocol: TCP
+            - containerPort: 1900
+              name: dlna-udp
+              protocol: UDP
+            - containerPort: 7359
+              name: discovery-udp
+              protocol: UDP
+          volumeMounts:
+            - mountPath: /cache
+              name: cache-volume
+            - mountPath: /tmp
+              name: tmp-volume
+            {{- if .Values.persistence.enabled }}
+            - mountPath: /config
+              name: config-volume
+              # subPath: config
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+      {{- if .Values.persistence.enabled }}
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "jellyfin.fullname" .) }}
+      {{- end }}
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            # sizeLimit: 1Gi
+            # sizeLimit: 10Gi
+        - name: tmp-volume
+          emptyDir: {}
+            # sizeLimit: 10Gi
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
