@@ -5,16 +5,16 @@ description: |
   Powered by a worldwide community of tinkerers and DIY enthusiasts.
   Perfect to run on a Raspberry Pi or a local server..
 type: application
-version: 0.0.1
-appVersion: "2023.1.4"
-icon: https://github.com/home-assistant/assets/blob/master/logo/logo-pretty.png?raw=true
+version: 0.1.0
+appVersion: "2023.11.1"
+icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
 keywords:
   - homeassistant
   - home-assistant
   - smart home
 annotations:
   artifacthub.io/changes: |
-    - "[Changed] Upgraded version to 2023.1.4"
+    - "[Changed] Upgraded version to 2023.11.1"
   artifacthub.io/images: |
     - name: home-assistant
       image: homeassistant/home-assistant
@@ -22,4 +22,4 @@ annotations:
     - name: Home assistant source repo
       url: https://github.com/home-assistant
     - name: Helm Repo
-      url: https://gitlab.com/alexander-chernov/helm/home-assistant
+      url: https://github.com/newbenji/charts

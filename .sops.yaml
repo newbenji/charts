@@ -1,0 +1,8 @@
+# keys:
+
+creation_rules:
+  - path_regex: secrets.yaml
+    #   encrypted_regex: "^(sops|password)$"
+    age: age1juucymu6yrgcdv5eq49628plfucjs598x4fzyawkepxmrl8une5qxxxyet
+    pgp: >-
+      5C4C9BC30ED778199D0C64E2689F4589EAA24957

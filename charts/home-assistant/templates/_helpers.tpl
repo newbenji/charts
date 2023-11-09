@@ -87,3 +87,27 @@ db_url: !secret hadbconfig
 {{- define "home-assistant.http" -}}
 {{ .Values.config.http | toYaml | indent 0 }}
 {{ end }}
+
+
+{{- define "home-assistant.scripts" -}}
+# This file is created by the helmchart.
+# See config.scripts in values.yaml
+# script:
+{{ .Values.config.scripts | toYaml | indent 0 }}
+{{ end }}
+
+
+{{- define "home-assistant.blueprints" -}}
+# This file is created by the helmchart.
+# See config.blueprints in values.yaml
+# script:
+{{ .Values.config.blueprints | toYaml | indent 0 }}
+{{ end }}
+
+
+{{- define "home-assistant.automations" -}}
+# This file is created by the helmchart.
+# See config.automations in values.yaml
+# script:
+{{ .Values.config.automations | toYaml | indent 0 }}
+{{ end }}

@@ -9,12 +9,14 @@
 To install the chart with the release name `my-release`:
 
 ```console
-$ helm repo add alekc-charts https://charts.alekc.dev/
-$ helm install my-release alekc-charts/{{ template "chart.name" . }}
+$ helm repo add benji-charts https://chartmuseum.newbenji.dk/
+$ helm install my-release benji-charts/{{ template "chart.name" . }}
 ```
 
 {{ template "chart.requirementsSection" . }}
 
 {{ template "chart.valuesSection" . }}
+
+{{ template "chart.valuesSectionHtml" . }}
 
 {{ template "helm-docs.versionFooter" . }}

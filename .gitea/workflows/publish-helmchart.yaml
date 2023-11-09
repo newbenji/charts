@@ -7,7 +7,7 @@ env:
   REPO_NAME: benji
   # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
   # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
-  ACTIVE_CHARTS: ("jellyfin" "hello-world" )
+  ACTIVE_CHARTS: ("jellyfin" "hello-world" "home-assistant" )
   LAST_RELEASE_SHA: 4ea07d22306297f2d84744e125112fcda61f1129
 on:
   push:
@@ -45,13 +45,14 @@ jobs:
         run: |
           helm version -c
           yq --version
+          echo "$LAST_RELEASE_SHA"
 
       - name: Run changed-files with dir_names
         id: changed-files-dir-names
         uses: tj-actions/changed-files@v39.2.1
         with:
           files: charts/*
-          sha: "${LAST_RELEASE_SHA}"
+          sha: "4ea07d22306297f2d84744e125112fcda61f1129"
           dir_names_max_depth: "2"
           dir_names: "true"
 

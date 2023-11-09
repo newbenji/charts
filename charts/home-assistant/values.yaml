@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
+strategy: RollingUpdate
 
 image:
   repository: homeassistant/home-assistant
@@ -151,5 +152,8 @@ config:
       # - 10.42.1.0/24
     ip_ban_enabled: false
     login_attempts_threshold: 5
+  scripts: {}
+  automations: {}
+  bluepritns: {}
 
 #  db_url: "!secret hadbconfig"
