@@ -11,8 +11,8 @@ env:
   REPO_NAME: benji
   # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
   # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
-  ACTIVE_CHARTS: ("jellyfin" "hello-world" "home-assistant" "gitea-action-runner" )
-  LAST_RELEASE_SHA: e1116577523f0c7d444e9e860cfe905d65161bbc
+  ACTIVE_CHARTS: ("jellyfin" "hello-world" "home-assistant" "gitea-action-runner" "synology-csi" )
+  LAST_RELEASE_SHA: 10096ddf0a5d418c50fc57258d5fde3101a70711
 on:
   push:
     # branches:
@@ -56,7 +56,7 @@ jobs:
         uses: tj-actions/changed-files@v39.2.1
         with:
           files: charts/*
-          sha: "e1116577523f0c7d444e9e860cfe905d65161bbc"
+          sha: "10096ddf0a5d418c50fc57258d5fde3101a70711"
           dir_names_max_depth: "2"
           dir_names: "true"
 

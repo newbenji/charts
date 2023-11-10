@@ -49,6 +49,7 @@ snapshotter:
   nodeSelector: { }
   tolerations: [ ]
 
+
 storageClasses:
   delete:
     # One of true or false (default):
