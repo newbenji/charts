@@ -11,7 +11,7 @@ env:
   REPO_NAME: benji
   # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
   # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
-  ACTIVE_CHARTS: ("jellyfin" "hello-world" "home-assistant" "gitea-action-runner" )
+  ACTIVE_CHARTS: ("jellyfin" "hello-world" "home-assistant" "gitea-action-runner" "synology-csi" )
   LAST_RELEASE_SHA: 10096ddf0a5d418c50fc57258d5fde3101a70711
 on:
   push:
