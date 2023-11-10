@@ -20,6 +20,7 @@ spec:
       labels:
         {{- include "gitea_action_runner.selectorLabels" . | nindent 8 }}
     spec:
+      restartPolicy: Always
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -66,8 +67,8 @@ spec:
         - name: daemon
           securityContext:
             privileged: true
-          image: docker:23.0.6-dind
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.dind.image.repository }}:{{ .Values.dind.image.tag }}"
+          imagePullPolicy: {{ .Values.dind.image.pullPolicy }}
           env:
             - name: DOCKER_DRIVER
               value: "overlay2"

@@ -2,13 +2,17 @@ name: Release Charts Benji
 run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
 # https://blog.gitea.io/2023/03/hacking-on-gitea-actions/
 
+# on pull request later do this
+# https://gitea.com/actions/release-action
+
+
 env:
   CHARTMUSEUM_URL: ${{ secrets.CHARTMUSEUM_URL }}
   REPO_NAME: benji
   # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
   # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
-  ACTIVE_CHARTS: ("jellyfin" "hello-world" "home-assistant" )
-  LAST_RELEASE_SHA: 4ea07d22306297f2d84744e125112fcda61f1129
+  ACTIVE_CHARTS: ("jellyfin" "hello-world" "home-assistant" "gitea-action-runner" )
+  LAST_RELEASE_SHA: e1116577523f0c7d444e9e860cfe905d65161bbc
 on:
   push:
     # branches:
@@ -45,14 +49,14 @@ jobs:
         run: |
           helm version -c
           yq --version
-          echo "$LAST_RELEASE_SHA"
+          echo "${LAST_RELEASE_SHA}"
 
       - name: Run changed-files with dir_names
         id: changed-files-dir-names
         uses: tj-actions/changed-files@v39.2.1
         with:
           files: charts/*
-          sha: "4ea07d22306297f2d84744e125112fcda61f1129"
+          sha: "e1116577523f0c7d444e9e860cfe905d65161bbc"
           dir_names_max_depth: "2"
           dir_names: "true"
 

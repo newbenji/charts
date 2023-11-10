@@ -1,5 +1,4 @@
 charts/tekton-dashboard
-charts/gitea-action-runner
 charts/hello-world
 charts/newChart
 charts/synology-csi-chart
