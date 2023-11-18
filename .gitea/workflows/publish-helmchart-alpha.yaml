@@ -16,21 +16,21 @@ env:
   # PULL_REQUEST_GITHUB:  ${{ github.event.pull_request.head.ref }}
   # PULL_REQUEST_GITEA:  ${{ gitea.event.pull_request.head.ref }}
 on:
-  # push:
-  #   branches-ignore:
-  #     - main
-  #   # branches:
-  #   #   - main
-  #   # paths:
-  #   #   - 'charts/jellyfin/**'
-  pull_request:
-    branches:
+  push:
+    branches-ignore:
       - main
+    # branches:
+    #   - main
+    # paths:
+    #   - 'charts/jellyfin/**'
+  # pull_request:
+  #   branches:
+  #     - main
 
-    types:
-      # - synchronize
-      # - opened
-      - closed
+  #   types:
+  #     # - synchronize
+  #     # - opened
+  #     - closed
 
 
 # github.event.pull_request.head.ref
@@ -75,7 +75,7 @@ jobs:
           dir_names_max_depth: "2"
           dir_names: "true"
 
-      - name: pull request
+      - name: Debug info
         # if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         # if: (!(github.event.action == 'closed' && github.event.pull_request.merged != true))
         run: |
@@ -87,8 +87,13 @@ jobs:
           echo "Pull request merged: -${{ gitea.event.pull_request.merged }}-"
           echo "------------------------"
           echo "------------------------"
-          echo "IF PULL REQUEST GET REF"
-          echo ""
+          echo "GIT INFO"
+          echo "GIT BRANCH $(git branch --show-current)"
+          git reflog show --no-abbrev $(git branch --show-current) | grep "branch: Created from" | awk '{print $1;}'
+          echo "-"
+          git reflog show --no-abbrev $(git branch --show-current)
+          git rev-list ${{ github.ref_name}} ^main | tail -n 1
+          git rev-parse "$(git rev-list ${{ github.ref_name }} ^main | tail -n 1)^"
 
 
       - name: Setup helm chart repo
@@ -106,7 +111,8 @@ jobs:
 
       - name: Set alpha and prerelease for modified charts if not main
         id: alphaRelease
-        if: github.ref_name != 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        # if: github.ref_name != 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
         run: |
           # yq --version
           for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
