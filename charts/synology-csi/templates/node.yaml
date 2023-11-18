@@ -63,6 +63,9 @@ spec:
         app: node
         {{- include "synology-csi.selectorLabels" $ | nindent 8 }}
     spec:
+      {{- with .affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: node-driver-registrar
           args:
@@ -82,6 +85,16 @@ spec:
           image: {{ .image }}:{{ .tag }}
           imagePullPolicy: {{ .imagePullPolicy }}
           {{- end }}
+          livenessProbe:
+            exec:
+              command:
+              - /csi-node-driver-registrar
+              - --kubelet-registration-path=/var/lib/kubelet/plugins/csi.san.synology.com/csi.sock
+              - --mode=kubelet-registration-probe
+            initialDelaySeconds: 30
+            periodSeconds: 90
+            timeoutSeconds: 15
+          resources: {}
           securityContext:
             privileged: true
           volumeMounts:
@@ -89,7 +102,7 @@ spec:
               mountPath: /csi
             - name: registration-dir
               mountPath: /registration
-        - name: plugin
+        - name: csi-plugin
           args:
             - --client-info=/etc/synology/client-info.yaml
             - --endpoint=$(CSI_ENDPOINT)
@@ -102,7 +115,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-          image: synology/synology-csi:{{ $.Chart.AppVersion }}
+          {{- with .plugin }}
+          image: {{ .image }}:{{ .tag | default $.Chart.AppVersion }}
+          imagePullPolicy: {{ .imagePullPolicy }}
+          {{- end }}
+          resources: {}
           securityContext:
             privileged: true
           volumeMounts:
@@ -114,12 +131,18 @@ spec:
             - name: host-root
               mountPath: /host
             - name: kubelet-dir
-              mountPath: /var/lib/kubelet
+              mountPath: {{ $.Values.node.kubeletPath }}
               mountPropagation: Bidirectional
             - name: plugin-dir
               mountPath: /csi
       hostNetwork: true
+      {{- with .nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "synology-csi.fullname" $ }}-node
+      {{- with .tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
       volumes:
         - name: client-info
           secret:
