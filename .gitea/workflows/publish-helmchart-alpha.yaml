@@ -36,7 +36,7 @@ on:
 # github.event.pull_request.head.ref
 
 jobs:
-  Explore-Gitea-Actions:
+  Publish changed charts for alpha builds:
     permissions:
       contents: write
       # runs-on: ubuntu-latest
@@ -94,6 +94,7 @@ jobs:
           git reflog show --no-abbrev $(git branch --show-current)
           git rev-list ${{ github.ref_name}} ^main | tail -n 1
           git rev-parse "$(git rev-list ${{ github.ref_name }} ^main | tail -n 1)^"
+          echo ""
 
 
       - name: Setup helm chart repo
