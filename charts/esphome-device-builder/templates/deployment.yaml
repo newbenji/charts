@@ -6,6 +6,7 @@ metadata:
     {{- include "esphome-device-builder.labels" . | nindent 4 }}
 spec:
   hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
