@@ -95,8 +95,8 @@ jobs:
           # # Upload the package since helm push dosnt work on chartmuseum yet
           # # prepared the command for user password
           helm plugin install https://github.com/chartmuseum/helm-push
-          # helm repo add --username "${_CM_USER}" --password "${_CM_PASS}" encode "${_REPO_URL}"
-          helm repo add benji https://chartmuseum.newbenji.dk
+          # helm repo add --username "${_CM_USER}" --password "${_CM_PASS}" helmrepo "${_REPO_URL}"
+          helm repo add helmrepo https://chartmuseum.newbenji.dk
 
       - name: Enter chart dir
         run: |
@@ -153,7 +153,7 @@ jobs:
           # # # prepared the command for user password
           # helm plugin install https://github.com/chartmuseum/helm-push
           # helm repo add --username "${_CM_USER}" --password "${_CM_PASS}" encode "${_REPO_URL}"
-          helm cm-push --force . benji
+          helm cm-push --force . helmrepo
 
           # curl --data-binary "@${chartPackage}" -u "${_CM_USER}:${_CM_PASS}" "${_REPO_URL}/api/charts"
           # curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}/api/charts"
