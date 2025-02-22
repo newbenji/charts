@@ -10,6 +10,7 @@ on:
   #   types:
   #     - closed
 
+# sha: 0017de2128b9828c8168e509e9a66584909d9109
 
 jobs:
   detect-changed-folders:
@@ -51,6 +52,9 @@ jobs:
           dir_names_max_depth: "2"
           dir_names: true
 
+      - name: Verify the contents of the .github/outputs/added_files.txt file
+        run: "echo ${{ steps.git-branch.outputs.dirs }}"
+
   build-chart:
     needs: [detect-changed-folders]
     runs-on: charts
@@ -91,7 +95,8 @@ jobs:
           # # Upload the package since helm push dosnt work on chartmuseum yet
           # # prepared the command for user password
           helm plugin install https://github.com/chartmuseum/helm-push
-          helm repo add --username "${_CM_USER}" --password "${_CM_PASS}" encode "${_REPO_URL}"
+          # helm repo add --username "${_CM_USER}" --password "${_CM_PASS}" encode "${_REPO_URL}"
+          helm repo add benji chartmuseum.newbenji.dk
 
       - name: Enter chart dir
         run: |
@@ -124,9 +129,7 @@ jobs:
       - name: Package chart and upload
         id: package
         env:
-          _CM_USER: ${{ secrets.CHARTMUSEUM_USERNAME }}
-          _CM_PASS: ${{ secrets.CHARTMUSEUM_PASSWORD }}
-          _REPO_URL: ${{ vars.HELM_REPOSITORY_URL }}
+          _REPO_URL: https://chartmuseum.newbenji.dk/
         run: |
           cd ${{ matrix.files }}
           chartName=$(yq e '.name' Chart.yaml)
@@ -150,7 +153,7 @@ jobs:
           # # # prepared the command for user password
           # helm plugin install https://github.com/chartmuseum/helm-push
           # helm repo add --username "${_CM_USER}" --password "${_CM_PASS}" encode "${_REPO_URL}"
-          helm cm-push --force . encode
+          helm cm-push --force . benji
 
           # curl --data-binary "@${chartPackage}" -u "${_CM_USER}:${_CM_PASS}" "${_REPO_URL}/api/charts"
           # curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}/api/charts"
