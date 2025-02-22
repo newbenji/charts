@@ -5,8 +5,6 @@ metadata:
   labels:
     {{- include "esphome-device-builder.labels" . | nindent 4 }}
 spec:
-  hostNetwork: true
-  dnsPolicy: ClusterFirstWithHostNet
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
@@ -20,6 +18,8 @@ spec:
       labels:
         {{- include "esphome-device-builder.selectorLabels" . | nindent 8 }}
     spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
