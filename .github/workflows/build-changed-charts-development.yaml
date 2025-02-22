@@ -53,7 +53,7 @@ jobs:
           dir_names: true
 
       - name: Verify the contents of the .github/outputs/added_files.txt file
-        run: "echo ${{ steps.git-branch.outputs.dirs }}"
+        run: "echo ${{ steps.git-branch.outputs.all_changed_and_modified_files }}"
 
   build-chart:
     needs: [detect-changed-folders]
@@ -96,7 +96,7 @@ jobs:
           # # prepared the command for user password
           helm plugin install https://github.com/chartmuseum/helm-push
           # helm repo add --username "${_CM_USER}" --password "${_CM_PASS}" encode "${_REPO_URL}"
-          helm repo add benji chartmuseum.newbenji.dk
+          helm repo add benji https://chartmuseum.newbenji.dk
 
       - name: Enter chart dir
         run: |
