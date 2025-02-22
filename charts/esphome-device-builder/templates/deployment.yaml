@@ -18,8 +18,8 @@ spec:
       labels:
         {{- include "esphome-device-builder.selectorLabels" . | nindent 8 }}
     spec:
-      hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
