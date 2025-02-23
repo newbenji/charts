@@ -8,11 +8,9 @@ on:
       folders:
         description: "Which paths under charts have been modified"
         value: ${{ jobs.detect-changed-folders.outputs.folders }}
-
       folderstest:
         description: "Which paths under charts have been modified"
         value: ${{ jobs.detect-changed-folders.outputs.folders }}
-
       tester:
         description: "Which paths under charts have been modified"
         value: ${{ jobs.detect-changed-folders.outputs.tester }}
@@ -55,6 +53,7 @@ jobs:
       - name: Run changed-files with dir_names
         id: get_changed_dirs
         uses: tj-actions/changed-files@v45
+        if: github.event_name == 'push'
         with:
           matrix: true
           # json: true
@@ -66,6 +65,7 @@ jobs:
       - name: Run changed-files with dir_names
         id: get_changed_dirs_pull
         uses: tj-actions/changed-files@v45
+        if: github.event.pull_request.merged == true
         with:
           matrix: true
           # json: true
@@ -82,14 +82,6 @@ jobs:
           for file in ${{ steps.get_changed_dirs_pull.outputs.all_changed_and_modified_files }}; do
             echo "$file was modified."
           done
-          ARRAYD="${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}"
-          ARRAYP="${{ steps.get_changed_dirs_pull.outputs.all_changed_and_modified_files }}"
-          if [ -z "$ARRAYD" ]; then
-            echo "Array push empty"
-          fi
-          if [ -z "$ARRAYP" ]; then
-            echo "Array pull empty"
-          fi
 
       - name: TEST output 1
         if: steps.get_changed_dirs_pull.outputs.any_changed
