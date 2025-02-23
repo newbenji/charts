@@ -16,6 +16,7 @@ on:
   # schedule:
     # - cron: '* * * *'
 
+
 jobs:
   call-workflow-passing-data:
     # runs-on: ${{ vars.RUNNER }}
