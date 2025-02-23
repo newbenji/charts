@@ -20,7 +20,7 @@ jobs:
   call-workflow-passing-data:
     # runs-on: ${{ vars.RUNNER }}
     # uses: "newbenji/charts/.github/workflows/reused.yaml@${{ github.head_ref || github.ref_name }}"
-    uses: newbenji/charts/.github/workflows/detect-modified-charts.yaml@esp32home
+    uses: newbenji/charts/.github/workflows/detect-modified-charts.yaml@main
 
     with:
       config-path: .github/labeler.yml
