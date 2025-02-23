@@ -21,6 +21,7 @@ jobs:
     runs-on: ${{ vars.RUNNER }}
     outputs:
       folders: ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
+      tester:  ${{ steps.tester_one.outputs.tester || steps.tester_two.outputs.tester }}
     steps:
       - uses: ConorMacBride/install-package@v1
         with:
@@ -70,6 +71,17 @@ jobs:
           for file in ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}; do
             echo "$file was modified."
           done
+
+      - name: TEST output 1
+        id: tester_one
+        run: |
+          echo "tester=1" >> $GITHUB_OUTPUT
+
+      - name: TEST output 2
+        id: tester_two
+        run: |
+          echo "tester=2" >> $GITHUB_OUTPUT
+
 
       # - name: list modfied
       #   if: steps.get_changed_dirs.outputs.any_changed == 'true'
