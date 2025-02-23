@@ -1,0 +1,57 @@
+name: Detect modified charts
+run-name: ${{ github.actor }} detecting which charts have been modified 🚀
+
+
+on:
+  workflow_call:
+    outputs:
+      folders:
+        description: "Which paths under charts have been modified"
+        value: ${{ jobs.detect-changed-folders.outputs.folders }}
+    inputs:
+      config-path:
+        required: true
+        type: string
+    secrets:
+      HELM_REPOSITORY_URL:
+        required: true
+
+jobs:
+  detect-changed-folders:
+    runs-on: ${{ vars.RUNNER }}
+    outputs:
+      folders: ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
+    steps:
+      - uses: ConorMacBride/install-package@v1
+        with:
+          apt: git
+
+      - name: Clone git repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+          fetch-tags: 'true'
+
+      - name: Get origin commit and branch
+        id: git-branch
+        run: |
+          ORIGIN_BRANCH="refs/remotes/origin/$(git branch -r | tail -n 1 | cut -d "/" -f2)"
+          MAIN_COMMIT=$(git merge-base origin/main ${ORIGIN_BRANCH})
+          echo "Origin branch: ${ORIGIN_BRANCH}"
+          echo "Main commit: ${MAIN_COMMIT}"
+          echo "ORIGIN_BRANCH=${ORIGIN_BRANCH}" >> $GITHUB_OUTPUT
+          echo "ORIGIN_SHA=${MAIN_COMMIT}" >> $GITHUB_OUTPUT
+
+      - name: Run changed-files with dir_names
+        id: get_changed_dirs
+        uses: tj-actions/changed-files@v44
+        with:
+          matrix: true
+          # json: true
+          files: charts/**
+          sha: "${{ steps.git-branch.outputs.ORIGIN_SHA }}"
+          dir_names_max_depth: "2"
+          dir_names: true
+
+      - name: Verify the contents of the .github/outputs/added_files.txt file
+        run: "echo ${{ steps.git-branch.outputs.all_changed_and_modified_files }}"
