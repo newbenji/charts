@@ -10,8 +10,9 @@ on:
     # - cron: '* * * *'
 jobs:
   call-workflow-passing-data:
-    # uses: "newbenji/charts/.github/workflows/reuse.yaml@${{ github.head_ref || github.ref_name }}"
+    # uses: "newbenji/charts/.github/workflows/reused.yaml@${{ github.head_ref || github.ref_name }}"
     uses: newbenji/charts/.github/workflows/reused.yaml@esp32home
+
     with:
       config-path: .github/labeler.yml
     secrets: inherit
