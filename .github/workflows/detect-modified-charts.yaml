@@ -82,6 +82,12 @@ jobs:
           for file in ${{ steps.get_changed_dirs_pull.outputs.all_changed_and_modified_files }}; do
             echo "$file was modified."
           done
+          if [ -z "${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}" ]; then
+            echo "Array push empty"
+          fi
+          if [ -z "${{ steps.get_changed_dirs_pull.outputs.all_changed_and_modified_files }}" ]; then
+            echo "Array pull empty"
+          fi
 
       - name: TEST output 1
         if: steps.get_changed_dirs_pull.outputs.any_changed
