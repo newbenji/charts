@@ -53,5 +53,11 @@ jobs:
           dir_names_max_depth: "2"
           dir_names: true
 
-      - name: Verify the contents of the .github/outputs/added_files.txt file
-        run: "echo ${{ steps.git-branch.outputs.all_changed_and_modified_files }}"
+      - name: List all added files
+        run: |
+          for file in ${{ steps.get_changed_dirs.outputs. all_changed_and_modified_files }}; do
+            echo "$file was modified."
+          done
+          for file in ${{ steps.get_changed_dirs.outputs. modified_files  }}; do
+            echo "$file was modified."
+          done
