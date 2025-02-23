@@ -96,6 +96,7 @@ jobs:
           # # prepared the command for user password
           helm plugin install https://github.com/chartmuseum/helm-push
           # helm repo add --username "${_CM_USER}" --password "${_CM_PASS}" helmrepo "${_REPO_URL}"
+          echo "Repo url ${_REPO_URL}"
           helm repo add helmrepo "${_REPO_URL}"
 
       - name: Enter chart dir
