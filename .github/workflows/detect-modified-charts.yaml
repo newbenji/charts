@@ -8,7 +8,8 @@ on:
       folders:
         description: "Which paths under charts have been modified"
         value: ${{ jobs.detect-changed-folders.outputs.folders }}
-      folderstest:
+
+        folderstest:
         description: "Which paths under charts have been modified"
         value: ${{ jobs.detect-changed-folders.outputs.folders }}
 
@@ -86,12 +87,14 @@ jobs:
         if: steps.get_changed_dirs_pull.outputs.any_changed
         id: tester_one
         run: |
+          echo "1"
           echo "tester=1" >> $GITHUB_OUTPUT
 
       - name: TEST output 2
         if: steps.get_changed_dirs.outputs.any_changed
         id: tester_two
         run: |
+          echo "2"
           echo "tester=2" >> $GITHUB_OUTPUT
 
 
