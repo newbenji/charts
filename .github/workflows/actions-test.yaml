@@ -62,7 +62,7 @@ jobs:
     steps:
       - run: echo "Hello, world, i am an merged pull request"
 
-  print-hello_branch:
+  print-hello_pushed:
     runs-on: ${{ vars.RUNNER }}
     if: github.event_name == 'push'
     steps:
