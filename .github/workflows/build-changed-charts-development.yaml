@@ -81,10 +81,6 @@ jobs:
         with:
           yq-version: v4.35.2
 
-      - name: Install Dependencies
-        run: |
-          echo ${{ matrix.chartfolder }}
-
       - name: Add chart repo
         env:
           _CM_USER: ${{ secrets.CHARTMUSEUM_USERNAME }}
