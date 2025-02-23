@@ -12,6 +12,8 @@ on:
       - main
     types:
       - closed
+      - opened
+
 
   # schedule:
     # - cron: '* * * *'
@@ -34,17 +36,30 @@ jobs:
           echo "---------------------------"
           echo ${{ needs.call-workflow-passing-data.outputs.folders }}
 
+  print-hello-opened:
+    runs-on: ${{ vars.RUNNER }}
+    if: github.event.pull_request.state == 'opened'
+    steps:
+      - run: echo "Hello, world, i am an opened pull request "
+
   print-hello-approved:
     runs-on: ${{ vars.RUNNER }}
     if: github.event.review.state == 'approved'
     steps:
-      - run: echo "Hello, world, i am an approved pull request "
+          - run: echo "Hello, world, i am an approved pull request "
 
-  print-hello-approved-merged:
+
+  print-hello-closed:
+    runs-on: ${{ vars.RUNNER }}
+    if: github.event.pull_request.state == 'closed'
+    steps:
+          - run: echo "Hello, world, i am an closed pull request "
+
+  print-hello-merged:
     runs-on: ${{ vars.RUNNER }}
     if: github.event.pull_request.merged == true
     steps:
-      - run: echo "Hello, world, i am an approved pull request and merged"
+      - run: echo "Hello, world, i am an merged pull request"
 
   print-hello_branch:
     runs-on: ${{ vars.RUNNER }}
