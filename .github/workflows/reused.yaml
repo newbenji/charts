@@ -9,7 +9,7 @@ on:
         required: true
         type: string
     secrets:
-      personal_access_token:
+      HELM_REPOSITORY_URL:
         required: true
 
 
