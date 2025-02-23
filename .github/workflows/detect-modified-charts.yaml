@@ -21,7 +21,7 @@ jobs:
     runs-on: ${{ vars.RUNNER }}
     outputs:
       folders: ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
-      tester:  ${{ steps.tester_one.outputs.tester || steps.tester_two.outputs.tester }}
+
     steps:
       - uses: ConorMacBride/install-package@v1
         with:
