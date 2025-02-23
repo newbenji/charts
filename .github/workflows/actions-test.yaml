@@ -31,9 +31,8 @@ jobs:
     needs: call-workflow-passing-data
     steps:
       - run: |
-          echo ${{ needs.call-workflow-passing-data.outputs.tester }} ${{ needs.call-workflow-passing-data.outputs.folders }}
           echo "---------------------------"
-          echo ${{ needs.call-workflow-passing-data.outputs.folderstest }}
+          echo ${{ needs.call-workflow-passing-data.outputs.folders }}
 
   print-hello-approved:
     runs-on: ${{ vars.RUNNER }}
