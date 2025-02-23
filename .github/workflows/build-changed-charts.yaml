@@ -88,7 +88,7 @@ jobs:
         env:
           _CM_USER: ${{ secrets.CHARTMUSEUM_USERNAME }}
           _CM_PASS: ${{ secrets.CHARTMUSEUM_PASSWORD }}
-          _REPO_URL: ${{ vars.HELM_REPOSITORY_URL }}
+          _REPO_URL: ${{ secrets.HELM_REPOSITORY_URL }}
         run: |
           echo "Add repo"
           # # Upload the package since helm push dosnt work on chartmuseum yet
