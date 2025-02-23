@@ -26,6 +26,11 @@ jobs:
       config-path: .github/labeler.yml
     secrets: inherit
 
+  output-from-detect:
+    runs-on: ${{ vars.RUNNER }}
+    needs: call-workflow-passing-data
+    steps:
+      - run: echo ${{ needs.call-workflow-passing-data.outputs.tester }} ${{ needs.call-workflow-passing-data.outputs.folders }}
 
   print-hello-approved:
     runs-on: ${{ vars.RUNNER }}

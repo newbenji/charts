@@ -66,7 +66,7 @@ jobs:
           dir_names: true
 
       - name: List all added files
-        if: steps.get_changed_dirs.outputs.any_changed == 'true'
+        # if: steps.get_changed_dirs.outputs.any_changed == 'true'
         run: |
           for file in ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}; do
             echo "$file was modified."
