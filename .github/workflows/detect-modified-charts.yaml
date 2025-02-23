@@ -8,6 +8,9 @@ on:
       folders:
         description: "Which paths under charts have been modified"
         value: ${{ jobs.detect-changed-folders.outputs.folders }}
+      folderstest:
+        description: "Which paths under charts have been modified"
+        value: ${{ jobs.detect-changed-folders.outputs.folders }}
 
       tester:
         description: "Which paths under charts have been modified"
@@ -26,6 +29,7 @@ jobs:
     outputs:
       folders: ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
       tester: ${{ steps.tester_one.outputs.tester || steps.tester_two.outputs.tester }}
+      folderstest: ${{  steps.get_changed_dirs_pull.outputs.all_changed_and_modified_files ||  steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
     steps:
       - uses: ConorMacBride/install-package@v1
         with:
@@ -79,13 +83,13 @@ jobs:
           done
 
       - name: TEST output 1
-        if: steps.get_changed_dirs_pull.outputs.any_changed == 'true'
+        if: steps.get_changed_dirs_pull.outputs.any_changed
         id: tester_one
         run: |
           echo "tester=1" >> $GITHUB_OUTPUT
 
       - name: TEST output 2
-        if: steps.get_changed_dirs.outputs.any_changed == 'true'
+        if: steps.get_changed_dirs.outputs.any_changed
         id: tester_two
         run: |
           echo "tester=2" >> $GITHUB_OUTPUT

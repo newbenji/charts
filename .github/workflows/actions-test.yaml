@@ -30,7 +30,10 @@ jobs:
     runs-on: ${{ vars.RUNNER }}
     needs: call-workflow-passing-data
     steps:
-      - run: echo ${{ needs.call-workflow-passing-data.outputs.tester }} ${{ needs.call-workflow-passing-data.outputs.folders }}
+      - run: |
+          echo ${{ needs.call-workflow-passing-data.outputs.tester }} ${{ needs.call-workflow-passing-data.outputs.folders }}
+          echo "---------------------------"
+          echo ${{ needs.call-workflow-passing-data.outputs.folderstest }}
 
   print-hello-approved:
     runs-on: ${{ vars.RUNNER }}
