@@ -70,7 +70,6 @@ jobs:
           dir_names: true
 
       - name: List all added files
-        # if: steps.get_changed_dirs.outputs.any_changed == 'true'
         run: |
           for file in ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}; do
             echo "$file was modified."
@@ -80,11 +79,13 @@ jobs:
           done
 
       - name: TEST output 1
+        if: steps.get_changed_dirs_pull.outputs.any_changed == 'true'
         id: tester_one
         run: |
           echo "tester=1" >> $GITHUB_OUTPUT
 
       - name: TEST output 2
+        if: steps.get_changed_dirs.outputs.any_changed == 'true'
         id: tester_two
         run: |
           echo "tester=2" >> $GITHUB_OUTPUT
