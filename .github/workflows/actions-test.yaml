@@ -1,15 +1,15 @@
 name: actions-test
 on:
   push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - test-branch
+    branches-ignore:
+      - main
+  # pull_request:
+  #   branches:
+  #     - test-branch
   # schedule:
     # - cron: '* * * *'
 jobs:
   print-hello:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER }}
     steps:
       - run: echo "Hello, world"
