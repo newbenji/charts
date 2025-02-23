@@ -44,7 +44,18 @@ jobs:
 
       - name: Run changed-files with dir_names
         id: get_changed_dirs
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v45
+        with:
+          matrix: true
+          # json: true
+          files: charts/**
+          sha: "${{ steps.git-branch.outputs.ORIGIN_SHA }}"
+          dir_names_max_depth: "2"
+          dir_names: true
+
+      - name: Run changed-files with dir_names
+        id: get_changed_dirs
+        uses: tj-actions/changed-files@v45
         with:
           matrix: true
           # json: true
@@ -54,10 +65,15 @@ jobs:
           dir_names: true
 
       - name: List all added files
+        if: steps.get_changed_dirs.outputs.any_changed == 'true'
         run: |
-          for file in ${{ steps.get_changed_dirs.outputs. all_changed_and_modified_files }}; do
+          for file in ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}; do
             echo "$file was modified."
           done
-          for file in ${{ steps.get_changed_dirs.outputs. modified_files  }}; do
+
+      - name: list modfied
+        if: steps.get_changed_dirs.outputs.any_changed == 'true'
+        run: |
+          for file in ${{ steps.get_changed_dirs.outputs.all_changed_files  }}; do
             echo "$file was modified."
           done
