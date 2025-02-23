@@ -70,7 +70,7 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
         with:
-          version: v3.13.3
+          version: v3.17.1
 
       - uses: ConorMacBride/install-package@v1
         with:
@@ -96,7 +96,7 @@ jobs:
           # # prepared the command for user password
           helm plugin install https://github.com/chartmuseum/helm-push
           # helm repo add --username "${_CM_USER}" --password "${_CM_PASS}" helmrepo "${_REPO_URL}"
-          helm repo add helmrepo https://chartmuseum.newbenji.dk
+          helm repo add helmrepo "${_REPO_URL}"
 
       - name: Enter chart dir
         run: |
