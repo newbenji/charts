@@ -1,15 +1,53 @@
 name: actions-test
 on:
   push:
-    branches:
-      - master
+    branches-ignore:
+      - main
+
+  pull_request_review:
+    types: [submitted]
+
   pull_request:
     branches:
-      - test-branch
+      - main
+    types:
+      - closed
+
   # schedule:
     # - cron: '* * * *'
+
 jobs:
-  print-hello:
-    runs-on: ubuntu-latest
+  call-workflow-passing-data:
+    # runs-on: ${{ vars.RUNNER }}
+    # uses: "newbenji/charts/.github/workflows/reused.yaml@${{ github.head_ref || github.ref_name }}"
+    uses: newbenji/charts/.github/workflows/detect-modified-charts.yaml@esp32home
+
+    with:
+      config-path: .github/labeler.yml
+    secrets: inherit
+
+  output-from-detect:
+    runs-on: ${{ vars.RUNNER }}
+    needs: call-workflow-passing-data
     steps:
-      - run: echo "Hello, world"
+      - run: |
+          echo "---------------------------"
+          echo ${{ needs.call-workflow-passing-data.outputs.folders }}
+
+  print-hello-approved:
+    runs-on: ${{ vars.RUNNER }}
+    if: github.event.review.state == 'approved'
+    steps:
+      - run: echo "Hello, world, i am an approved pull request "
+
+  print-hello-approved-merged:
+    runs-on: ${{ vars.RUNNER }}
+    if: github.event.pull_request.merged == true
+    steps:
+      - run: echo "Hello, world, i am an approved pull request and merged"
+
+  print-hello_branch:
+    runs-on: ${{ vars.RUNNER }}
+    if: github.event_name == 'push'
+    steps:
+      - run: echo "Hello, world i was pushed"
