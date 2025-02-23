@@ -9,7 +9,7 @@ on:
         description: "Which paths under charts have been modified"
         value: ${{ jobs.detect-changed-folders.outputs.folders }}
 
-        folderstest:
+      folderstest:
         description: "Which paths under charts have been modified"
         value: ${{ jobs.detect-changed-folders.outputs.folders }}
 
