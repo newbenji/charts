@@ -12,17 +12,28 @@ on:
       config-path:
         required: true
         type: string
+      chart-path:
+        # required: true
+        type: string
+        default: charts
+      branch:
+        type: string
+
     # secrets:
     #   HELM_REPOSITORY_URL:
     #     required: true
 
 jobs:
   detect-changed-folders:
-    # runs-on: ${{ vars.RUNNER }}
-    runs-on:  ${{ secrets.RUNNER }}
+    runs-on:
+      group: charts
     outputs:
       folders: ${{  steps.get_changed_dirs_pull.outputs.all_changed_and_modified_files ||  steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
     steps:
+      - name: debug
+        run: |
+          echo ${{ env.branch }}---
+
       - uses: ConorMacBride/install-package@v1
         with:
           apt: git
