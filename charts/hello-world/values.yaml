@@ -39,7 +39,7 @@ securityContext: {}
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
-
+  # somevar
 service:
   type: ClusterIP
   port: 80

@@ -21,18 +21,18 @@ on:
 # something
 jobs:
   call-workflow-passing-data:
-    # runs-on: ${{ vars.RUNNER }}
+    # runs-on: ${{ secrets.RUNNER }}
     # uses: "newbenji/charts/.github/workflows/reused.yaml@${{ github.head_ref || github.ref_name }}"
 
     if: github.event_name == 'push' || github.event.pull_request.merged == true
     uses: newbenji/charts/.github/workflows/detect-modified-charts.yaml@tester2
-
+    # id: detect-changed-paths
     with:
       config-path: .github/labeler.yml
     secrets: inherit
 
   output-from-detect:
-    runs-on: charts
+    runs-on:  ${{ secrets.RUNNER }}
     needs: call-workflow-passing-data
     steps:
       - run: |
@@ -40,38 +40,38 @@ jobs:
           echo ${{ needs.call-workflow-passing-data.outputs.folders }}
 
   print-hello-opened:
-    runs-on: charts
+    runs-on:  ${{ secrets.RUNNER }}
     if: github.event.pull_request.state == 'opened'
     steps:
       - run: echo "Hello, world, i am an opened pull request "
 
   print-hello-approved:
-    runs-on: charts
+    runs-on:  ${{ secrets.RUNNER }}
     if: github.event.review.state == 'approved'
     steps:
           - run: echo "Hello, world, i am an approved pull request "
 
 
   print-hello-closed:
-    runs-on: charts
-    if: github.event.pull_request.state == 'closed'
+    runs-on: ch ${{ secrets.RUNNER }}arts
+    if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == false
     steps:
-          - run: echo "Hello, world, i am an closed pull request "
+          - run: echo "Hello, world, i am an closed pull request but not merged"
 
   print-hello-merged:
-    runs-on: charts
+    runs-on:  ${{ secrets.RUNNER }}
     if: github.event.pull_request.merged == true
     steps:
-      - run: echo "Hello, world, i am an merged pull request"
+      - run: echo "Hello, world, i am an merged closed and merged pull request"
 
   print-hello-opened-new:
-    runs-on: charts
+    runs-on:  ${{ secrets.RUNNER }}
     if: github.event.created
     steps:
       - run: echo "Hello, world i was pushed"
 
   print-hello_pushed:
-    runs-on: charts
-    if: github.event_name == 'push'
+    runs-on:  ${{ secrets.RUNNER }}
+    if: github.event_name == 'push' && !github.event.created
     steps:
       - run: echo "Hello, world i was pushed"

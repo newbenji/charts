@@ -19,7 +19,7 @@ on:
 jobs:
   detect-changed-folders:
     # runs-on: ${{ vars.RUNNER }}
-    runs-on: charts
+    runs-on:  ${{ secrets.RUNNER }}
     outputs:
       folders: ${{  steps.get_changed_dirs_pull.outputs.all_changed_and_modified_files ||  steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
     steps:
