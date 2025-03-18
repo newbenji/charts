@@ -53,7 +53,7 @@ jobs:
 
 
   print-hello-closed:
-    runs-on: ch ${{ secrets.RUNNER }}arts
+    runs-on: ${{ secrets.RUNNER }}
     if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == false
     steps:
           - run: echo "Hello, world, i am an closed pull request but not merged"
