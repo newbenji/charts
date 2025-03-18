@@ -7,6 +7,8 @@ on:
   pull_request_review:
     types: [submitted]
 
+  create: {}
+
   pull_request:
     branches:
       - main
@@ -61,6 +63,12 @@ jobs:
     if: github.event.pull_request.merged == true
     steps:
       - run: echo "Hello, world, i am an merged pull request"
+
+  print-hello-opened-new:
+    runs-on: ${{ vars.RUNNER }}
+    if: ${{ (github.event.ref_type == 'branch') && github.event.ref != 'main' }}
+    steps:
+      - run: echo "Hello, world i was pushed"
 
   print-hello_pushed:
     runs-on: ${{ vars.RUNNER }}
