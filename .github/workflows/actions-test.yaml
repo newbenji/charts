@@ -23,7 +23,7 @@ on:
 jobs:
   call-workflow-passing-data:
     if: github.event_name == 'push' || github.event.pull_request.merged == true
-    uses: newbenji/charts/.github/workflows/detect-modified-charts.yaml@${{github.head_ref||github.ref_name}}
+    uses: newbenji/charts/.github/workflows/detect-modified-charts.yaml@tester3
     with:
       chart-path: charts
       config-path: .github/labeler.yml
