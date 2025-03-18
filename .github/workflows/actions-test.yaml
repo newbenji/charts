@@ -66,7 +66,7 @@ jobs:
 
   print-hello-opened-new:
     runs-on: ${{ vars.RUNNER }}
-    if: ${{ (github.event.ref_type == 'branch') && github.event.ref != 'main' }}
+    if: ${{ (github.event.ref_type == 'branch') }}
     steps:
       - run: echo "Hello, world i was pushed"
 
