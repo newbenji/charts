@@ -32,7 +32,7 @@ jobs:
     steps:
       - name: debug
         run: |
-          echo ${{ env.branch }}---
+          echo ${{ inputs.branch }}---
 
       - uses: ConorMacBride/install-package@v1
         with:
@@ -62,7 +62,7 @@ jobs:
         with:
           matrix: true
           # json: true
-          files: charts/**
+          files: ${{ inputs.chart-path }}/**
           sha: "${{ steps.git-branch.outputs.ORIGIN_SHA }}"
           dir_names_max_depth: "2"
           dir_names: true
