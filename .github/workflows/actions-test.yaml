@@ -7,7 +7,7 @@ on:
   pull_request_review:
     types: [submitted]
 
-  create: {}
+  create:
 
   pull_request:
     branches:
