@@ -1,5 +1,6 @@
 name: actions-test
-run-name: ${{ github.actor }} is running actions-test 🚀
+# run-name: ${{ github.actor }} is running actions-test 🚀
+run-name: "Action-test: ${{ github.event.head_commit.message } }🚀"
 on:
   push:
     branches-ignore:
