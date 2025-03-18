@@ -1,6 +1,6 @@
 name: actions-test
 # run-name: ${{ github.actor }} is running actions-test 🚀
-run-name: "Action-test: ${{ github.event.head_commit.message } }🚀"
+run-name: "Action-test: ${{ github.event.head_commit.message }} 🚀"
 on:
   push:
     branches-ignore:
@@ -22,12 +22,8 @@ on:
 # something
 jobs:
   call-workflow-passing-data:
-    # uses: "newbenji/charts/.github/workflows/reused.yaml@${{ github.head_ref || github.ref_name }}"
-
     if: github.event_name == 'push' || github.event.pull_request.merged == true
-    # uses: newbenji/charts/.github/workflows/detect-modified-charts.yaml@tester2
-    uses: bewbenji/charts/.github/workflows/detect-modified-charts.yaml@${{github.head_ref||github.ref_name}}
-    # id: detect-changed-paths
+    uses: newbenji/charts/.github/workflows/detect-modified-charts.yaml@tester3
     with:
       chart-path: charts
       config-path: .github/labeler.yml
