@@ -5,7 +5,6 @@ description: |
   Powered by a worldwide community of tinkerers and DIY enthusiasts.
   Perfect to run on a Raspberry Pi or a local server..
 type: application
-# ci-test: verifying alpha build/publish pipeline
 version: 0.1.0
 appVersion: "2023.11.1"
 icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
