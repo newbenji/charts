@@ -88,11 +88,6 @@ jobs:
         with:
           version: v3.13.3
 
-      - name: Setup YQ
-        uses: chrisdickinson/setup-yq@v1.0.1
-        with:
-          yq-version: v4.35.2
-
       - name: Helm dependency update
         working-directory: ${{ matrix.chart_path }}
         run: helm dependency update
@@ -131,11 +126,6 @@ jobs:
         uses: ConorMacBride/install-package@v1.1.0
         with:
           apt: git curl
-
-      - name: Setup YQ
-        uses: chrisdickinson/setup-yq@v1.0.1
-        with:
-          yq-version: v4.35.2
 
       - name: Helm dependency build
         working-directory: ${{ matrix.chart_path }}
