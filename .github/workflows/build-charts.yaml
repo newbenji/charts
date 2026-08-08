@@ -9,6 +9,9 @@ on:
     branches:
       - main
     types:
+      - opened
+      - synchronize
+      - reopened
       - closed
 
 permissions:
@@ -24,7 +27,7 @@ env:
 
 jobs:
   detect-changed-folders:
-    if: github.event_name == 'push' || github.event.pull_request.merged == true
+    if: github.event_name == 'push' || github.event.action != 'closed' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
       folders: ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
@@ -101,11 +104,57 @@ jobs:
             helm lint -f values.yaml . --with-subcharts
           fi
 
-  build-and-publish:
+  # Docs are regenerated while the PR is still open, pushing to the PR's own
+  # branch (unprotected) instead of main. By merge time README.md is already
+  # current, so the release job below never needs to push to main at all.
+  update-docs:
     needs: [detect-changed-folders, validate-charts]
+    if: >
+      github.event_name == 'pull_request' &&
+      github.event.action != 'closed' &&
+      needs.detect-changed-folders.outputs.has_changes == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    strategy:
+      matrix:
+        chart_path: ${{ fromJSON(needs.detect-changed-folders.outputs.folders) }}
+      fail-fast: false
+      # Matrix entries push README changes to the same PR branch; serialize
+      # to avoid them racing each other.
+      max-parallel: 1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for README template
+        id: check_files
+        uses: andstor/file-existence-action@v3
+        with:
+          files: "${{ matrix.chart_path }}/README.md.gotmpl"
+
+      - name: helm-docs
+        uses: losisin/helm-docs-github-action@v2
+        if: steps.check_files.outputs.files_exists == 'true'
+        with:
+          chart-search-root: ${{ matrix.chart_path }}
+          output-file: README.md
+          template-files: ./_templates.gotmpl,README.md.gotmpl
+          git-push: true
+          fail-on-diff: false
+
+  build-and-publish:
+    needs: [detect-changed-folders, validate-charts]
+    if: >
+      needs.detect-changed-folders.outputs.has_changes == 'true' &&
+      (github.event_name == 'push' || github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
       packages: write
     strategy:
       matrix:
@@ -114,8 +163,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Helm
         uses: azure/setup-helm@v5.0.1
@@ -144,25 +191,6 @@ jobs:
           yq -i ".version = \"${ALPHA_VERSION}\"" Chart.yaml
           yq -i '(.annotations | select(. != null) | .["artifacthub.io/prerelease"]) |= "true"' Chart.yaml
           echo "Updated version to: ${ALPHA_VERSION}"
-
-      - name: Check for README template
-        id: check_files
-        uses: andstor/file-existence-action@v3
-        with:
-          files: "${{ matrix.chart_path }}/README.md.gotmpl"
-
-      # Only regenerate docs on the main-release path: parallel matrix entries
-      # each committing+pushing README changes to the same branch would race
-      # each other on alpha builds across many branches.
-      - name: helm-docs
-        uses: losisin/helm-docs-github-action@v2
-        if: steps.check_files.outputs.files_exists == 'true' && github.event_name == 'pull_request'
-        with:
-          chart-search-root: ${{ matrix.chart_path }}
-          output-file: README.md
-          template-files: ./_templates.gotmpl,README.md.gotmpl
-          git-push: true
-          fail-on-diff: false
 
       - name: Package chart
         id: package
