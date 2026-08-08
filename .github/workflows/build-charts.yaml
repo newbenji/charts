@@ -117,13 +117,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    strategy:
-      matrix:
-        chart_path: ${{ fromJSON(needs.detect-changed-folders.outputs.folders) }}
-      fail-fast: false
-      # Matrix entries push README changes to the same PR branch; serialize
-      # to avoid them racing each other.
-      max-parallel: 1
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -131,17 +124,16 @@ jobs:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check for README template
-        id: check_files
-        uses: andstor/file-existence-action@v3
-        with:
-          files: "${{ matrix.chart_path }}/README.md.gotmpl"
-
+      # chart-search-root is the repo root (not the individual changed chart)
+      # because helm-docs resolves a `./`-prefixed shared template file
+      # relative to chart-search-root, not the repo root in general. Running
+      # from the root also lets it fall back to its built-in template for any
+      # chart with no README.md.gotmpl of its own, so no existence check
+      # is needed here.
       - name: helm-docs
         uses: losisin/helm-docs-github-action@v2
-        if: steps.check_files.outputs.files_exists == 'true'
         with:
-          chart-search-root: ${{ matrix.chart_path }}
+          chart-search-root: .
           output-file: README.md
           template-files: ./_templates.gotmpl,README.md.gotmpl
           git-push: true
