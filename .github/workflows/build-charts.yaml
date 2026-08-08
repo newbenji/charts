@@ -185,13 +185,17 @@ jobs:
       - name: Job summary
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<EOF
-          ## Chart Build Summary
+          ## 📦 ${{ steps.package.outputs.chart_name }} @ ${{ steps.package.outputs.chart_version }}
 
           | Item | Value |
           |------|-------|
-          | Chart | ${{ steps.package.outputs.chart_name }} |
-          | Version | ${{ steps.package.outputs.chart_version }} |
-          | Registry | oci://${{ env.CHART_REGISTRY }}/${{ steps.package.outputs.chart_name }} |
+          | Package | \`${{ steps.package.outputs.package_file }}\` |
+          | Pushed to | \`oci://${{ env.CHART_REGISTRY }}/${{ steps.package.outputs.chart_name }}\` |
           | Branch | ${{ github.ref_name }} |
           | Commit | ${{ github.sha }} |
+
+          Pull it with:
+          \`\`\`
+          helm pull oci://${{ env.CHART_REGISTRY }}/${{ steps.package.outputs.chart_name }} --version ${{ steps.package.outputs.chart_version }}
+          \`\`\`
           EOF
