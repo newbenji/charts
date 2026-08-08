@@ -39,7 +39,8 @@ securityContext: {}
 
 homeAssistant:
   persistence:
-    volumeName: pvc-6fa054bc-a616-473a-ba1d-4925c832fb33
+    # -- Bind the PVC to a specific pre-provisioned PersistentVolume by name. Leave empty to let the cluster's default provisioner handle it.
+    volumeName: ""
 
 service:
   type: ClusterIP
@@ -55,8 +56,6 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths:
@@ -96,10 +95,6 @@ persistence:
   # if you need any additional volume mounts, you can define them here
   additionalMounts: []
 
-postgresql:
-  enabled: true
-  connection: postgresql://homeassistant:theise8aeGephuuChiTh@postgresql-service.pg.svc.cluster.local/homeassistant
-
 vscode:
   enabled: false
   image:
@@ -113,8 +108,6 @@ vscode:
   ingress:
     enabled: false
     annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
     path: /
     hosts:
       - home-assistant.local
@@ -137,9 +130,8 @@ vscode:
     # nodePort: 30000
 
 
-hadbconfig: "postgresql://homeassistant:****@postgresql.localhost/homeassistant"
-
-
+# -- Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. Must be set to a real connection string.
+hadbconfig: ""
 
 config:
   recorder:
@@ -154,6 +146,4 @@ config:
     login_attempts_threshold: 5
   scripts: {}
   automations: {}
-  bluepritns: {}
-
-#  db_url: "!secret hadbconfig"
+  blueprints: {}
