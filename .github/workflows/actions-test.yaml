@@ -1,0 +1,90 @@
+name: actions-test
+# run-name: ${{ github.actor }} is running actions-test 🚀
+run-name: "Action-test: ${{ github.event.head_commit.message }} 🚀"
+on:
+  push:
+    branches-ignore:
+      - main
+
+  pull_request_review:
+    types: [submitted]
+
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+      - opened
+
+
+  # schedule:
+    # - cron: '* * * *'
+# somethin
+jobs:
+  detect-changed-folders:
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
+    uses: newbenji/charts/.github/workflows/detect-modified-charts.yaml@tester3
+    with:
+      chart-path: charts
+      config-path: .github/labeler.yml
+      branch: "${{ github.head_ref || github.ref_name }}"
+    secrets: inherit
+
+  build-chart:
+    needs: [ detect-changed-folders ]
+    uses: newbenji/charts/.github/workflows/build-helmchart-workflow.yaml@tester3
+    strategy:
+      matrix:
+        files: ${{ fromJSON(needs.detect-changed-folders.outputs.folders) }}
+      fail-fast: false
+    with:
+      helm-chart: ${{ matrix.files }}
+
+
+  output-from-detect:
+    runs-on: charts
+    needs:  detect-changed-folders
+    steps:
+      - run: |
+          echo "---------------------------"
+          echo ${{ needs.detect-changed-folders.outputs.folders }}
+
+
+
+
+  print-hello-opened:
+    runs-on: charts
+    if: github.event.pull_request.state == 'opened'
+    steps:
+      - run: echo "Hello, world, i am an opened pull request "
+
+  print-hello-approved:
+    runs-on: charts
+    if: github.event.review.state == 'approved'
+    steps:
+          - run: echo "Hello, world, i am an approved pull request "
+
+
+  print-hello-closed:
+    runs-on: charts
+    if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == false
+    steps:
+          - run: echo "Hello, world, i am an closed pull request but not merged"
+
+  print-hello-merged:
+    runs-on: charts
+    if: github.event.pull_request.merged == true
+    steps:
+      - run: echo "Hello, world, i am an merged closed and merged pull request"
+
+  print-hello-opened-new:
+    runs-on: charts
+    if: github.event.created
+    steps:
+      - run: echo "Hello, world i was pushed"
+
+  print-hello_pushed:
+    runs-on: charts
+    if: github.event_name == 'push' && !github.event.created
+    steps:
+      - run: echo "Hello, world i was pushed"

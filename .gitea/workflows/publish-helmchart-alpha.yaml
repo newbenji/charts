@@ -1,0 +1,204 @@
+name: Release Charts Benji
+run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
+# https://blog.gitea.io/2023/03/hacking-on-gitea-actions/
+
+# on pull request later do this
+# https://gitea.com/actions/release-action
+
+
+env:
+  CHARTMUSEUM_URL: ${{ secrets.CHARTMUSEUM_URL }}
+  REPO_NAME: benji
+  # CHARTMUSEUM_USER: ${{ secrets.CHARTMUSEUM_USER }}
+  # CHARTMUSEUM_PASSWORD:  ${{ secrets.CHARTMUSEUM_PASSWORD }}
+  ACTIVE_CHARTS: ("jellyfin" "hello-world" "home-assistant" "gitea-action-runner" "synology-csi" )
+  LAST_RELEASE_SHA: f14eb01a9296ecff435018f1202d4e831f68d9d2
+  # PULL_REQUEST_GITHUB:  ${{ github.event.pull_request.head.ref }}
+  # PULL_REQUEST_GITEA:  ${{ gitea.event.pull_request.head.ref }}
+on:
+  push:
+    branches-ignore:
+      - main
+    # branches:
+    #   - main
+    # paths:
+    #   - 'charts/jellyfin/**'
+  # pull_request:
+  #   branches:
+  #     - main
+
+  #   types:
+  #     # - synchronize
+  #     # - opened
+  #     - closed
+
+
+# github.event.pull_request.head.ref
+
+jobs:
+  Publish changed charts for alpha builds:
+    permissions:
+      contents: write
+      # runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
+    # runs-on: ubuntu-20.04
+    steps:
+      - name: Clone git repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+        # Install helm
+      - name: Set up Helm
+        uses: https://github.com/azure/setup-helm@v3
+        with:
+          version: v3.13.0
+
+        # install yq
+      - name: Setup YQ
+        uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: v4.35.2
+
+      - name: Versions on tools
+        run: |
+          helm version -c
+          yq --version
+          echo "${LAST_RELEASE_SHA}"
+
+      - name: Run changed-files with dir_names
+        id: changed-files-dir-names
+        uses: tj-actions/changed-files@v39.2.1
+        with:
+          files: charts/*
+          sha: "f14eb01a9296ecff435018f1202d4e831f68d9d2"
+          dir_names_max_depth: "2"
+          dir_names: "true"
+
+      - name: Debug info
+        # if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        # if: (!(github.event.action == 'closed' && github.event.pull_request.merged != true))
+        run: |
+          echo "Event name: -${{ github.event_name }}-"
+          echo "Event action: -${{ github.event.action }}-"
+          echo "Pull request merged: -${{ github.event.pull_request.merged }}-"
+          echo "Event name: -${{ gitea.event_name }}-"
+          echo "Event action: -${{ gitea.event.action }}-"
+          echo "Pull request merged: -${{ gitea.event.pull_request.merged }}-"
+          echo "------------------------"
+          echo "------------------------"
+          echo "GIT INFO"
+          echo "GIT BRANCH $(git branch --show-current)"
+          git reflog show --no-abbrev $(git branch --show-current) | grep "branch: Created from" | awk '{print $1;}'
+          echo "-"
+          git reflog show --no-abbrev $(git branch --show-current)
+          git rev-list ${{ github.ref_name}} ^main | tail -n 1
+          git rev-parse "$(git rev-list ${{ github.ref_name }} ^main | tail -n 1)^"
+          echo ""
+
+
+      - name: Setup helm chart repo
+        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        run: |
+          if [[ $REPO_NAME ]]; then
+            # echo ${REPO_NAME}
+            # echo ${CHARTMUSEUM_URL}
+            # echo ${CHARTMUSEUM_URL1}
+            # echo "helm repo add ${REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}"
+            helm repo add ${REPO_NAME} ${{ secrets.CHARTMUSEUM_URL }}
+            helm repo update
+            # --username=${CHARTMUSEUM_USER} --password=${CHARTMUSEUM_PASSWORD}
+          fi
+
+      - name: Set alpha and prerelease for modified charts if not main
+        id: alphaRelease
+        # if: github.ref_name != 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        run: |
+          # yq --version
+          for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+            # Move in to chart dir
+            cd "${{ gitea.workspace }}/${dir}"
+
+            # Append alpha to release if not main
+            sed -i '/^version: /s/$/-alpha/' Chart.yaml
+
+            # Set prerelease to true if not main
+            yq -i '(.annotations | select(has("artifacthub.io/prerelease"))."artifacthub.io/prerelease") |= "true"' Chart.yaml
+          done
+
+          # Go back to workspace dir
+          cd "${{ gitea.workspace }}"
+
+      - name: Package changed charts
+        if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        run: |
+          for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+            cd "${{ gitea.workspace }}/${dir}"
+
+            chartName=$(yq e '.name'  Chart.yaml)
+
+            # Only run on some the charts for now
+            if [[ $(echo ${ACTIVE_CHARTS[@]} | fgrep -w $chartName) ]]
+            then
+              helm package .
+
+              chartVersion=$(yq e '.version'  Chart.yaml)
+              chartPackage="${chartName}-${chartVersion}.tgz"
+
+              # only if not branch main
+              if [ "${{ github.ref_name }}" != "main" ]; then
+                echo "Since not in main, we delete a package first"
+                # Delete an existing package of the current version prior to upload (mimicking --force)
+
+                # curl -X DELETE -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts/${chartName}/${chartVersion}"
+                curl -X DELETE "${CHARTMUSEUM_URL}/api/charts/${chartName}/${chartVersion}"
+              fi
+
+              # Upload the package since helm push dosnt work on chartmuseum yet
+              # prepared the command for user password
+              # curl --data-binary "@${chartPackage}" -u "${_cm_user}:${_cm_pass}" "${CHARTMUSEUM_URL}/api/charts"
+              curl --data-binary "@${chartPackage}" "${CHARTMUSEUM_URL}/api/charts"
+
+              # chartmuseum dont support pust at the momemt from oci url
+              # helm push "${chartName}" "${REPO_NAME}"
+            fi
+          done
+
+          # Back to workspace path
+          cd ${{ gitea.workspace }}
+
+
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+
+      # - name: List all changed files
+      #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+      #   run: |
+      #     for file in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+      #       echo "$file was changed"
+      #     done
+
+      # - name: Run chart-testing (lint)
+      #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+      #   run: |
+      #     for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+      #       echo "linting $dir"
+      #       helm lint --quiet $dir
+      #     done
+      # - run: echo "The name of your branch is ${{ gitea.ref }} and your repository is ${{ gitea.repository }}."
+      # - run: echo "The name of your branch is ${{ gitea.ref_name }} and your repository is ${{ gitea.repository }}."
+
+
+      # - name: Cat chart.yaml
+      #   if: steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+      #   run: |
+      #     for dir in ${{ steps.changed-files-dir-names.outputs.all_changed_and_modified_files }}; do
+      #       cat $dir/Chart.yaml
+      #     done
+
+      # - name: Step 1 - Echo out a GitHub Actions Secret to the logs
+      #   run: |
+      #     echo "The GitHub Action Secret will be masked:  "
+      #     echo ${{ secrets.CHARTMUSEUM_URL }}
+      #     echo "Trick to echo GitHub Actions Secret:  "
+      #     echo ${{secrets.CHARTMUSEUM_URL}} | sed 's/./& /g'

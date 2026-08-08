@@ -1,0 +1,60 @@
+name: Builds and lint a helmchart
+run-name: ${{ github.actor }} is building a helmchart 🚀
+
+
+on:
+  workflow_call:
+    inputs:
+      helm-chart:
+        type: string
+        required: true
+      develompent:
+        type: boolean
+        default: true
+
+
+jobs:
+  build_chart:
+    runs-on: charts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        # with:
+        #   version: v3.17.1
+
+      - name: Setup YQ
+        uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: v4.35.2
+
+
+      - name: Set alpha and prerelease for modified charts if not main
+        id: alphaRelease
+        # if: github.ref_name != 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        # if: github.ref_name != 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        if: github.ref_name != 'main'
+        run: |
+          cd ${{ inputs.helm-chart }}
+          sed -i '/^version: /s/$/-alpha/' Chart.yaml
+          yq -i '(.annotations | select(has("artifacthub.io/prerelease"))."artifacthub.io/prerelease") |= "true"' Chart.yaml
+
+      - uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.x'
+          check-latest: true
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.7.0
+
+      - name: Run chart-testing (lint)
+        run: |
+          cd ${{ inputs.helm-chart }}
+          pwd
+          ls -al
+          ls -al ../
+          ct lint  --config ../ct.yaml

@@ -1,0 +1,53 @@
+name: Detect modified charts
+run-name: ${{ github.actor }} detecting modified charts 🚀
+
+
+on:
+  workflow_call:
+    outputs:
+      charts:
+        description: "Which paths under charts have been modified"
+        value: ${{ jobs.detect-changed-charts.outputs.charts }}
+    inputs:
+      # config-path:
+      #   required: true
+      #   type: string
+      charts-path:
+        # required: true
+        type: string
+        default: charts
+
+jobs:
+  detect-changed-charts:
+    runs-on: charts
+    outputs:
+      charts: ${{steps.list-changed.outputs.charts}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4.3.0
+        # with:
+          # version: v3.17.0
+
+      - uses: actions/setup-python@v5.4.0
+        with:
+          python-version: '3.x'
+          check-latest: true
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.7.0
+
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct --chart-dirs ${{ inputs.charts-path }} list-changed --target-branch ${{ github.event.repository.default_branch }})
+          readarray -t charts_array <<< "$changed"
+          charts_array_clean=("${charts_array[@]/\charts\//}")
+          echo $charts_array
+          echo $charts_array_tmp
+          charts_json=$(jq --compact-output --null-input '$ARGS.positional' --args -- "${charts_array_clean[@]}")
+          echo "charts=$charts_json" >> $GITHUB_OUTPUT

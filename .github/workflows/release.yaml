@@ -1,0 +1,288 @@
+name: Release Charts
+
+on:
+  push:
+    branches:
+      - tester3
+    # paths:
+    #   - 'charts/**'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  detect-changed-charts:
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
+    uses: newbenji/charts/.github/workflows/detect-changed-charts-job.yaml@tester3
+    # with:
+      # charts-path: charts
+      # branch: "${{ github.head_ref || github.ref_name }}"
+    secrets: inherit
+
+
+  lint-chart:
+    needs: [detect-changed-charts]
+    runs-on: charts
+    strategy:
+      matrix:
+        files: ${{ fromJson(needs.detect-changed-charts.outputs.charts)}}
+      fail-fast: false
+    steps:
+      - name: debug
+        run: |
+          echo  ${{ matrix.files }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        # with:
+          # renovate: datasource=github-tags depName=helm/helm
+          # version: v3.17.2
+
+      - uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.x'
+          check-latest: true
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.7.0
+
+
+      - name: Setup YQ
+        uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version:  v4.45.1
+
+      - name: Set alpha and prerelease for modified charts if development
+        id: alphaRelease
+        # if: github.ref_name != 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        # if: github.ref_name != 'main' && steps.changed-files-dir-names.outputs.all_changed_and_modified_files_count > 0
+        if: github.ref_name != 'main'
+        env:
+          CHART: ${{ matrix.files }}
+        run: |
+          sed -i '/^version: /s/$/-alpha/' charts/${CHART}/Chart.yaml
+          yq -i '(.annotations | select(has("artifacthub.io/prerelease"))."artifacthub.io/prerelease") |= "true"' "charts/${CHART}/Chart.yaml"
+
+      - name: Show updated Chart.yaml
+        env:
+          CHART: ${{ matrix.files }}
+        run: |
+          yq "charts/${CHART}/Chart.yaml"
+
+      - name: Retrieve version from Chart.yaml
+        id: chart_version
+        env:
+          CHART: ${{ matrix.files }}
+        run: |
+          echo "version=$(yq '.version' charts/${CHART}/Chart.yaml)"
+          echo "version=$(yq '.version' charts/${CHART}/Chart.yaml)" >> "${GITHUB_OUTPUT}"
+
+      - name: Select CT configgile
+        id: ct_config
+        run: |
+          if [[ $GITHUB_REF_NAME == 'main' ]]; then
+            echo "CT_CONFIG_FILE=ct.yaml" >> $GITHUB_OUTPUT
+          else
+            echo "CT_CONFIG_FILE=ct-alpha.yaml" >> $GITHUB_OUTPUT
+          fi
+
+      - name: install helm unittests
+        run: |
+          helm env
+          # renovate: datasource=github-tags depName=helm-unittest/helm-unittest
+          helm plugin install https://github.com/helm-unittest/helm-unittest.git
+
+      - name: Run chart-testing (lint)
+        env:
+          CHART: ${{ matrix.files }}
+        run: |
+          echo "ct lint --config ${{ steps.ct_config.outputs.CT_CONFIG_FILE }} --charts charts/${CHART}"
+          ct lint --config ${{ steps.ct_config.outputs.CT_CONFIG_FILE }} --charts "charts/${CHART}"
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.12.0
+
+      - name: Run chart-testing (install)
+        env:
+          CHART: ${{ matrix.files }}
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+          # kubectl get ns
+          # echo "ct install --config ${{ steps.ct_config.outputs.CT_CONFIG_FILE }} --debug --charts charts/${CHART}"
+          # ct install --config ${{ steps.ct_config.outputs.CT_CONFIG_FILE }} --debug --charts "charts/${CHART}"
+          ct install --config ${{ steps.ct_config.outputs.CT_CONFIG_FILE }} --charts "charts/${CHART}"
+
+      - name: Add chart repo
+        env:
+          _CM_USER: ${{ secrets.CHARTMUSEUM_USERNAME }}
+          _CM_PASS: ${{ secrets.CHARTMUSEUM_PASSWORD }}
+          _REPO_URL: ${{ secrets.HELM_REPOSITORY_URL }}
+        run: |
+          echo "Add repo"
+          # # Upload the package since helm push dosnt work on chartmuseum yet
+          # # prepared the command for user password
+          helm plugin install https://github.com/chartmuseum/helm-push
+          # helm repo add --username "${_CM_USER}" --password "${_CM_PASS}" helmrepo "${_REPO_URL}"
+          echo "Repo url ${_REPO_URL}"
+          helm repo add helmrepo "${_REPO_URL}"
+
+      - name: Package alphachart and force push
+        env:
+          CHART: ${{ matrix.files }}
+        if: github.ref_name != 'main'
+        run: |
+          helm package "charts/${CHART}"
+          ls -al
+          # helm cm-push --force . helmrepo
+
+      # - name: Package alphachart and force push
+      #   if:
+      #   run:
+
+  tester-output:
+    needs: [detect-changed-charts]
+    runs-on: charts
+    strategy:
+      matrix:
+        files: ${{ fromJson(needs.detect-changed-charts.outputs.charts)}}
+      fail-fast: false
+    steps:
+      - name: debug
+        run: |
+          echo  ${{ matrix.files }}
+
+
+  # release:
+  #   runs-on: charts
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+
+  #     # - name: Configure Git
+  #     #   run: |
+  #     #     git config user.name "$GITHUB_ACTOR"
+  #     #     git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+  #     # - name: Login to GitHub Container Registry
+  #     #   uses: docker/login-action@v3
+  #     #   with:
+  #     #     registry: ghcr.io
+  #     #     username: ${{ github.actor }}
+  #     #     password: ${{ secrets.GITHUB_TOKEN }}
+
+  #     - name: Install Helm
+  #       uses: azure/setup-helm@v4
+  #       # with:
+  #         # renovate: datasource=github-tags depName=helm/helm
+  #         # version: v3.17.2
+
+  #     - name: Retrieve version from Chart.yaml
+  #       id: chart_version
+  #       run: |
+  #         echo "version=$(yq '.version' charts/jenkins/Chart.yaml)" >> "${GITHUB_OUTPUT}"
+
+  #     - name: Extract version changelog
+  #       id: version_changelog
+  #       env:
+  #         VERSION: ${{ steps.chart_version.outputs.version }}
+  #       run: |
+  #         changelog=$(awk -v version="${VERSION}" '
+  #         /^(##|###) [0-9]+.[0-9]+.[0-9]+/ {
+  #             if (p) { exit };
+  #             if ($2 == version) {
+  #                 p = 1; next
+  #             }
+  #         } p
+  #         ' charts/jenkins/CHANGELOG.md)
+
+  #         delimiter="$(openssl rand -hex 8)"
+  #         # shellcheck disable=SC2129
+  #         echo "changelog<<${delimiter}" >> "${GITHUB_OUTPUT}"
+  #         echo "${changelog}" >> "${GITHUB_OUTPUT}"
+  #         echo "${delimiter}" >> "${GITHUB_OUTPUT}"
+
+  #     - name: Annotate Chart.yaml with current version changelog
+  #       if: steps.version_changelog.outputs.changelog != ''
+  #       env:
+  #         CHANGELOG: ${{ steps.version_changelog.outputs.changelog }}
+  #       run: |
+  #         # Changelog sanitation
+  #         # shellcheck disable=SC2016
+  #         proper_changelog=$(echo "${CHANGELOG}" \
+  #         | grep -v '^$' `# remove empty lines` \
+  #         | grep -v '^|' `# remove table lines` \
+  #         | iconv -c -f utf8 -t ascii `# remove non ascii characters like emoji` \
+  #         | sed 's/^/- /' `# add a dash in front of every line` \
+  #         | sed 's/  / /') # double spaces
+
+  #         # Add new line to ensure scalar value in Chart.yaml
+  #         printf -v change '%s\n' "${proper_changelog}"
+
+  #         # Update chart annotations using strenv operator (https://mikefarah.gitbook.io/yq/operators/string-operators#string-blocks-bash-and-newlines)
+  #         CHANGE="${change}" yq --inplace ".annotations.\"artifacthub.io/changes\" = strenv(CHANGE)" charts/jenkins/Chart.yaml
+
+  #     - name: Show updated Chart.yaml
+  #       run: |
+  #         yq charts/jenkins/Chart.yaml
+
+  #     - name: Run chart-releaser
+  #       id: chart_releaser
+  #       uses: helm/chart-releaser-action@v1.7.0
+  #       env:
+  #         CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+  #     - name: Push Chart to GHCR
+  #       run: |
+  #         for pkg in .cr-release-packages/*; do
+  #           if [ -z "${pkg:-}" ]; then
+  #             break
+  #           fi
+  #           helm push "${pkg}" oci://ghcr.io/jenkinsci/helm-charts
+  #         done
+
+  #     - name: Retrieve release info
+  #       id: release_info
+  #       if: steps.chart_releaser.outputs.changed_charts != ''
+  #       env:
+  #         LAST_TAG: "jenkins-${{ steps.chart_version.outputs.version }}"
+  #         REPOSITORY: ${{ github.repository }}
+  #       run: |
+  #         release=$(curl -L "https://api.github.com/repos/${REPOSITORY}/releases/tags/${LAST_TAG}")
+
+  #         echo "id=$(echo "${release}" | jq '.id')" >> "${GITHUB_OUTPUT}"
+
+  #         delimiter="$(openssl rand -hex 8)"
+  #         # shellcheck disable=SC2129
+  #         echo "body<<${delimiter}" >> "${GITHUB_OUTPUT}"
+  #         echo "${release}" | jq --raw-output '.body' >> "${GITHUB_OUTPUT}"
+  #         echo "${delimiter}" >> "${GITHUB_OUTPUT}"
+
+  #     - name: Update release description
+  #       id: update_release
+  #       if: steps.chart_releaser.outputs.changed_charts != ''
+  #       uses: actions/github-script@v7
+  #       env:
+  #         ID: ${{ steps.release_info.outputs.id }}
+  #         BODY: ${{steps.release_info.outputs.body}}
+  #         CHANGELOG: ${{steps.version_changelog.outputs.changelog}}
+  #       with:
+  #         script: |
+  #           try {
+  #             await github.rest.repos.updateRelease({
+  #               release_id: process.env.ID,
+  #               owner: context.repo.owner,
+  #               repo: context.repo.repo,
+  #               body: process.env.BODY + "\r\n\r\n## Changelog" + process.env.CHANGELOG,
+  #             });
+  #           } catch (error) {
+  #             core.setFailed(error.message);
+  #           }
