@@ -160,6 +160,7 @@ jobs:
         with:
           chart-search-root: ${{ matrix.chart_path }}
           output-file: README.md
+          template-files: ./_templates.gotmpl,README.md.gotmpl
           git-push: true
           fail-on-diff: false
 

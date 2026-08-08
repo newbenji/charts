@@ -4,14 +4,7 @@
 
 {{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
 
-## Installing the Chart
-
-To install the chart with the release name `my-release`:
-
-```console
-$ helm repo add benji-charts https://chartmuseum.newbenji.dk/
-$ helm install my-release benji-charts/{{ template "chart.name" . }}
-```
+{{ template "chart.ociInstall" . }}
 
 {{ template "chart.requirementsSection" . }}
 
