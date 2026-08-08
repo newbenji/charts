@@ -25,7 +25,7 @@ env:
 jobs:
   detect-changed-folders:
     if: github.event_name == 'push' || github.event.pull_request.merged == true
-    runs-on: encodify-runner
+    runs-on: ubuntu-latest
     outputs:
       folders: ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
       has_changes: ${{ steps.get_changed_dirs.outputs.any_changed }}
@@ -63,7 +63,7 @@ jobs:
   validate-charts:
     needs: [detect-changed-folders]
     if: needs.detect-changed-folders.outputs.has_changes == 'true'
-    runs-on: encodify-runner
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     strategy:
@@ -108,7 +108,7 @@ jobs:
 
   build-and-publish:
     needs: [detect-changed-folders, validate-charts]
-    runs-on: encodify-runner
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
