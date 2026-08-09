@@ -206,6 +206,29 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
           helm push "${{ steps.package.outputs.package_file }}" "oci://${{ env.CHART_REGISTRY }}"
 
+      # Once the real version is published, its -alpha counterpart (if any)
+      # is superseded and just clutters the registry. GITHUB_TOKEN can't
+      # delete packages, so this uses a PAT with delete:packages instead.
+      - name: Delete superseded alpha package
+        if: github.event.pull_request.merged == true
+        env:
+          GH_TOKEN: ${{ secrets.PACKAGES_PAT }}
+        run: |
+          set -e
+          CHART_NAME="${{ steps.package.outputs.chart_name }}"
+          ALPHA_TAG="${{ steps.package.outputs.chart_version }}-alpha"
+          PACKAGE_NAME="charts%2F${CHART_NAME}"
+
+          VERSION_ID=$(gh api "/user/packages/container/${PACKAGE_NAME}/versions?per_page=100" \
+            --jq ".[] | select(.metadata.container.tags[]? == \"${ALPHA_TAG}\") | .id" | head -1)
+
+          if [ -n "$VERSION_ID" ]; then
+            gh api --method DELETE "/user/packages/container/${PACKAGE_NAME}/versions/${VERSION_ID}"
+            echo "Deleted superseded alpha package: ${CHART_NAME}:${ALPHA_TAG} (version id ${VERSION_ID})"
+          else
+            echo "No superseded alpha package found for ${CHART_NAME}:${ALPHA_TAG}"
+          fi
+
       - name: Job summary
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<EOF
