@@ -156,12 +156,12 @@ ingress:
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
-    # For NGINX INC, these may be neccessary
+    # For NGINX INC, these may be necessary
     # nginx.org/proxy-read-timeout: "3600"
     # nginx.org/proxy-send-timeout: "3600"
     # nginx.org/websocket-services: "<release_name>-frigate" # TODO: can this be automated?
 
-  # -- list of hosts and their paths and ports that ingress controller should repsond to.
+  # -- list of hosts and their paths and ports that ingress controller should respond to.
   # -- alternatively use `http` if anonymous auth is allowed
   hosts:
     - host: chart.example.local
@@ -288,7 +288,7 @@ securityContext: {}
   # privileged: true
 
 # -- Set Pod level Security Context
-# -- the container level securiy context defined above
+# -- the container level security context defined above
 # -- will override it for frigate container
 podSecurityContext: {}
   # capabilities:
@@ -318,7 +318,7 @@ tolerations: []
 # -- Set Pod affinity rules
 affinity: {}
 
-# -- Set additonal pod Annotations
+# -- Set additional pod Annotations
 podAnnotations: {}
 
 # -- Define extra init containers
