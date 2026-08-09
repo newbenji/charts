@@ -1,5 +1,50 @@
 apiVersion: v1
 entries:
+  esphome-device-builder:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Added] Recovered this chart from an old ChartMuseum devel repo (its source repository was lost) and republished it here going forward"
+        - "[Added] Gateway API HTTPRoute support as an alternative to Ingress"
+        - "[Added] Persistence for /config (device configs, secrets, and dashboard state - previously lost on every pod restart) and optionally /cache (PlatformIO toolchain downloads)"
+        - "[Added] env/envFromSecrets support, e.g. for ESPHOME_TRUSTED_DOMAINS (needed behind a reverse proxy/ingress that doesn't forward the original Host header) or ESPHOME_USERNAME/ESPHOME_PASSWORD"
+        - "[Fixed] liveness/readiness probes hit the full dashboard SPA (/) instead of the lightweight /version endpoint the upstream image's own Docker healthcheck uses"
+        - "[Changed] Bumped default appVersion to 2026.7.4 (was stuck on 1.16.0); the image now bundles the actively-maintained esphome/device-builder dashboard (this chart's namesake) instead of the legacy dashboard"
+        - "[Changed] Cleaned up the ingress template to the current Helm standard (dropped pre-1.19 Kubernetes compatibility branches)"
+      artifacthub.io/images: |
+        - name: esphome-device-builder
+          image: ghcr.io/esphome/esphome
+      artifacthub.io/links: |
+        - name: ESPHome source repo
+          url: https://github.com/esphome/esphome
+        - name: Device Builder dashboard source repo
+          url: https://github.com/esphome/device-builder
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 2026.7.4
+    created: "2026-08-09T14:13:10.04903336Z"
+    description: Web dashboard for building, flashing, and managing ESPHome firmware
+      on ESP8266/ESP32 devices
+    digest: bedfedcd7e329455395236a849435d51444919e3395a53b99fa6509b77c540d5
+    home: https://github.com/newbenji/charts/tree/main/charts/esphome-device-builder
+    icon: https://esphome.io/images/logo.svg
+    keywords:
+    - esphome
+    - esp8266
+    - esp32
+    - iot
+    - smart home
+    maintainers:
+    - email: benji@newbenji.dk
+      name: newbenji
+    name: esphome-device-builder
+    sources:
+    - https://github.com/esphome/esphome
+    - https://github.com/esphome/device-builder
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/esphome-device-builder-0.1.0/esphome-device-builder-0.1.0.tgz
+    version: 0.1.0
   frigate:
   - annotations:
       artifacthub.io/changes: |
@@ -115,4 +160,4 @@ entries:
     urls:
     - https://github.com/newbenji/charts/releases/download/home-assistant-0.2.1/home-assistant-0.2.1.tgz
     version: 0.2.1
-generated: "2026-08-09T10:12:58.539195282Z"
+generated: "2026-08-09T14:13:10.049045242Z"
