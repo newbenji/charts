@@ -1,23 +1,23 @@
-{{- if .Values.whisper.enabled }}
+{{- if .Values.piper.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "home-assistant.whisperFullname" . }}
+  name: {{ include "home-assistant.piperFullname" . }}
   labels:
-    {{- include "home-assistant.labelsWhisper" . | nindent 4 }}
+    {{- include "home-assistant.labelsPiper" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "home-assistant.selectorLabelsWhisper" . | nindent 6 }}
+      {{- include "home-assistant.selectorLabelsPiper" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.whisper.podAnnotations }}
+      {{- with .Values.piper.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "home-assistant.selectorLabelsWhisper" . | nindent 8 }}
+        {{- include "home-assistant.selectorLabelsPiper" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -29,35 +29,35 @@ spec:
       dnsPolicy: {{ .Values.dnsPolicy }}
       volumes:
         - name: data
-          {{- if .Values.whisper.persistence.enabled }}
+          {{- if .Values.piper.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: {{ .Values.whisper.persistence.existingClaim | default (include "home-assistant.whisperFullname" .) }}
+            claimName: {{ .Values.piper.persistence.existingClaim | default (include "home-assistant.piperFullname" .) }}
           {{- else }}
           emptyDir: {}
           {{- end }}
       containers:
-        - name: wyoming-whisper
+        - name: wyoming-piper
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.whisper.image.repository }}:{{ .Values.whisper.image.tag }}"
-          imagePullPolicy: {{ .Values.whisper.image.pullPolicy }}
+          image: "{{ .Values.piper.image.repository }}:{{ .Values.piper.image.tag }}"
+          imagePullPolicy: {{ .Values.piper.image.pullPolicy }}
           args:
-            - --model
-            - {{ .Values.whisper.model | quote }}
-            {{- with .Values.whisper.extraArgs }}
+            - --voice
+            - {{ .Values.piper.voice | quote }}
+            {{- with .Values.piper.extraArgs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           volumeMounts:
             - mountPath: /data
               name: data
           ports:
-            # wyoming-whisper's entrypoint always binds tcp://0.0.0.0:10300; override via
-            # whisper.extraArgs (e.g. "--uri", "tcp://0.0.0.0:9999") if you need a different port
-            - name: whisper
-              containerPort: 10300
+            # wyoming-piper's entrypoint always binds tcp://0.0.0.0:10200; override via
+            # piper.extraArgs (e.g. "--uri", "tcp://0.0.0.0:9999") if you need a different port
+            - name: piper
+              containerPort: 10200
               protocol: TCP
           resources:
-            {{- toYaml .Values.whisper.resources | nindent 12 }}
+            {{- toYaml .Values.piper.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -6,9 +6,11 @@ replicaCount: 1
 strategy: RollingUpdate
 
 image:
+  # -- Home Assistant image repository
   repository: homeassistant/home-assistant
+  # -- Image pull policy
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
+  # -- Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
 imagePullSecrets: []
@@ -16,14 +18,15 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
+  # -- Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
+  # -- The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# -- Annotations to add to the Home Assistant pod
 podAnnotations: {}
 
 podSecurityContext: {}
@@ -43,7 +46,9 @@ homeAssistant:
     volumeName: ""
 
 service:
+  # -- Kubernetes Service type used to expose Home Assistant
   type: ClusterIP
+  # -- Service port. Also used as the backend port by the ingress and httpRoute
   port: 8123
 
 # -- Enables host networking (so that home assistant can scan devices automatically on the same network). If set to false, you might want to amend dnsPolicy value as well
@@ -53,18 +58,42 @@ hostNetwork: true
 dnsPolicy: ClusterFirstWithHostNet
 
 ingress:
+  # -- Expose Home Assistant via a classic Ingress resource. Mutually exclusive with httpRoute.enabled
   enabled: false
+  # -- IngressClass to use, e.g. "nginx". Leave empty to use the cluster's default IngressClass
   className: ""
+  # -- Annotations to add to the Ingress, e.g. ingress-controller-specific annotations such as nginx.ingress.kubernetes.io/*
   annotations: {}
+  # -- Host/path rules routed to the Home Assistant service
   hosts:
     - host: chart-example.local
       paths:
         - path: /
           pathType: ImplementationSpecific
+  # -- TLS configuration for the Ingress
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+httpRoute:
+  # -- Expose Home Assistant via a Gateway API HTTPRoute instead of an Ingress. Requires the Gateway API CRDs and a Gateway to already exist in the cluster. Mutually exclusive with ingress.enabled
+  enabled: false
+  # -- Annotations to add to the HTTPRoute
+  annotations: {}
+  # -- Additional labels to add to the HTTPRoute
+  labels: {}
+  # -- References to the Gateway(s) this route attaches to
+  parentRefs:
+    - name: ""
+      # namespace: gateway-system
+      # sectionName: https
+  # -- Hostnames the route matches. Leave empty to match all hostnames on the parent Gateway listener(s)
+  hostnames: []
+  # -- Path matches routed to the Home Assistant service
+  matches:
+    - path: /
+      pathType: PathPrefix
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -85,67 +114,172 @@ tolerations: []
 affinity: {}
 
 persistence:
+  # -- StorageClass to request for the Home Assistant config PVC. Leave empty to use the cluster's default StorageClass
   storageClass: ""
+  # -- Use an existing PVC instead of creating one. Leave empty to let the chart create it
   existingClaim: ""
+  # -- Enable persistence for the Home Assistant config directory
   enabled: true
+  # -- Access mode for the Home Assistant config PVC
   accessMode: ReadWriteOnce
+  # -- Size of the Home Assistant config PVC
   size: 5Gi
-  # if you need any additional volumes, you can define them here
+  # -- Additional volumes to add to the Home Assistant pod
   additionalVolumes: []
-  # if you need any additional volume mounts, you can define them here
+  # -- Additional volume mounts to add to the Home Assistant container
   additionalMounts: []
 
 vscode:
+  # -- Run a code-server (VS Code in the browser) sidecar for editing the Home Assistant config directory
   enabled: false
   image:
+    # -- code-server image repository
     repository: codercom/code-server
+    # -- code-server image tag
     tag: 4.11.0
+    # -- code-server image pull policy
     pullPolicy: IfNotPresent
+  # -- Path to the Home Assistant config directory, mounted into the code-server container
   hassConfig: /config
+  # -- Path to code-server's own settings/extensions directory, inside hassConfig
   vscodePath: /config/.vscode
+  # -- Additional environment variables for the code-server container
   extraEnv: {}
 
   ingress:
+    # -- Expose code-server via an Ingress
     enabled: false
+    # -- Annotations to add to the code-server Ingress
     annotations: {}
+    # -- Path routed to the code-server service
     path: /
+    # -- Hosts routed to the code-server service
     hosts:
       - home-assistant.local
+    # -- TLS configuration for the code-server Ingress
     tls: []
       # - secretName: home-assistant-tls
       #   hosts:
       #     - home-assistant.local
   service:
+    # -- Kubernetes Service type used to expose code-server
     type: ClusterIP
+    # -- code-server service port
     port: 80
+    # -- Annotations to add to the code-server Service
     annotations: {}
+    # -- Additional labels to add to the code-server Service
     labels: {}
+    # -- Static ClusterIP to request for the code-server Service
     clusterIP: ""
     ## List of IP addresses at which the hass-vscode service is available
     ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
     ##
+    # -- External IPs for the code-server Service
     externalIPs: []
+    # -- LoadBalancer IP to request, when service.type is LoadBalancer
     loadBalancerIP: ""
+    # -- Source ranges allowed to reach the code-server Service, when service.type is LoadBalancer
     loadBalancerSourceRanges: []
     # nodePort: 30000
 
+
+whisper:
+  # -- Deploy a wyoming-whisper speech-to-text service alongside Home Assistant. Add it in Home Assistant via Settings > Devices & Services > Add Integration > Wyoming Protocol, pointing at the whisper Service on its port
+  enabled: false
+  image:
+    # -- wyoming-whisper image repository
+    repository: rhasspy/wyoming-whisper
+    # -- wyoming-whisper image tag
+    tag: "3.5.0"
+    # -- wyoming-whisper image pull policy
+    pullPolicy: IfNotPresent
+  # -- Whisper model to load. See https://github.com/rhasspy/wyoming-whisper#models
+  model: small
+  # -- Additional command-line arguments passed to wyoming-whisper
+  extraArgs: []
+  service:
+    # -- Kubernetes Service type used to expose whisper
+    type: ClusterIP
+    # -- whisper service port
+    port: 10300
+  persistence:
+    # -- Persist the whisper model cache across restarts
+    enabled: true
+    # -- StorageClass to request for the whisper PVC. Leave empty to use the cluster's default StorageClass
+    storageClass: ""
+    # -- Use an existing PVC instead of creating one. Leave empty to let the chart create it
+    existingClaim: ""
+    # -- Access mode for the whisper PVC
+    accessMode: ReadWriteOnce
+    # -- Size of the whisper PVC
+    size: 2Gi
+  # -- Resource requests/limits for the whisper container
+  resources: {}
+  # -- Annotations to add to the whisper pod
+  podAnnotations: {}
+
+piper:
+  # -- Deploy a wyoming-piper text-to-speech service alongside Home Assistant. Add it in Home Assistant via Settings > Devices & Services > Add Integration > Wyoming Protocol, pointing at the piper Service on its port
+  enabled: false
+  image:
+    # -- wyoming-piper image repository
+    repository: rhasspy/wyoming-piper
+    # -- wyoming-piper image tag
+    tag: "2.3.1"
+    # -- wyoming-piper image pull policy
+    pullPolicy: IfNotPresent
+  # -- Piper voice to load, e.g. en_US-lessac-medium. See https://github.com/rhasspy/piper/blob/master/VOICES.md
+  voice: en_US-lessac-medium
+  # -- Additional command-line arguments passed to wyoming-piper
+  extraArgs: []
+  service:
+    # -- Kubernetes Service type used to expose piper
+    type: ClusterIP
+    # -- piper service port
+    port: 10200
+  persistence:
+    # -- Persist the piper voice cache across restarts
+    enabled: true
+    # -- StorageClass to request for the piper PVC. Leave empty to use the cluster's default StorageClass
+    storageClass: ""
+    # -- Use an existing PVC instead of creating one. Leave empty to let the chart create it
+    existingClaim: ""
+    # -- Access mode for the piper PVC
+    accessMode: ReadWriteOnce
+    # -- Size of the piper PVC
+    size: 1Gi
+  # -- Resource requests/limits for the piper container
+  resources: {}
+  # -- Annotations to add to the piper pod
+  podAnnotations: {}
 
 # -- Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. Must be set to a real connection string.
 hadbconfig: ""
 
 config:
   recorder:
+    # -- Number of days of history to keep in the recorder database. See https://www.home-assistant.io/integrations/recorder/
     purge_keep_days: 30
   http:
+    # -- Trust the X-Forwarded-For header from trusted_proxies. See https://www.home-assistant.io/integrations/http/
     use_x_forwarded_for: false
+    # -- CIDR ranges of reverse proxies trusted to set X-Forwarded-For/X-Forwarded-Proto
     trusted_proxies: []
       # - 192.168.0.0/22
       # - 10.42.0.0/24
       # - 10.42.1.0/24
+    # -- Ban IPs after too many failed login attempts
     ip_ban_enabled: false
+    # -- Number of failed login attempts before an IP is banned
     login_attempts_threshold: 5
+  # -- Rendered into configmap-scripts.yaml as Home Assistant's scripts.yaml. See https://www.home-assistant.io/docs/scripts/
   scripts: {}
+  # -- Rendered into configmap-automations.yaml as Home Assistant's automations.yaml. See https://www.home-assistant.io/docs/automation/yaml/
   automations: {}
+  # -- Rendered into configmap-blueprints.yaml as Home Assistant blueprints. See https://www.home-assistant.io/docs/automation/using_blueprints/
   blueprints: {}
+  # -- Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config
   telegram_bot: []
+  # -- Rendered into configmap-notify.yaml as Home Assistant's notify platform config
   notify: []

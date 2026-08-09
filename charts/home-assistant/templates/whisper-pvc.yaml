@@ -1,30 +1,17 @@
-{{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
-kind: PersistentVolumeClaim
+{{- if and .Values.whisper.enabled .Values.whisper.persistence.enabled (not .Values.whisper.persistence.existingClaim) }}
 apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
-  name: whisper
+  name: {{ include "home-assistant.whisperFullname" . }}
   labels:
-    {{- include "home-assistant.labels" . | nindent 4 }}
+    {{- include "home-assistant.labelsWhisper" . | nindent 4 }}
 spec:
   accessModes:
-    - {{ .Values.persistence.accessMode | quote }}
-  {{- if .Values.persistence.storageClass }}
-  storageClassName: {{ .Values.persistence.storageClass | quote }}
+    - {{ .Values.whisper.persistence.accessMode | quote }}
+  {{- if .Values.whisper.persistence.storageClass }}
+  storageClassName: {{ .Values.whisper.persistence.storageClass | quote }}
   {{- end }}
   resources:
     requests:
-      storage: 2Gi
-  {{- end }}
-
-# ---
-# kind: PersistentVolumeClaim
-# apiVersion: v1
-# metadata:
-#   name: whisper
-# spec:
-#   accessModes:
-#     - ReadWriteOnce
-#   resources:
-#     requests:
-#       storage: 2Gi
-#   volumeMode: Filesystem
+      storage: {{ .Values.whisper.persistence.size | quote }}
+{{- end }}

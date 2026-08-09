@@ -5,7 +5,7 @@ HomeAssistant is an open source home automation that puts local control and priv
 Powered by a worldwide community of tinkerers and DIY enthusiasts.
 Perfect to run on a Raspberry Pi or a local server..
 
-![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2023.11.1](https://img.shields.io/badge/AppVersion-2023.11.1-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
 
 ## Installing the Chart
 
@@ -18,19 +18,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/home-assistant --version 0.2.1
+$ helm install my-release newbenji-charts/home-assistant --version 0.3.0
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.1
+$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.3.0
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.1
+$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.3.0
 ```
 
 ## Values
@@ -38,73 +38,107 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.1
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| config.automations | object | `{}` |  |
-| config.blueprints | object | `{}` |  |
-| config.http.ip_ban_enabled | bool | `false` |  |
-| config.http.login_attempts_threshold | int | `5` |  |
-| config.http.trusted_proxies | list | `[]` |  |
-| config.http.use_x_forwarded_for | bool | `false` |  |
-| config.notify | list | `[]` |  |
-| config.recorder.purge_keep_days | int | `30` |  |
-| config.scripts | object | `{}` |  |
-| config.telegram_bot | list | `[]` |  |
+| config.automations | object | `{}` | Rendered into configmap-automations.yaml as Home Assistant's automations.yaml. See https://www.home-assistant.io/docs/automation/yaml/ |
+| config.blueprints | object | `{}` | Rendered into configmap-blueprints.yaml as Home Assistant blueprints. See https://www.home-assistant.io/docs/automation/using_blueprints/ |
+| config.http.ip_ban_enabled | bool | `false` | Ban IPs after too many failed login attempts |
+| config.http.login_attempts_threshold | int | `5` | Number of failed login attempts before an IP is banned |
+| config.http.trusted_proxies | list | `[]` | CIDR ranges of reverse proxies trusted to set X-Forwarded-For/X-Forwarded-Proto |
+| config.http.use_x_forwarded_for | bool | `false` | Trust the X-Forwarded-For header from trusted_proxies. See https://www.home-assistant.io/integrations/http/ |
+| config.notify | list | `[]` | Rendered into configmap-notify.yaml as Home Assistant's notify platform config |
+| config.recorder.purge_keep_days | int | `30` | Number of days of history to keep in the recorder database. See https://www.home-assistant.io/integrations/recorder/ |
+| config.scripts | object | `{}` | Rendered into configmap-scripts.yaml as Home Assistant's scripts.yaml. See https://www.home-assistant.io/docs/scripts/ |
+| config.telegram_bot | list | `[]` | Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config |
 | dnsPolicy | string | `"ClusterFirstWithHostNet"` | Dns policy |
 | fullnameOverride | string | `""` |  |
 | hadbconfig | string | `""` | Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. Must be set to a real connection string. |
 | homeAssistant.persistence.volumeName | string | `""` | Bind the PVC to a specific pre-provisioned PersistentVolume by name. Leave empty to let the cluster's default provisioner handle it. |
 | hostNetwork | bool | `true` | Enables host networking (so that home assistant can scan devices automatically on the same network). If set to false, you might want to amend dnsPolicy value as well |
-| image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.repository | string | `"homeassistant/home-assistant"` |  |
-| image.tag | string | `""` |  |
+| httpRoute.annotations | object | `{}` | Annotations to add to the HTTPRoute |
+| httpRoute.enabled | bool | `false` | Expose Home Assistant via a Gateway API HTTPRoute instead of an Ingress. Requires the Gateway API CRDs and a Gateway to already exist in the cluster. Mutually exclusive with ingress.enabled |
+| httpRoute.hostnames | list | `[]` | Hostnames the route matches. Leave empty to match all hostnames on the parent Gateway listener(s) |
+| httpRoute.labels | object | `{}` | Additional labels to add to the HTTPRoute |
+| httpRoute.matches | list | `[{"path":"/","pathType":"PathPrefix"}]` | Path matches routed to the Home Assistant service |
+| httpRoute.parentRefs | list | `[{"name":""}]` | References to the Gateway(s) this route attaches to |
+| image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
+| image.repository | string | `"homeassistant/home-assistant"` | Home Assistant image repository |
+| image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` |  |
-| ingress.annotations | object | `{}` |  |
-| ingress.className | string | `""` |  |
-| ingress.enabled | bool | `false` |  |
-| ingress.hosts[0].host | string | `"chart-example.local"` |  |
-| ingress.hosts[0].paths[0].path | string | `"/"` |  |
-| ingress.hosts[0].paths[0].pathType | string | `"ImplementationSpecific"` |  |
-| ingress.tls | list | `[]` |  |
+| ingress.annotations | object | `{}` | Annotations to add to the Ingress, e.g. ingress-controller-specific annotations such as nginx.ingress.kubernetes.io/* |
+| ingress.className | string | `""` | IngressClass to use, e.g. "nginx". Leave empty to use the cluster's default IngressClass |
+| ingress.enabled | bool | `false` | Expose Home Assistant via a classic Ingress resource. Mutually exclusive with httpRoute.enabled |
+| ingress.hosts | list | `[{"host":"chart-example.local","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Host/path rules routed to the Home Assistant service |
+| ingress.tls | list | `[]` | TLS configuration for the Ingress |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
-| persistence.accessMode | string | `"ReadWriteOnce"` |  |
-| persistence.additionalMounts | list | `[]` |  |
-| persistence.additionalVolumes | list | `[]` |  |
-| persistence.enabled | bool | `true` |  |
-| persistence.existingClaim | string | `""` |  |
-| persistence.size | string | `"5Gi"` |  |
-| persistence.storageClass | string | `""` |  |
-| podAnnotations | object | `{}` |  |
+| persistence.accessMode | string | `"ReadWriteOnce"` | Access mode for the Home Assistant config PVC |
+| persistence.additionalMounts | list | `[]` | Additional volume mounts to add to the Home Assistant container |
+| persistence.additionalVolumes | list | `[]` | Additional volumes to add to the Home Assistant pod |
+| persistence.enabled | bool | `true` | Enable persistence for the Home Assistant config directory |
+| persistence.existingClaim | string | `""` | Use an existing PVC instead of creating one. Leave empty to let the chart create it |
+| persistence.size | string | `"5Gi"` | Size of the Home Assistant config PVC |
+| persistence.storageClass | string | `""` | StorageClass to request for the Home Assistant config PVC. Leave empty to use the cluster's default StorageClass |
+| piper.enabled | bool | `false` | Deploy a wyoming-piper text-to-speech service alongside Home Assistant. Add it in Home Assistant via Settings > Devices & Services > Add Integration > Wyoming Protocol, pointing at the piper Service on its port |
+| piper.extraArgs | list | `[]` | Additional command-line arguments passed to wyoming-piper |
+| piper.image.pullPolicy | string | `"IfNotPresent"` | wyoming-piper image pull policy |
+| piper.image.repository | string | `"rhasspy/wyoming-piper"` | wyoming-piper image repository |
+| piper.image.tag | string | `"2.3.1"` | wyoming-piper image tag |
+| piper.persistence.accessMode | string | `"ReadWriteOnce"` | Access mode for the piper PVC |
+| piper.persistence.enabled | bool | `true` | Persist the piper voice cache across restarts |
+| piper.persistence.existingClaim | string | `""` | Use an existing PVC instead of creating one. Leave empty to let the chart create it |
+| piper.persistence.size | string | `"1Gi"` | Size of the piper PVC |
+| piper.persistence.storageClass | string | `""` | StorageClass to request for the piper PVC. Leave empty to use the cluster's default StorageClass |
+| piper.podAnnotations | object | `{}` | Annotations to add to the piper pod |
+| piper.resources | object | `{}` | Resource requests/limits for the piper container |
+| piper.service.port | int | `10200` | piper service port |
+| piper.service.type | string | `"ClusterIP"` | Kubernetes Service type used to expose piper |
+| piper.voice | string | `"en_US-lessac-medium"` | Piper voice to load, e.g. en_US-lessac-medium. See https://github.com/rhasspy/piper/blob/master/VOICES.md |
+| podAnnotations | object | `{}` | Annotations to add to the Home Assistant pod |
 | podSecurityContext | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
-| service.port | int | `8123` |  |
-| service.type | string | `"ClusterIP"` |  |
-| serviceAccount.annotations | object | `{}` |  |
-| serviceAccount.create | bool | `true` |  |
-| serviceAccount.name | string | `""` |  |
+| service.port | int | `8123` | Service port. Also used as the backend port by the ingress and httpRoute |
+| service.type | string | `"ClusterIP"` | Kubernetes Service type used to expose Home Assistant |
+| serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
+| serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
+| serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
 | strategy | string | `"RollingUpdate"` |  |
 | tolerations | list | `[]` |  |
-| vscode.enabled | bool | `false` |  |
-| vscode.extraEnv | object | `{}` |  |
-| vscode.hassConfig | string | `"/config"` |  |
-| vscode.image.pullPolicy | string | `"IfNotPresent"` |  |
-| vscode.image.repository | string | `"codercom/code-server"` |  |
-| vscode.image.tag | string | `"4.11.0"` |  |
-| vscode.ingress.annotations | object | `{}` |  |
-| vscode.ingress.enabled | bool | `false` |  |
-| vscode.ingress.hosts[0] | string | `"home-assistant.local"` |  |
-| vscode.ingress.path | string | `"/"` |  |
-| vscode.ingress.tls | list | `[]` |  |
-| vscode.service.annotations | object | `{}` |  |
-| vscode.service.clusterIP | string | `""` |  |
-| vscode.service.externalIPs | list | `[]` |  |
-| vscode.service.labels | object | `{}` |  |
-| vscode.service.loadBalancerIP | string | `""` |  |
-| vscode.service.loadBalancerSourceRanges | list | `[]` |  |
-| vscode.service.port | int | `80` |  |
-| vscode.service.type | string | `"ClusterIP"` |  |
-| vscode.vscodePath | string | `"/config/.vscode"` |  |
+| vscode.enabled | bool | `false` | Run a code-server (VS Code in the browser) sidecar for editing the Home Assistant config directory |
+| vscode.extraEnv | object | `{}` | Additional environment variables for the code-server container |
+| vscode.hassConfig | string | `"/config"` | Path to the Home Assistant config directory, mounted into the code-server container |
+| vscode.image.pullPolicy | string | `"IfNotPresent"` | code-server image pull policy |
+| vscode.image.repository | string | `"codercom/code-server"` | code-server image repository |
+| vscode.image.tag | string | `"4.11.0"` | code-server image tag |
+| vscode.ingress.annotations | object | `{}` | Annotations to add to the code-server Ingress |
+| vscode.ingress.enabled | bool | `false` | Expose code-server via an Ingress |
+| vscode.ingress.hosts | list | `["home-assistant.local"]` | Hosts routed to the code-server service |
+| vscode.ingress.path | string | `"/"` | Path routed to the code-server service |
+| vscode.ingress.tls | list | `[]` | TLS configuration for the code-server Ingress |
+| vscode.service.annotations | object | `{}` | Annotations to add to the code-server Service |
+| vscode.service.clusterIP | string | `""` | Static ClusterIP to request for the code-server Service |
+| vscode.service.externalIPs | list | `[]` | External IPs for the code-server Service |
+| vscode.service.labels | object | `{}` | Additional labels to add to the code-server Service |
+| vscode.service.loadBalancerIP | string | `""` | LoadBalancer IP to request, when service.type is LoadBalancer |
+| vscode.service.loadBalancerSourceRanges | list | `[]` | Source ranges allowed to reach the code-server Service, when service.type is LoadBalancer |
+| vscode.service.port | int | `80` | code-server service port |
+| vscode.service.type | string | `"ClusterIP"` | Kubernetes Service type used to expose code-server |
+| vscode.vscodePath | string | `"/config/.vscode"` | Path to code-server's own settings/extensions directory, inside hassConfig |
+| whisper.enabled | bool | `false` | Deploy a wyoming-whisper speech-to-text service alongside Home Assistant. Add it in Home Assistant via Settings > Devices & Services > Add Integration > Wyoming Protocol, pointing at the whisper Service on its port |
+| whisper.extraArgs | list | `[]` | Additional command-line arguments passed to wyoming-whisper |
+| whisper.image.pullPolicy | string | `"IfNotPresent"` | wyoming-whisper image pull policy |
+| whisper.image.repository | string | `"rhasspy/wyoming-whisper"` | wyoming-whisper image repository |
+| whisper.image.tag | string | `"3.5.0"` | wyoming-whisper image tag |
+| whisper.model | string | `"small"` | Whisper model to load. See https://github.com/rhasspy/wyoming-whisper#models |
+| whisper.persistence.accessMode | string | `"ReadWriteOnce"` | Access mode for the whisper PVC |
+| whisper.persistence.enabled | bool | `true` | Persist the whisper model cache across restarts |
+| whisper.persistence.existingClaim | string | `""` | Use an existing PVC instead of creating one. Leave empty to let the chart create it |
+| whisper.persistence.size | string | `"2Gi"` | Size of the whisper PVC |
+| whisper.persistence.storageClass | string | `""` | StorageClass to request for the whisper PVC. Leave empty to use the cluster's default StorageClass |
+| whisper.podAnnotations | object | `{}` | Annotations to add to the whisper pod |
+| whisper.resources | object | `{}` | Resource requests/limits for the whisper container |
+| whisper.service.port | int | `10300` | whisper service port |
+| whisper.service.type | string | `"ClusterIP"` | Kubernetes Service type used to expose whisper |
 
 ## Values
 
@@ -132,7 +166,7 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.1
 {}
 </pre>
 </td>
-			<td></td>
+			<td>Rendered into configmap-automations.yaml as Home Assistant's automations.yaml. See https://www.home-assistant.io/docs/automation/yaml/</td>
 		</tr>
 		<tr>
 			<td>config.blueprints</td>
@@ -141,7 +175,7 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.1
 {}
 </pre>
 </td>
-			<td></td>
+			<td>Rendered into configmap-blueprints.yaml as Home Assistant blueprints. See https://www.home-assistant.io/docs/automation/using_blueprints/</td>
 		</tr>
 		<tr>
 			<td>config.http.ip_ban_enabled</td>
@@ -150,7 +184,7 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.1
 false
 </pre>
 </td>
-			<td></td>
+			<td>Ban IPs after too many failed login attempts</td>
 		</tr>
 		<tr>
 			<td>config.http.login_attempts_threshold</td>
@@ -159,7 +193,7 @@ false
 5
 </pre>
 </td>
-			<td></td>
+			<td>Number of failed login attempts before an IP is banned</td>
 		</tr>
 		<tr>
 			<td>config.http.trusted_proxies</td>
@@ -168,7 +202,7 @@ false
 []
 </pre>
 </td>
-			<td></td>
+			<td>CIDR ranges of reverse proxies trusted to set X-Forwarded-For/X-Forwarded-Proto</td>
 		</tr>
 		<tr>
 			<td>config.http.use_x_forwarded_for</td>
@@ -177,7 +211,7 @@ false
 false
 </pre>
 </td>
-			<td></td>
+			<td>Trust the X-Forwarded-For header from trusted_proxies. See https://www.home-assistant.io/integrations/http/</td>
 		</tr>
 		<tr>
 			<td>config.notify</td>
@@ -186,7 +220,7 @@ false
 []
 </pre>
 </td>
-			<td></td>
+			<td>Rendered into configmap-notify.yaml as Home Assistant's notify platform config</td>
 		</tr>
 		<tr>
 			<td>config.recorder.purge_keep_days</td>
@@ -195,7 +229,7 @@ false
 30
 </pre>
 </td>
-			<td></td>
+			<td>Number of days of history to keep in the recorder database. See https://www.home-assistant.io/integrations/recorder/</td>
 		</tr>
 		<tr>
 			<td>config.scripts</td>
@@ -204,7 +238,7 @@ false
 {}
 </pre>
 </td>
-			<td></td>
+			<td>Rendered into configmap-scripts.yaml as Home Assistant's scripts.yaml. See https://www.home-assistant.io/docs/scripts/</td>
 		</tr>
 		<tr>
 			<td>config.telegram_bot</td>
@@ -213,7 +247,7 @@ false
 []
 </pre>
 </td>
-			<td></td>
+			<td>Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config</td>
 		</tr>
 		<tr>
 			<td>dnsPolicy</td>
@@ -261,13 +295,76 @@ true
 			<td>Enables host networking (so that home assistant can scan devices automatically on the same network). If set to false, you might want to amend dnsPolicy value as well</td>
 		</tr>
 		<tr>
+			<td>httpRoute.annotations</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Annotations to add to the HTTPRoute</td>
+		</tr>
+		<tr>
+			<td>httpRoute.enabled</td>
+			<td>bool</td>
+			<td><pre lang="json">
+false
+</pre>
+</td>
+			<td>Expose Home Assistant via a Gateway API HTTPRoute instead of an Ingress. Requires the Gateway API CRDs and a Gateway to already exist in the cluster. Mutually exclusive with ingress.enabled</td>
+		</tr>
+		<tr>
+			<td>httpRoute.hostnames</td>
+			<td>list</td>
+			<td><pre lang="json">
+[]
+</pre>
+</td>
+			<td>Hostnames the route matches. Leave empty to match all hostnames on the parent Gateway listener(s)</td>
+		</tr>
+		<tr>
+			<td>httpRoute.labels</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Additional labels to add to the HTTPRoute</td>
+		</tr>
+		<tr>
+			<td>httpRoute.matches</td>
+			<td>list</td>
+			<td><pre lang="json">
+[
+  {
+    "path": "/",
+    "pathType": "PathPrefix"
+  }
+]
+</pre>
+</td>
+			<td>Path matches routed to the Home Assistant service</td>
+		</tr>
+		<tr>
+			<td>httpRoute.parentRefs</td>
+			<td>list</td>
+			<td><pre lang="json">
+[
+  {
+    "name": ""
+  }
+]
+</pre>
+</td>
+			<td>References to the Gateway(s) this route attaches to</td>
+		</tr>
+		<tr>
 			<td>image.pullPolicy</td>
 			<td>string</td>
 			<td><pre lang="json">
 "IfNotPresent"
 </pre>
 </td>
-			<td></td>
+			<td>Image pull policy</td>
 		</tr>
 		<tr>
 			<td>image.repository</td>
@@ -276,7 +373,7 @@ true
 "homeassistant/home-assistant"
 </pre>
 </td>
-			<td></td>
+			<td>Home Assistant image repository</td>
 		</tr>
 		<tr>
 			<td>image.tag</td>
@@ -285,7 +382,7 @@ true
 ""
 </pre>
 </td>
-			<td></td>
+			<td>Overrides the image tag whose default is the chart appVersion.</td>
 		</tr>
 		<tr>
 			<td>imagePullSecrets</td>
@@ -303,7 +400,7 @@ true
 {}
 </pre>
 </td>
-			<td></td>
+			<td>Annotations to add to the Ingress, e.g. ingress-controller-specific annotations such as nginx.ingress.kubernetes.io/*</td>
 		</tr>
 		<tr>
 			<td>ingress.className</td>
@@ -312,7 +409,7 @@ true
 ""
 </pre>
 </td>
-			<td></td>
+			<td>IngressClass to use, e.g. "nginx". Leave empty to use the cluster's default IngressClass</td>
 		</tr>
 		<tr>
 			<td>ingress.enabled</td>
@@ -321,34 +418,26 @@ true
 false
 </pre>
 </td>
-			<td></td>
+			<td>Expose Home Assistant via a classic Ingress resource. Mutually exclusive with httpRoute.enabled</td>
 		</tr>
 		<tr>
-			<td>ingress.hosts[0].host</td>
-			<td>string</td>
+			<td>ingress.hosts</td>
+			<td>list</td>
 			<td><pre lang="json">
-"chart-example.local"
+[
+  {
+    "host": "chart-example.local",
+    "paths": [
+      {
+        "path": "/",
+        "pathType": "ImplementationSpecific"
+      }
+    ]
+  }
+]
 </pre>
 </td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>ingress.hosts[0].paths[0].path</td>
-			<td>string</td>
-			<td><pre lang="json">
-"/"
-</pre>
-</td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>ingress.hosts[0].paths[0].pathType</td>
-			<td>string</td>
-			<td><pre lang="json">
-"ImplementationSpecific"
-</pre>
-</td>
-			<td></td>
+			<td>Host/path rules routed to the Home Assistant service</td>
 		</tr>
 		<tr>
 			<td>ingress.tls</td>
@@ -357,7 +446,7 @@ false
 []
 </pre>
 </td>
-			<td></td>
+			<td>TLS configuration for the Ingress</td>
 		</tr>
 		<tr>
 			<td>nameOverride</td>
@@ -384,7 +473,7 @@ false
 "ReadWriteOnce"
 </pre>
 </td>
-			<td></td>
+			<td>Access mode for the Home Assistant config PVC</td>
 		</tr>
 		<tr>
 			<td>persistence.additionalMounts</td>
@@ -393,7 +482,7 @@ false
 []
 </pre>
 </td>
-			<td></td>
+			<td>Additional volume mounts to add to the Home Assistant container</td>
 		</tr>
 		<tr>
 			<td>persistence.additionalVolumes</td>
@@ -402,7 +491,7 @@ false
 []
 </pre>
 </td>
-			<td></td>
+			<td>Additional volumes to add to the Home Assistant pod</td>
 		</tr>
 		<tr>
 			<td>persistence.enabled</td>
@@ -411,7 +500,7 @@ false
 true
 </pre>
 </td>
-			<td></td>
+			<td>Enable persistence for the Home Assistant config directory</td>
 		</tr>
 		<tr>
 			<td>persistence.existingClaim</td>
@@ -420,7 +509,7 @@ true
 ""
 </pre>
 </td>
-			<td></td>
+			<td>Use an existing PVC instead of creating one. Leave empty to let the chart create it</td>
 		</tr>
 		<tr>
 			<td>persistence.size</td>
@@ -429,7 +518,7 @@ true
 "5Gi"
 </pre>
 </td>
-			<td></td>
+			<td>Size of the Home Assistant config PVC</td>
 		</tr>
 		<tr>
 			<td>persistence.storageClass</td>
@@ -438,7 +527,142 @@ true
 ""
 </pre>
 </td>
-			<td></td>
+			<td>StorageClass to request for the Home Assistant config PVC. Leave empty to use the cluster's default StorageClass</td>
+		</tr>
+		<tr>
+			<td>piper.enabled</td>
+			<td>bool</td>
+			<td><pre lang="json">
+false
+</pre>
+</td>
+			<td>Deploy a wyoming-piper text-to-speech service alongside Home Assistant. Add it in Home Assistant via Settings > Devices & Services > Add Integration > Wyoming Protocol, pointing at the piper Service on its port</td>
+		</tr>
+		<tr>
+			<td>piper.extraArgs</td>
+			<td>list</td>
+			<td><pre lang="json">
+[]
+</pre>
+</td>
+			<td>Additional command-line arguments passed to wyoming-piper</td>
+		</tr>
+		<tr>
+			<td>piper.image.pullPolicy</td>
+			<td>string</td>
+			<td><pre lang="json">
+"IfNotPresent"
+</pre>
+</td>
+			<td>wyoming-piper image pull policy</td>
+		</tr>
+		<tr>
+			<td>piper.image.repository</td>
+			<td>string</td>
+			<td><pre lang="json">
+"rhasspy/wyoming-piper"
+</pre>
+</td>
+			<td>wyoming-piper image repository</td>
+		</tr>
+		<tr>
+			<td>piper.image.tag</td>
+			<td>string</td>
+			<td><pre lang="json">
+"2.3.1"
+</pre>
+</td>
+			<td>wyoming-piper image tag</td>
+		</tr>
+		<tr>
+			<td>piper.persistence.accessMode</td>
+			<td>string</td>
+			<td><pre lang="json">
+"ReadWriteOnce"
+</pre>
+</td>
+			<td>Access mode for the piper PVC</td>
+		</tr>
+		<tr>
+			<td>piper.persistence.enabled</td>
+			<td>bool</td>
+			<td><pre lang="json">
+true
+</pre>
+</td>
+			<td>Persist the piper voice cache across restarts</td>
+		</tr>
+		<tr>
+			<td>piper.persistence.existingClaim</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>Use an existing PVC instead of creating one. Leave empty to let the chart create it</td>
+		</tr>
+		<tr>
+			<td>piper.persistence.size</td>
+			<td>string</td>
+			<td><pre lang="json">
+"1Gi"
+</pre>
+</td>
+			<td>Size of the piper PVC</td>
+		</tr>
+		<tr>
+			<td>piper.persistence.storageClass</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>StorageClass to request for the piper PVC. Leave empty to use the cluster's default StorageClass</td>
+		</tr>
+		<tr>
+			<td>piper.podAnnotations</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Annotations to add to the piper pod</td>
+		</tr>
+		<tr>
+			<td>piper.resources</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Resource requests/limits for the piper container</td>
+		</tr>
+		<tr>
+			<td>piper.service.port</td>
+			<td>int</td>
+			<td><pre lang="json">
+10200
+</pre>
+</td>
+			<td>piper service port</td>
+		</tr>
+		<tr>
+			<td>piper.service.type</td>
+			<td>string</td>
+			<td><pre lang="json">
+"ClusterIP"
+</pre>
+</td>
+			<td>Kubernetes Service type used to expose piper</td>
+		</tr>
+		<tr>
+			<td>piper.voice</td>
+			<td>string</td>
+			<td><pre lang="json">
+"en_US-lessac-medium"
+</pre>
+</td>
+			<td>Piper voice to load, e.g. en_US-lessac-medium. See https://github.com/rhasspy/piper/blob/master/VOICES.md</td>
 		</tr>
 		<tr>
 			<td>podAnnotations</td>
@@ -447,7 +671,7 @@ true
 {}
 </pre>
 </td>
-			<td></td>
+			<td>Annotations to add to the Home Assistant pod</td>
 		</tr>
 		<tr>
 			<td>podSecurityContext</td>
@@ -492,7 +716,7 @@ true
 8123
 </pre>
 </td>
-			<td></td>
+			<td>Service port. Also used as the backend port by the ingress and httpRoute</td>
 		</tr>
 		<tr>
 			<td>service.type</td>
@@ -501,7 +725,7 @@ true
 "ClusterIP"
 </pre>
 </td>
-			<td></td>
+			<td>Kubernetes Service type used to expose Home Assistant</td>
 		</tr>
 		<tr>
 			<td>serviceAccount.annotations</td>
@@ -510,7 +734,7 @@ true
 {}
 </pre>
 </td>
-			<td></td>
+			<td>Annotations to add to the service account</td>
 		</tr>
 		<tr>
 			<td>serviceAccount.create</td>
@@ -519,7 +743,7 @@ true
 true
 </pre>
 </td>
-			<td></td>
+			<td>Specifies whether a service account should be created</td>
 		</tr>
 		<tr>
 			<td>serviceAccount.name</td>
@@ -528,7 +752,7 @@ true
 ""
 </pre>
 </td>
-			<td></td>
+			<td>The name of the service account to use. If not set and create is true, a name is generated using the fullname template</td>
 		</tr>
 		<tr>
 			<td>strategy</td>
@@ -555,7 +779,7 @@ true
 false
 </pre>
 </td>
-			<td></td>
+			<td>Run a code-server (VS Code in the browser) sidecar for editing the Home Assistant config directory</td>
 		</tr>
 		<tr>
 			<td>vscode.extraEnv</td>
@@ -564,7 +788,7 @@ false
 {}
 </pre>
 </td>
-			<td></td>
+			<td>Additional environment variables for the code-server container</td>
 		</tr>
 		<tr>
 			<td>vscode.hassConfig</td>
@@ -573,7 +797,7 @@ false
 "/config"
 </pre>
 </td>
-			<td></td>
+			<td>Path to the Home Assistant config directory, mounted into the code-server container</td>
 		</tr>
 		<tr>
 			<td>vscode.image.pullPolicy</td>
@@ -582,7 +806,7 @@ false
 "IfNotPresent"
 </pre>
 </td>
-			<td></td>
+			<td>code-server image pull policy</td>
 		</tr>
 		<tr>
 			<td>vscode.image.repository</td>
@@ -591,7 +815,7 @@ false
 "codercom/code-server"
 </pre>
 </td>
-			<td></td>
+			<td>code-server image repository</td>
 		</tr>
 		<tr>
 			<td>vscode.image.tag</td>
@@ -600,7 +824,7 @@ false
 "4.11.0"
 </pre>
 </td>
-			<td></td>
+			<td>code-server image tag</td>
 		</tr>
 		<tr>
 			<td>vscode.ingress.annotations</td>
@@ -609,7 +833,7 @@ false
 {}
 </pre>
 </td>
-			<td></td>
+			<td>Annotations to add to the code-server Ingress</td>
 		</tr>
 		<tr>
 			<td>vscode.ingress.enabled</td>
@@ -618,16 +842,18 @@ false
 false
 </pre>
 </td>
-			<td></td>
+			<td>Expose code-server via an Ingress</td>
 		</tr>
 		<tr>
-			<td>vscode.ingress.hosts[0]</td>
-			<td>string</td>
+			<td>vscode.ingress.hosts</td>
+			<td>list</td>
 			<td><pre lang="json">
-"home-assistant.local"
+[
+  "home-assistant.local"
+]
 </pre>
 </td>
-			<td></td>
+			<td>Hosts routed to the code-server service</td>
 		</tr>
 		<tr>
 			<td>vscode.ingress.path</td>
@@ -636,7 +862,7 @@ false
 "/"
 </pre>
 </td>
-			<td></td>
+			<td>Path routed to the code-server service</td>
 		</tr>
 		<tr>
 			<td>vscode.ingress.tls</td>
@@ -645,7 +871,7 @@ false
 []
 </pre>
 </td>
-			<td></td>
+			<td>TLS configuration for the code-server Ingress</td>
 		</tr>
 		<tr>
 			<td>vscode.service.annotations</td>
@@ -654,7 +880,7 @@ false
 {}
 </pre>
 </td>
-			<td></td>
+			<td>Annotations to add to the code-server Service</td>
 		</tr>
 		<tr>
 			<td>vscode.service.clusterIP</td>
@@ -663,7 +889,7 @@ false
 ""
 </pre>
 </td>
-			<td></td>
+			<td>Static ClusterIP to request for the code-server Service</td>
 		</tr>
 		<tr>
 			<td>vscode.service.externalIPs</td>
@@ -672,7 +898,7 @@ false
 []
 </pre>
 </td>
-			<td></td>
+			<td>External IPs for the code-server Service</td>
 		</tr>
 		<tr>
 			<td>vscode.service.labels</td>
@@ -681,7 +907,7 @@ false
 {}
 </pre>
 </td>
-			<td></td>
+			<td>Additional labels to add to the code-server Service</td>
 		</tr>
 		<tr>
 			<td>vscode.service.loadBalancerIP</td>
@@ -690,7 +916,7 @@ false
 ""
 </pre>
 </td>
-			<td></td>
+			<td>LoadBalancer IP to request, when service.type is LoadBalancer</td>
 		</tr>
 		<tr>
 			<td>vscode.service.loadBalancerSourceRanges</td>
@@ -699,7 +925,7 @@ false
 []
 </pre>
 </td>
-			<td></td>
+			<td>Source ranges allowed to reach the code-server Service, when service.type is LoadBalancer</td>
 		</tr>
 		<tr>
 			<td>vscode.service.port</td>
@@ -708,7 +934,7 @@ false
 80
 </pre>
 </td>
-			<td></td>
+			<td>code-server service port</td>
 		</tr>
 		<tr>
 			<td>vscode.service.type</td>
@@ -717,7 +943,7 @@ false
 "ClusterIP"
 </pre>
 </td>
-			<td></td>
+			<td>Kubernetes Service type used to expose code-server</td>
 		</tr>
 		<tr>
 			<td>vscode.vscodePath</td>
@@ -726,7 +952,142 @@ false
 "/config/.vscode"
 </pre>
 </td>
-			<td></td>
+			<td>Path to code-server's own settings/extensions directory, inside hassConfig</td>
+		</tr>
+		<tr>
+			<td>whisper.enabled</td>
+			<td>bool</td>
+			<td><pre lang="json">
+false
+</pre>
+</td>
+			<td>Deploy a wyoming-whisper speech-to-text service alongside Home Assistant. Add it in Home Assistant via Settings > Devices & Services > Add Integration > Wyoming Protocol, pointing at the whisper Service on its port</td>
+		</tr>
+		<tr>
+			<td>whisper.extraArgs</td>
+			<td>list</td>
+			<td><pre lang="json">
+[]
+</pre>
+</td>
+			<td>Additional command-line arguments passed to wyoming-whisper</td>
+		</tr>
+		<tr>
+			<td>whisper.image.pullPolicy</td>
+			<td>string</td>
+			<td><pre lang="json">
+"IfNotPresent"
+</pre>
+</td>
+			<td>wyoming-whisper image pull policy</td>
+		</tr>
+		<tr>
+			<td>whisper.image.repository</td>
+			<td>string</td>
+			<td><pre lang="json">
+"rhasspy/wyoming-whisper"
+</pre>
+</td>
+			<td>wyoming-whisper image repository</td>
+		</tr>
+		<tr>
+			<td>whisper.image.tag</td>
+			<td>string</td>
+			<td><pre lang="json">
+"3.5.0"
+</pre>
+</td>
+			<td>wyoming-whisper image tag</td>
+		</tr>
+		<tr>
+			<td>whisper.model</td>
+			<td>string</td>
+			<td><pre lang="json">
+"small"
+</pre>
+</td>
+			<td>Whisper model to load. See https://github.com/rhasspy/wyoming-whisper#models</td>
+		</tr>
+		<tr>
+			<td>whisper.persistence.accessMode</td>
+			<td>string</td>
+			<td><pre lang="json">
+"ReadWriteOnce"
+</pre>
+</td>
+			<td>Access mode for the whisper PVC</td>
+		</tr>
+		<tr>
+			<td>whisper.persistence.enabled</td>
+			<td>bool</td>
+			<td><pre lang="json">
+true
+</pre>
+</td>
+			<td>Persist the whisper model cache across restarts</td>
+		</tr>
+		<tr>
+			<td>whisper.persistence.existingClaim</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>Use an existing PVC instead of creating one. Leave empty to let the chart create it</td>
+		</tr>
+		<tr>
+			<td>whisper.persistence.size</td>
+			<td>string</td>
+			<td><pre lang="json">
+"2Gi"
+</pre>
+</td>
+			<td>Size of the whisper PVC</td>
+		</tr>
+		<tr>
+			<td>whisper.persistence.storageClass</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>StorageClass to request for the whisper PVC. Leave empty to use the cluster's default StorageClass</td>
+		</tr>
+		<tr>
+			<td>whisper.podAnnotations</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Annotations to add to the whisper pod</td>
+		</tr>
+		<tr>
+			<td>whisper.resources</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Resource requests/limits for the whisper container</td>
+		</tr>
+		<tr>
+			<td>whisper.service.port</td>
+			<td>int</td>
+			<td><pre lang="json">
+10300
+</pre>
+</td>
+			<td>whisper service port</td>
+		</tr>
+		<tr>
+			<td>whisper.service.type</td>
+			<td>string</td>
+			<td><pre lang="json">
+"ClusterIP"
+</pre>
+</td>
+			<td>Kubernetes Service type used to expose whisper</td>
 		</tr>
 	</tbody>
 </table>
