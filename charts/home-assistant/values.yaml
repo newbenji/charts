@@ -147,3 +147,5 @@ config:
   scripts: {}
   automations: {}
   blueprints: {}
+  telegram_bot: []
+  notify: []

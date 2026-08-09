@@ -5,7 +5,7 @@ HomeAssistant is an open source home automation that puts local control and priv
 Powered by a worldwide community of tinkerers and DIY enthusiasts.
 Perfect to run on a Raspberry Pi or a local server..
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2023.11.1](https://img.shields.io/badge/AppVersion-2023.11.1-informational?style=flat-square)
+![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2023.11.1](https://img.shields.io/badge/AppVersion-2023.11.1-informational?style=flat-square)
 
 ## Installing the Chart
 
@@ -18,19 +18,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/home-assistant --version 0.2.0
+$ helm install my-release newbenji-charts/home-assistant --version 0.2.1
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.0
+$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.1
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.0
+$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.1
 ```
 
 ## Values
@@ -44,8 +44,10 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.0
 | config.http.login_attempts_threshold | int | `5` |  |
 | config.http.trusted_proxies | list | `[]` |  |
 | config.http.use_x_forwarded_for | bool | `false` |  |
+| config.notify | list | `[]` |  |
 | config.recorder.purge_keep_days | int | `30` |  |
 | config.scripts | object | `{}` |  |
+| config.telegram_bot | list | `[]` |  |
 | dnsPolicy | string | `"ClusterFirstWithHostNet"` | Dns policy |
 | fullnameOverride | string | `""` |  |
 | hadbconfig | string | `""` | Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. Must be set to a real connection string. |
@@ -178,6 +180,15 @@ false
 			<td></td>
 		</tr>
 		<tr>
+			<td>config.notify</td>
+			<td>list</td>
+			<td><pre lang="json">
+[]
+</pre>
+</td>
+			<td></td>
+		</tr>
+		<tr>
 			<td>config.recorder.purge_keep_days</td>
 			<td>int</td>
 			<td><pre lang="json">
@@ -191,6 +202,15 @@ false
 			<td>object</td>
 			<td><pre lang="json">
 {}
+</pre>
+</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>config.telegram_bot</td>
+			<td>list</td>
+			<td><pre lang="json">
+[]
 </pre>
 </td>
 			<td></td>
