@@ -1,9 +1,19 @@
-{{ define "chart.ociInstall" -}}
+{{ define "chart.install" -}}
 ## Installing the Chart
 
-This chart is published as an OCI artifact to the GitHub Container Registry.
+This chart is published two ways: as a classic Helm repo via GitHub Pages
+(releases only), and as an OCI artifact via the GitHub Container Registry
+(releases and alpha builds).
 
-To install it with the release name `my-release`:
+Via the classic repo:
+
+```console
+$ helm repo add newbenji-charts https://newbenji.github.io/charts/
+$ helm repo update
+$ helm install my-release newbenji-charts/{{ template "chart.name" . }} --version {{ template "chart.version" . }}
+```
+
+Via OCI:
 
 ```console
 $ helm install my-release oci://ghcr.io/newbenji/charts/{{ template "chart.name" . }} --version {{ template "chart.version" . }}
