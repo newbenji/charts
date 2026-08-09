@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-notify
+  labels:
+    app.kubernetes.io/name: {{ include "home-assistant.name" . }}
+    helm.sh/chart: {{ include "home-assistant.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  notify.yaml: | {{ include "home-assistant.notify" . | nindent 4 }}

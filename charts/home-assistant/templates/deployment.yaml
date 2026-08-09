@@ -50,6 +50,12 @@ spec:
         - name: config-scripts
           configMap:
             name: config-scripts
+        - name: config-telegram-bot
+          configMap:
+            name: config-telegram-bot
+        - name: config-notify
+          configMap:
+            name: config-notify
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -70,6 +76,14 @@ spec:
               readOnly: true
             - name: config-scripts
               mountPath: /config/scripts
+              readOnly: true
+            - name: config-telegram-bot
+              mountPath: /config/telegram_bot.yaml
+              subPath: telegram_bot.yaml
+              readOnly: true
+            - name: config-notify
+              mountPath: /config/notify.yaml
+              subPath: notify.yaml
               readOnly: true
           ports:
             - name: http

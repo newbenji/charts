@@ -89,6 +89,16 @@ db_url: !secret hadbconfig
 {{ end }}
 
 
+{{- define "home-assistant.telegram_bot" -}}
+{{ .Values.config.telegram_bot | toYaml | indent 0 }}
+{{ end }}
+
+
+{{- define "home-assistant.notify" -}}
+{{ .Values.config.notify | toYaml | indent 0 }}
+{{ end }}
+
+
 {{- define "home-assistant.scripts" -}}
 # This file is created by the helmchart.
 # See config.scripts in values.yaml

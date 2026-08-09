@@ -5,7 +5,7 @@ description: |
   Powered by a worldwide community of tinkerers and DIY enthusiasts.
   Perfect to run on a Raspberry Pi or a local server..
 type: application
-version: 0.2.0
+version: 0.2.1
 appVersion: "2023.11.1"
 icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
 keywords:
@@ -14,9 +14,7 @@ keywords:
   - smart home
 annotations:
   artifacthub.io/changes: |
-    - "[Removed] Dropped unused postgresql.connection value (contained a stale credential)"
-    - "[Fixed] config.blueprints was misspelled as bluepritns and never applied"
-    - "[Changed] homeAssistant.persistence.volumeName and hadbconfig now default to empty instead of environment-specific placeholders"
+    - "[Changed] Documented GitHub Pages helm repo add alongside OCI in README"
   artifacthub.io/images: |
     - name: home-assistant
       image: homeassistant/home-assistant
