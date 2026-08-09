@@ -145,8 +145,16 @@ jobs:
 
   build-and-publish:
     needs: [detect-changed-folders, validate-charts, update-docs]
+    # update-docs only runs on a merged PR (see its own `if`), so it's always
+    # "skipped" on a plain push - the default implicit `success()` treats
+    # that skip as "not successful" and would skip this job too. `!cancelled()`
+    # opts out of that implicit check; validate-charts/update-docs results are
+    # then checked explicitly instead.
     if: >
+      !cancelled() &&
       needs.detect-changed-folders.outputs.has_changes == 'true' &&
+      needs.validate-charts.result == 'success' &&
+      needs.update-docs.result != 'failure' &&
       (github.event_name == 'push' || github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     permissions:
