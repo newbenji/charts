@@ -107,29 +107,26 @@ jobs:
             helm lint -f values.yaml . --with-subcharts
           fi
 
-  # Docs are regenerated after merge. main's ruleset requires a pull request
-  # for every change, and (unlike an org-owned repo) a personal repo's
-  # ruleset can't grant the GitHub Actions app a bypass for that rule - so
-  # this can't push straight to main. Instead it opens a small PR with the
-  # regenerated READMEs for a human to merge (bypassing review, as the owner
-  # already can). This is intentionally decoupled from build-and-publish
-  # below - chart releases don't wait on this PR being merged.
-  update-docs:
+  # Docs are regenerated on the feature branch itself, on every push (a
+  # feature branch has no ruleset, so - unlike main - GITHUB_TOKEN can just
+  # push straight to it). By the time a PR is opened or merged, the README is
+  # already correct and part of the same diff - no separate post-merge PR
+  # needed. `[skip ci]` on the commit stops it from retriggering this same
+  # workflow (the retrigger would just find no further diff and commit
+  # nothing, but would still burn a redundant lint+alpha-build cycle first).
+  #
+  # This only works for branches pushed to this repo directly - a fork PR's
+  # GITHUB_TOKEN is read-only here, so it can't push back to the fork. See
+  # check-docs below for the fork case.
+  regenerate-docs:
     needs: [detect-changed-folders, validate-charts]
-    if: >
-      github.event_name == 'pull_request' &&
-      github.event.action == 'closed' &&
-      github.event.pull_request.merged == true &&
-      needs.detect-changed-folders.outputs.has_changes == 'true'
+    if: github.event_name == 'push' && needs.detect-changed-folders.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-        with:
-          ref: main
 
       # chart-search-root is the repo root (not the individual changed chart)
       # because helm-docs resolves a `./`-prefixed shared template file
@@ -146,15 +143,37 @@ jobs:
           git-push: false
           fail-on-diff: false
 
-      - name: Open docs PR
-        uses: peter-evans/create-pull-request@v7
+      - name: Commit regenerated docs
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit-message: "docs: regenerate chart READMEs"
-          title: "docs: regenerate chart READMEs"
-          body: Automated helm-docs regeneration, triggered by the chart change in #${{ github.event.pull_request.number }}.
-          branch: docs/update-readmes
-          delete-branch: true
-          base: main
+          commit_message: "docs: regenerate chart READMEs [skip ci]"
+          file_pattern: "charts/**/README.md"
+
+  # Safety net for pull requests from forks: regenerate-docs above can't push
+  # back to a fork, so this just fails the check instead, flagging a stale
+  # README on the PR. It doesn't block merging - the main ruleset has no
+  # required-status-check rule - but it's visible to a reviewer.
+  check-docs:
+    needs: [detect-changed-folders, validate-charts]
+    if: >
+      github.event_name == 'pull_request' &&
+      github.event.action != 'closed' &&
+      needs.detect-changed-folders.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: helm-docs
+        uses: losisin/helm-docs-github-action@v2
+        with:
+          chart-search-root: .
+          output-file: README.md
+          template-files: ./_templates.gotmpl,README.md.gotmpl
+          git-push: false
+          fail-on-diff: true
 
   build-and-publish:
     needs: [detect-changed-folders, validate-charts]
