@@ -1,5 +1,57 @@
 apiVersion: v1
 entries:
+  frigate:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed] Forked from blakeblackshear/blakeshome-charts (unmaintained since 2025-11), to be maintained and improved here going forward"
+        - "[Fixed] go2rtc admin service port (1984) was routed to the wrong container port (webrtc-tcp instead of go2rtc-admin)"
+        - "[Fixed] liveness/readiness/startup probes hit the full web UI (/) instead of a lightweight endpoint (/api/)"
+        - "[Fixed] resources.limits.nvidia.com/gpu was rendered as a YAML int instead of the string Kubernetes' Quantity type expects"
+        - "[Fixed] RSTP typos (frigate-rstp-credentials, FRIGATE_RSTP_USERNAME) corrected to RTSP"
+        - "[Fixed] stale amd64nvidia/Docker-Hub image tagging guidance replaced with current GHCR-based tagging"
+        - "[Changed] Bumped default appVersion to 0.17.2 (was stuck on 0.14.1)"
+        - "[Added] Configurable ingress pathType per host path (was hardcoded to ImplementationSpecific)"
+        - "[Added] Gateway API HTTPRoute support as an alternative to Ingress"
+        - "[Added] priorityClassName support"
+        - "[Added] Optional dnsConfig passthrough"
+        - "[Added] config accepts a native YAML map in addition to a string"
+        - "[Added] persistence.config.seedOnly to seed config.yml once and let Frigate's UI own it afterward, instead of always overwriting it from the ConfigMap"
+      artifacthub.io/images: |
+        - name: frigate
+          image: ghcr.io/blakeblackshear/frigate
+      artifacthub.io/links: |
+        - name: Frigate source repo
+          url: https://github.com/blakeblackshear/frigate
+        - name: Upstream chart (blakeshome-charts)
+          url: https://github.com/blakeblackshear/blakeshome-charts
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 0.17.2
+    created: "2026-08-09T10:12:58.539186646Z"
+    description: NVR With Realtime Object Detection for IP Cameras
+    digest: acd051c83d8621a1ffc6c1e82e1533e3a380c13849ffc3525aa3102d47b181fe
+    home: https://github.com/newbenji/charts/tree/main/charts/frigate
+    icon: https://github.com/blakeblackshear/frigate/blob/master/docs/static/img/frigate.png
+    keywords:
+    - tensorflow
+    - coral
+    - ml
+    maintainers:
+    - email: blakeb@blakeshome.com
+      name: blakeblackshear
+    - email: jeff@billimek.com
+      name: billimek
+    - email: benji@newbenji.dk
+      name: newbenji
+    name: frigate
+    sources:
+    - https://github.com/blakeblackshear/frigate
+    - https://github.com/blakeblackshear/blakeshome-charts
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/frigate-7.10.0/frigate-7.10.0.tgz
+    version: 7.10.0
   home-assistant:
   - annotations:
       artifacthub.io/changes: |
@@ -63,4 +115,4 @@ entries:
     urls:
     - https://github.com/newbenji/charts/releases/download/home-assistant-0.2.1/home-assistant-0.2.1.tgz
     version: 0.2.1
-generated: "2026-08-09T08:28:07.158857925Z"
+generated: "2026-08-09T10:12:58.539195282Z"
