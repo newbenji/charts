@@ -265,3 +265,20 @@ config:
   telegram_bot: []
   # -- Rendered into configmap-notify.yaml as Home Assistant's notify platform config
   notify: []
+
+# -- Additional arbitrary Kubernetes manifests to render alongside the chart, e.g. an ExternalSecret or a NetworkPolicy. Each entry is either a map (rendered via toYaml) or a string (rendered as-is); both are passed through tpl, so release/values templating works inside them
+extraManifests: []
+# - apiVersion: external-secrets.io/v1beta1
+#   kind: ExternalSecret
+#   metadata:
+#     name: home-assistant-secrets
+#   spec:
+#     secretStoreRef:
+#       name: my-secret-store
+#       kind: ClusterSecretStore
+#     target:
+#       name: home-assistant-secrets
+#     data:
+#       - secretKey: hadbconfig
+#         remoteRef:
+#           key: home-assistant/hadbconfig

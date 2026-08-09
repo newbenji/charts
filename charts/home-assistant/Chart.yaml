@@ -20,6 +20,7 @@ annotations:
     - "[Fixed] vscode sidecar: fixed the default port (was 80, unusable by the non-root code-server user), wired up the password and resources values that templates already referenced but values.yaml never defined, and removed the vscode.ingress/vscode.service.* fields that had no template backing them"
     - "[Changed] Bumped default code-server image to 4.131.0"
     - "[Added] extraContainerPorts to open additional ports (optionally a contiguous range) on the Home Assistant container"
+    - "[Added] extraManifests to render arbitrary additional Kubernetes manifests alongside the chart (e.g. an ExternalSecret)"
   artifacthub.io/images: |
     - name: home-assistant
       image: homeassistant/home-assistant
