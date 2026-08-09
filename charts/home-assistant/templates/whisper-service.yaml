@@ -1,15 +1,17 @@
----
+{{- if .Values.whisper.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: whisper
+  name: {{ include "home-assistant.whisperFullname" . }}
   labels:
-
+    {{- include "home-assistant.labelsWhisper" . | nindent 4 }}
 spec:
+  type: {{ .Values.whisper.service.type }}
+  ports:
+    - port: {{ .Values.whisper.service.port }}
+      targetPort: whisper
+      protocol: TCP
+      name: whisper
   selector:
     {{- include "home-assistant.selectorLabelsWhisper" . | nindent 4 }}
-  type: ClusterIP
-  ports:
-    - protocol: TCP
-      port: 10300
-      targetPort: whisper
+{{- end }}

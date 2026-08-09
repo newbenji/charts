@@ -1,0 +1,27 @@
+Home Assistant has been deployed.
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else if .Values.httpRoute.enabled }}
+  Reachable through the Gateway(s) referenced in httpRoute.parentRefs.
+{{- else }}
+  It has not been exposed via ingress or httpRoute. To access it locally, run:
+    kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "home-assistant.fullname" . }} 8123:{{ .Values.service.port }}
+{{- end }}
+
+{{- if .Values.whisper.enabled }}
+
+A wyoming-whisper speech-to-text service is running at:
+  {{ include "home-assistant.whisperFullname" . }}:{{ .Values.whisper.service.port }}
+
+Add it to Home Assistant via Settings > Devices & Services > Add Integration > Wyoming Protocol.
+{{- end }}
+
+{{- if .Values.piper.enabled }}
+
+A wyoming-piper text-to-speech service is running at:
+  {{ include "home-assistant.piperFullname" . }}:{{ .Values.piper.service.port }}
+
+Add it to Home Assistant via Settings > Devices & Services > Add Integration > Wyoming Protocol.
+{{- end }}

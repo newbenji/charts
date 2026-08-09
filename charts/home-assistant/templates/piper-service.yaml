@@ -1,0 +1,17 @@
+{{- if .Values.piper.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "home-assistant.piperFullname" . }}
+  labels:
+    {{- include "home-assistant.labelsPiper" . | nindent 4 }}
+spec:
+  type: {{ .Values.piper.service.type }}
+  ports:
+    - port: {{ .Values.piper.service.port }}
+      targetPort: piper
+      protocol: TCP
+      name: piper
+  selector:
+    {{- include "home-assistant.selectorLabelsPiper" . | nindent 4 }}
+{{- end }}

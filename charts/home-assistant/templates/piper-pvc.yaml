@@ -1,0 +1,17 @@
+{{- if and .Values.piper.enabled .Values.piper.persistence.enabled (not .Values.piper.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "home-assistant.piperFullname" . }}
+  labels:
+    {{- include "home-assistant.labelsPiper" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.piper.persistence.accessMode | quote }}
+  {{- if .Values.piper.persistence.storageClass }}
+  storageClassName: {{ .Values.piper.persistence.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.piper.persistence.size | quote }}
+{{- end }}

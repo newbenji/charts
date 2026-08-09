@@ -60,6 +60,53 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: whisper
 {{- end }}
 
+{{/*
+Whisper fullname
+*/}}
+{{- define "home-assistant.whisperFullname" -}}
+{{- printf "%s-whisper" (include "home-assistant.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Whisper labels
+*/}}
+{{- define "home-assistant.labelsWhisper" -}}
+helm.sh/chart: {{ include "home-assistant.chart" . }}
+{{ include "home-assistant.selectorLabelsWhisper" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "home-assistant.selectorLabelsPiper" -}}
+app.kubernetes.io/name: {{ include "home-assistant.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: piper
+{{- end }}
+
+{{/*
+Piper fullname
+*/}}
+{{- define "home-assistant.piperFullname" -}}
+{{- printf "%s-piper" (include "home-assistant.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Piper labels
+*/}}
+{{- define "home-assistant.labelsPiper" -}}
+helm.sh/chart: {{ include "home-assistant.chart" . }}
+{{ include "home-assistant.selectorLabelsPiper" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
 
 
 

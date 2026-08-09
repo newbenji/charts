@@ -16,9 +16,9 @@ spec:
       port: {{ .Values.vscode.service.port }}
       protocol: TCP
       targetPort: vscode
-      {{ if ( and ( eq .Values.vscode.service.type "NodePort" ) ( not ( empty .Values.vscode.service.nodePort))) }}
+      {{- if and (eq .Values.service.type "NodePort") .Values.vscode.service.nodePort }}
       nodePort: {{ .Values.vscode.service.nodePort }}
-      {{ end }}
+      {{- end }}
   {{- end }}
   selector:
     {{- include "home-assistant.selectorLabels" . | nindent 4 }}

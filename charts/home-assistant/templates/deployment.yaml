@@ -89,6 +89,16 @@ spec:
             - name: http
               containerPort: 8123
               protocol: TCP
+            {{- range .Values.extraContainerPorts }}
+            {{- $port := . }}
+            {{- $count := $port.count | default 1 | int }}
+            {{- $start := $port.containerPort | int }}
+            {{- range $i := until $count }}
+            - name: {{ if gt $count 1 }}{{ printf "%s-%d" $port.name (add $start $i) }}{{ else }}{{ $port.name }}{{ end }}
+              containerPort: {{ add $start $i }}
+              protocol: {{ $port.protocol | default "TCP" }}
+            {{- end }}
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /
@@ -135,19 +145,12 @@ spec:
               value: {{ $value }}
             {{- end }}
           volumeMounts:
-          - mountPath: /config
-            name: config
-          {{- if .Values.usePodSecurityContext }}
+            - mountPath: /config
+              name: config
           securityContext:
-            runAsUser: {{ default 0 .Values.runAsUser }}
-          {{- if and ( .Values.runAsUser ) ( .Values.fsGroup ) }}
-          {{- if not ( eq .Values.runAsUser 0.0) }}
-            fsGroup: {{ .Values.fsGroup }}
-          {{- end }}
-          {{- end }}
-          {{- end }}
+            {{- toYaml .Values.securityContext | nindent 12 }}
           resources:
-            {{ toYaml .Values.vscode.resources | indent 12 }}
+            {{- toYaml .Values.vscode.resources | nindent 12 }}
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
