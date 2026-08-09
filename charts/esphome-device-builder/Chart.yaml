@@ -1,0 +1,39 @@
+apiVersion: v2
+appVersion: "2026.7.4"
+description: Web dashboard for building, flashing, and managing ESPHome firmware on ESP8266/ESP32 devices
+name: esphome-device-builder
+type: application
+version: 0.1.0
+keywords:
+  - esphome
+  - esp8266
+  - esp32
+  - iot
+  - smart home
+home: https://github.com/newbenji/charts/tree/main/charts/esphome-device-builder
+icon: https://esphome.io/images/logo.svg
+sources:
+  - https://github.com/esphome/esphome
+  - https://github.com/esphome/device-builder
+maintainers:
+  - name: newbenji
+    email: benji@newbenji.dk
+annotations:
+  artifacthub.io/changes: |
+    - "[Added] Recovered this chart from an old ChartMuseum devel repo (its source repository was lost) and republished it here going forward"
+    - "[Added] Gateway API HTTPRoute support as an alternative to Ingress"
+    - "[Added] Persistence for /config (device configs, secrets, and dashboard state - previously lost on every pod restart) and optionally /cache (PlatformIO toolchain downloads)"
+    - "[Added] env/envFromSecrets support, e.g. for ESPHOME_TRUSTED_DOMAINS (needed behind a reverse proxy/ingress that doesn't forward the original Host header) or ESPHOME_USERNAME/ESPHOME_PASSWORD"
+    - "[Fixed] liveness/readiness probes hit the full dashboard SPA (/) instead of the lightweight /version endpoint the upstream image's own Docker healthcheck uses"
+    - "[Changed] Bumped default appVersion to 2026.7.4 (was stuck on 1.16.0); the image now bundles the actively-maintained esphome/device-builder dashboard (this chart's namesake) instead of the legacy dashboard"
+    - "[Changed] Cleaned up the ingress template to the current Helm standard (dropped pre-1.19 Kubernetes compatibility branches)"
+  artifacthub.io/images: |
+    - name: esphome-device-builder
+      image: ghcr.io/esphome/esphome
+  artifacthub.io/links: |
+    - name: ESPHome source repo
+      url: https://github.com/esphome/esphome
+    - name: Device Builder dashboard source repo
+      url: https://github.com/esphome/device-builder
+    - name: Helm Repo
+      url: https://github.com/newbenji/charts
