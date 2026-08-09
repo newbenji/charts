@@ -1,0 +1,48 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+This chart installs the [ESPHome Device Builder](https://github.com/esphome/device-builder) dashboard on Kubernetes, for building and flashing ESPHome firmware to ESP8266/ESP32 devices. As of ESPHome 2026.6.0, this is the dashboard bundled in the standard `ghcr.io/esphome/esphome` image.
+
+## Recovered chart
+
+This chart's original source repository was lost; it was recovered from a
+package still hosted on an old devel ChartMuseum instance and republished
+here going forward. Beyond this repo's standard chart scaffolding, it's had
+persistence, Gateway API support, and an appVersion bump added on top of the
+original port — see the changelog below.
+
+Note: the chart uses `hostNetwork: true`, which the dashboard needs to discover devices on the local network for flashing.
+
+### Persistence
+
+Set `persistence.config.enabled: true` before relying on this in anything but
+a throwaway environment — without it, every device configuration, secret,
+and dashboard setting lives only in the pod's ephemeral filesystem and is
+lost on restart. `persistence.cache.enabled: true` is optional but speeds up
+compiles by keeping PlatformIO's downloaded toolchains around across
+restarts too.
+
+### Running behind an Ingress or HTTPRoute
+
+The dashboard checks that a WebSocket handshake's `Origin` matches the
+`Host` header it receives, and 403s the connection otherwise. Most ingress
+controllers forward the original `Host` unchanged, so this generally works
+out of the box — but if yours rewrites it (or you're proxying a mismatched
+hostname), set `env.ESPHOME_TRUSTED_DOMAINS` to the public hostname. See the
+[Device Builder docs](https://github.com/esphome/device-builder#behind-a-reverse-proxy)
+for details.
+
+{{ template "chart.install" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}
