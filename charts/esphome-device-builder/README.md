@@ -1,3 +1,4 @@
+
 # esphome-device-builder
 
 Web dashboard for building, flashing, and managing ESPHome firmware on ESP8266/ESP32 devices
@@ -88,7 +89,7 @@ $ helm pull oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.0
 | httpRoute.parentRefs | list | `[{"name":""}]` | References to the Gateway(s) this route attaches to |
 | image.pullPolicy | string | `"IfNotPresent"` | Docker image pull policy |
 | image.repository | string | `"ghcr.io/esphome/esphome"` | Docker registry/repository to pull the image from |
-| image.tag | string | `""` | Overrides the default tag (appVersion) used in Chart.yaml. See available tags at https://github.com/esphome/esphome/pkgs/container/esphome |
+| image.tag | string | `""` | Overrides the default tag (appVersion) used in Chart.yaml. Defaults to the chart's appVersion (2026.7.4) when left empty. See available tags at https://github.com/esphome/esphome/pkgs/container/esphome |
 | imagePullSecrets | list | `[]` | Docker image pull secrets |
 | ingress.annotations | object | `{}` | annotations to configure your Ingress. See your Ingress Controller's Docs for more info. |
 | ingress.className | string | `""` | ingressClassName for using on clusters with multiple ingresses, default is null |
