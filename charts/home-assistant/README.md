@@ -9,9 +9,19 @@ Perfect to run on a Raspberry Pi or a local server..
 
 ## Installing the Chart
 
-This chart is published as an OCI artifact to the GitHub Container Registry.
+This chart is published two ways: as a classic Helm repo via GitHub Pages
+(releases only), and as an OCI artifact via the GitHub Container Registry
+(releases and alpha builds).
 
-To install it with the release name `my-release`:
+Via the classic repo:
+
+```console
+$ helm repo add newbenji-charts https://newbenji.github.io/charts/
+$ helm repo update
+$ helm install my-release newbenji-charts/home-assistant --version 0.2.0
+```
+
+Via OCI:
 
 ```console
 $ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.2.0

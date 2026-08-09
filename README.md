@@ -1,9 +1,24 @@
 # charts
 
-Helm charts, published as OCI artifacts to the GitHub Container Registry (no
-`helm repo add` — OCI registries don't support the classic Helm repo index).
+Helm charts, published two ways:
+
+- **Classic Helm repo, via GitHub Pages** — supports `helm repo add`. Only
+  carries real releases (not alpha builds).
+- **OCI, via the GitHub Container Registry** — no `helm repo add` (OCI
+  registries don't support the classic repo index), but covers both real
+  releases and alpha builds.
 
 ## Installing a chart
+
+### Classic repo (releases only)
+
+```console
+$ helm repo add newbenji-charts https://newbenji.github.io/charts/
+$ helm repo update
+$ helm install my-release newbenji-charts/<chart-name> --version <version>
+```
+
+### OCI (releases and alpha builds)
 
 ```console
 $ helm install my-release oci://ghcr.io/newbenji/charts/<chart-name> --version <version>
@@ -16,9 +31,10 @@ $ helm pull oci://ghcr.io/newbenji/charts/<chart-name> --version <version>
 ```
 
 Browse available charts and versions at
-[github.com/newbenji/charts/pkgs](https://github.com/newbenji/charts?tab=packages),
-or see each chart's own README under [`charts/`](charts/) for its specific
-values and installation notes.
+[github.com/newbenji/charts/pkgs](https://github.com/newbenji/charts?tab=packages)
+or the [Pages index](https://newbenji.github.io/charts/), or see each chart's
+own README under [`charts/`](charts/) for its specific values and
+installation notes.
 
 ## Releases vs. alpha builds
 
