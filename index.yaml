@@ -1,0 +1,32 @@
+apiVersion: v1
+entries:
+  home-assistant:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed] Documented GitHub Pages helm repo add alongside OCI in README"
+      artifacthub.io/images: |
+        - name: home-assistant
+          image: homeassistant/home-assistant
+      artifacthub.io/links: |
+        - name: Home assistant source repo
+          url: https://github.com/home-assistant
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 2023.11.1
+    created: "2026-08-09T07:19:25.516194421Z"
+    description: 'HomeAssistant is an open source home automation that puts local
+      control and privacy first. Powered by a worldwide community of tinkerers and
+      DIY enthusiasts. Perfect to run on a Raspberry Pi or a local server.. '
+    digest: 4cead6b8bded76f4a9595649dba2553f5b238f8ccf5ca49b1d2de809d3dee85a
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
+    keywords:
+    - homeassistant
+    - home-assistant
+    - smart home
+    name: home-assistant
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/home-assistant-0.2.1/home-assistant-0.2.1.tgz
+    version: 0.2.1
+generated: "2026-08-09T07:19:25.51619899Z"
