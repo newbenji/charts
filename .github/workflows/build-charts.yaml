@@ -107,10 +107,13 @@ jobs:
             helm lint -f values.yaml . --with-subcharts
           fi
 
-  # Docs are regenerated after merge and pushed straight to main. This relies
-  # on the "main" ruleset granting the GitHub Actions app an "always" bypass
-  # of its required-pull-request rule - without that, this push is rejected
-  # the same way a plain `git push origin main` would be.
+  # Docs are regenerated after merge. main's ruleset requires a pull request
+  # for every change, and (unlike an org-owned repo) a personal repo's
+  # ruleset can't grant the GitHub Actions app a bypass for that rule - so
+  # this can't push straight to main. Instead it opens a small PR with the
+  # regenerated READMEs for a human to merge (bypassing review, as the owner
+  # already can). This is intentionally decoupled from build-and-publish
+  # below - chart releases don't wait on this PR being merged.
   update-docs:
     needs: [detect-changed-folders, validate-charts]
     if: >
@@ -121,12 +124,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
           ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       # chart-search-root is the repo root (not the individual changed chart)
       # because helm-docs resolves a `./`-prefixed shared template file
@@ -140,21 +143,23 @@ jobs:
           chart-search-root: .
           output-file: README.md
           template-files: ./_templates.gotmpl,README.md.gotmpl
-          git-push: true
+          git-push: false
           fail-on-diff: false
 
+      - name: Open docs PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "docs: regenerate chart READMEs"
+          title: "docs: regenerate chart READMEs"
+          body: Automated helm-docs regeneration, triggered by the chart change in #${{ github.event.pull_request.number }}.
+          branch: docs/update-readmes
+          delete-branch: true
+          base: main
+
   build-and-publish:
-    needs: [detect-changed-folders, validate-charts, update-docs]
-    # update-docs only runs on a merged PR (see its own `if`), so it's always
-    # "skipped" on a plain push - the default implicit `success()` treats
-    # that skip as "not successful" and would skip this job too. `!cancelled()`
-    # opts out of that implicit check; validate-charts/update-docs results are
-    # then checked explicitly instead.
+    needs: [detect-changed-folders, validate-charts]
     if: >
-      !cancelled() &&
       needs.detect-changed-folders.outputs.has_changes == 'true' &&
-      needs.validate-charts.result == 'success' &&
-      needs.update-docs.result != 'failure' &&
       (github.event_name == 'push' || github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     permissions:
@@ -165,10 +170,9 @@ jobs:
         chart_path: ${{ fromJSON(needs.detect-changed-folders.outputs.folders) }}
       fail-fast: false
     steps:
-      # On merge, update-docs already pushed a docs commit onto main, so pull
-      # main's tip (not the triggering event sha) to package the current
-      # README. On a plain push (alpha build), update-docs never ran - stick
-      # with the sha that was actually pushed.
+      # On merge, use main's tip (the merge commit) rather than the
+      # triggering event sha. On a plain push (alpha build), stick with the
+      # sha that was actually pushed.
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
@@ -274,8 +278,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Always merged-PR-triggered (see the `if` above), so main's tip always
-      # includes the docs commit update-docs just pushed.
+      # Always merged-PR-triggered (see the `if` above).
       - name: Checkout repository
         uses: actions/checkout@v7
         with:

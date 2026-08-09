@@ -110,7 +110,7 @@ config:
 | httpRoute.parentRefs | list | `[{"name":""}]` | References to the Gateway(s) this route attaches to |
 | ingress.annotations | object | `{}` | annotations to configure your Ingress. See your Ingress Controller's Docs for more info. |
 | ingress.enabled | bool | `false` | Enables the use of an Ingress Controller to front the Service and can provide HTTPS. Mutually exclusive with httpRoute.enabled |
-| ingress.hosts | list | `[{"host":"chart.example.local","paths":[{"path":"/","portName":"http-auth"}]}]` | list of hosts and their paths and ports that ingress controller should repsond to. Each path may also set `pathType` (defaults to `ImplementationSpecific` when unset) |
+| ingress.hosts | list | `[{"host":"chart.example.local","paths":[{"path":"/","portName":"http-auth"}]}]` | list of hosts and their paths and ports that ingress controller should respond to. Each path may also set `pathType` (defaults to `ImplementationSpecific` when unset) |
 | ingress.ingressClassName | string | `nil` | ingressClassName for using on clusters with multiple ingresses, default is null |
 | ingress.tls | list | `[]` | list of TLS configurations |
 | nameOverride | string | `""` | Overrides the name of resources |
@@ -126,7 +126,7 @@ config:
 | persistence.media.size | string | `"10Gi"` | size/capacity of the PVC |
 | persistence.media.skipuninstall | bool | `false` | Do not delete the pvc upon helm uninstall |
 | persistence.media.accessMode | string | `"ReadWriteOnce"` | [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes) to use for the PVC |
-| podAnnotations | object | `{}` | Set additonal pod Annotations |
+| podAnnotations | object | `{}` | Set additional pod Annotations |
 | podSecurityContext | object | `{}` | Set Pod level Security Context. The container level security context defined below will override it for the frigate container |
 | priorityClassName | string | `""` | Name of a PriorityClass to assign to the Pod. Leave empty for no priority (default scheduling) |
 | probes.liveness.enabled | bool | `true` |  |
