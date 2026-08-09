@@ -21,7 +21,7 @@ permissions:
 concurrency:
   # PR-open activity (opened/synchronize/reopened) and the merge/release event
   # share a ref but must not share a cancellation group - otherwise merging
-  # right after opening/pushing can cancel the still-running docs job mid-checkout.
+  # right after opening/pushing can cancel the still-running release job.
   group: build-charts-${{ github.ref }}-${{ (github.event_name == 'pull_request' && github.event.action == 'closed') && 'release' || 'build' }}
   cancel-in-progress: true
 
@@ -107,16 +107,17 @@ jobs:
             helm lint -f values.yaml . --with-subcharts
           fi
 
-  # Docs are regenerated while the PR is still open, pushing to the PR's own
-  # branch (unprotected) instead of main. By merge time README.md is already
-  # current, so the release job below never needs to push to main at all.
+  # Docs are regenerated after merge and pushed straight to main. This relies
+  # on the "main" ruleset granting the GitHub Actions app an "always" bypass
+  # of its required-pull-request rule - without that, this push is rejected
+  # the same way a plain `git push origin main` would be.
   update-docs:
     needs: [detect-changed-folders, validate-charts]
     if: >
       github.event_name == 'pull_request' &&
-      github.event.action != 'closed' &&
-      needs.detect-changed-folders.outputs.has_changes == 'true' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      needs.detect-changed-folders.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -124,7 +125,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.head_ref }}
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # chart-search-root is the repo root (not the individual changed chart)
@@ -143,7 +144,7 @@ jobs:
           fail-on-diff: false
 
   build-and-publish:
-    needs: [detect-changed-folders, validate-charts]
+    needs: [detect-changed-folders, validate-charts, update-docs]
     if: >
       needs.detect-changed-folders.outputs.has_changes == 'true' &&
       (github.event_name == 'push' || github.event.pull_request.merged == true)
@@ -156,8 +157,14 @@ jobs:
         chart_path: ${{ fromJSON(needs.detect-changed-folders.outputs.folders) }}
       fail-fast: false
     steps:
+      # On merge, update-docs already pushed a docs commit onto main, so pull
+      # main's tip (not the triggering event sha) to package the current
+      # README. On a plain push (alpha build), update-docs never ran - stick
+      # with the sha that was actually pushed.
       - name: Checkout repository
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'push' && github.sha || 'main' }}
 
       - name: Set up Helm
         uses: azure/setup-helm@v5.0.1
@@ -259,9 +266,12 @@ jobs:
     permissions:
       contents: write
     steps:
+      # Always merged-PR-triggered (see the `if` above), so main's tip always
+      # includes the docs commit update-docs just pushed.
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Set up Helm
