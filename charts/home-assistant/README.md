@@ -49,6 +49,7 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.3.0
 | config.scripts | object | `{}` | Rendered into configmap-scripts.yaml as Home Assistant's scripts.yaml. See https://www.home-assistant.io/docs/scripts/ |
 | config.telegram_bot | list | `[]` | Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config |
 | dnsPolicy | string | `"ClusterFirstWithHostNet"` | Dns policy |
+| extraContainerPorts | list | `[]` | Additional ports to open on the Home Assistant container, e.g. for integrations that listen on their own port (ESPHome dashboard, Matter, HomeKit Bridge, etc). Set `count` greater than 1 to open a contiguous range starting at containerPort. Port names must stay within Kubernetes' 15-character limit and be unique |
 | fullnameOverride | string | `""` |  |
 | hadbconfig | string | `""` | Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. Must be set to a real connection string. |
 | homeAssistant.persistence.volumeName | string | `""` | Bind the PVC to a specific pre-provisioned PersistentVolume by name. Leave empty to let the cluster's default provisioner handle it. |
@@ -104,25 +105,16 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.3.0
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
 | strategy | string | `"RollingUpdate"` |  |
 | tolerations | list | `[]` |  |
-| vscode.enabled | bool | `false` | Run a code-server (VS Code in the browser) sidecar for editing the Home Assistant config directory |
+| vscode.enabled | bool | `false` | Run a code-server (VS Code in the browser) sidecar, in the same pod, for editing the Home Assistant config directory |
 | vscode.extraEnv | object | `{}` | Additional environment variables for the code-server container |
 | vscode.hassConfig | string | `"/config"` | Path to the Home Assistant config directory, mounted into the code-server container |
 | vscode.image.pullPolicy | string | `"IfNotPresent"` | code-server image pull policy |
 | vscode.image.repository | string | `"codercom/code-server"` | code-server image repository |
-| vscode.image.tag | string | `"4.11.0"` | code-server image tag |
-| vscode.ingress.annotations | object | `{}` | Annotations to add to the code-server Ingress |
-| vscode.ingress.enabled | bool | `false` | Expose code-server via an Ingress |
-| vscode.ingress.hosts | list | `["home-assistant.local"]` | Hosts routed to the code-server service |
-| vscode.ingress.path | string | `"/"` | Path routed to the code-server service |
-| vscode.ingress.tls | list | `[]` | TLS configuration for the code-server Ingress |
-| vscode.service.annotations | object | `{}` | Annotations to add to the code-server Service |
-| vscode.service.clusterIP | string | `""` | Static ClusterIP to request for the code-server Service |
-| vscode.service.externalIPs | list | `[]` | External IPs for the code-server Service |
-| vscode.service.labels | object | `{}` | Additional labels to add to the code-server Service |
-| vscode.service.loadBalancerIP | string | `""` | LoadBalancer IP to request, when service.type is LoadBalancer |
-| vscode.service.loadBalancerSourceRanges | list | `[]` | Source ranges allowed to reach the code-server Service, when service.type is LoadBalancer |
-| vscode.service.port | int | `80` | code-server service port |
-| vscode.service.type | string | `"ClusterIP"` | Kubernetes Service type used to expose code-server |
+| vscode.image.tag | string | `"4.131.0"` | code-server image tag |
+| vscode.password | string | `""` | Password to require for code-server, stored in a Secret. Leave empty to disable auth (--auth=none) — only safe if the service isn't exposed outside the cluster |
+| vscode.resources | object | `{}` | Resource requests/limits for the code-server container |
+| vscode.service.nodePort | string | `""` | NodePort to request for the code-server port, when service.type (the shared Service's type) is NodePort |
+| vscode.service.port | int | `8080` | code-server service port, exposed alongside the main Home Assistant port on the same Service. Also used as the container's listen port, so it must be >1024 since the image runs as a non-root user |
 | vscode.vscodePath | string | `"/config/.vscode"` | Path to code-server's own settings/extensions directory, inside hassConfig |
 | whisper.enabled | bool | `false` | Deploy a wyoming-whisper speech-to-text service alongside Home Assistant. Add it in Home Assistant via Settings > Devices & Services > Add Integration > Wyoming Protocol, pointing at the whisper Service on its port |
 | whisper.extraArgs | list | `[]` | Additional command-line arguments passed to wyoming-whisper |
@@ -257,6 +249,15 @@ false
 </pre>
 </td>
 			<td>Dns policy</td>
+		</tr>
+		<tr>
+			<td>extraContainerPorts</td>
+			<td>list</td>
+			<td><pre lang="json">
+[]
+</pre>
+</td>
+			<td>Additional ports to open on the Home Assistant container, e.g. for integrations that listen on their own port (ESPHome dashboard, Matter, HomeKit Bridge, etc). Set `count` greater than 1 to open a contiguous range starting at containerPort. Port names must stay within Kubernetes' 15-character limit and be unique</td>
 		</tr>
 		<tr>
 			<td>fullnameOverride</td>
@@ -779,7 +780,7 @@ true
 false
 </pre>
 </td>
-			<td>Run a code-server (VS Code in the browser) sidecar for editing the Home Assistant config directory</td>
+			<td>Run a code-server (VS Code in the browser) sidecar, in the same pod, for editing the Home Assistant config directory</td>
 		</tr>
 		<tr>
 			<td>vscode.extraEnv</td>
@@ -821,129 +822,46 @@ false
 			<td>vscode.image.tag</td>
 			<td>string</td>
 			<td><pre lang="json">
-"4.11.0"
+"4.131.0"
 </pre>
 </td>
 			<td>code-server image tag</td>
 		</tr>
 		<tr>
-			<td>vscode.ingress.annotations</td>
-			<td>object</td>
-			<td><pre lang="json">
-{}
-</pre>
-</td>
-			<td>Annotations to add to the code-server Ingress</td>
-		</tr>
-		<tr>
-			<td>vscode.ingress.enabled</td>
-			<td>bool</td>
-			<td><pre lang="json">
-false
-</pre>
-</td>
-			<td>Expose code-server via an Ingress</td>
-		</tr>
-		<tr>
-			<td>vscode.ingress.hosts</td>
-			<td>list</td>
-			<td><pre lang="json">
-[
-  "home-assistant.local"
-]
-</pre>
-</td>
-			<td>Hosts routed to the code-server service</td>
-		</tr>
-		<tr>
-			<td>vscode.ingress.path</td>
-			<td>string</td>
-			<td><pre lang="json">
-"/"
-</pre>
-</td>
-			<td>Path routed to the code-server service</td>
-		</tr>
-		<tr>
-			<td>vscode.ingress.tls</td>
-			<td>list</td>
-			<td><pre lang="json">
-[]
-</pre>
-</td>
-			<td>TLS configuration for the code-server Ingress</td>
-		</tr>
-		<tr>
-			<td>vscode.service.annotations</td>
-			<td>object</td>
-			<td><pre lang="json">
-{}
-</pre>
-</td>
-			<td>Annotations to add to the code-server Service</td>
-		</tr>
-		<tr>
-			<td>vscode.service.clusterIP</td>
+			<td>vscode.password</td>
 			<td>string</td>
 			<td><pre lang="json">
 ""
 </pre>
 </td>
-			<td>Static ClusterIP to request for the code-server Service</td>
+			<td>Password to require for code-server, stored in a Secret. Leave empty to disable auth (--auth=none) — only safe if the service isn't exposed outside the cluster</td>
 		</tr>
 		<tr>
-			<td>vscode.service.externalIPs</td>
-			<td>list</td>
-			<td><pre lang="json">
-[]
-</pre>
-</td>
-			<td>External IPs for the code-server Service</td>
-		</tr>
-		<tr>
-			<td>vscode.service.labels</td>
+			<td>vscode.resources</td>
 			<td>object</td>
 			<td><pre lang="json">
 {}
 </pre>
 </td>
-			<td>Additional labels to add to the code-server Service</td>
+			<td>Resource requests/limits for the code-server container</td>
 		</tr>
 		<tr>
-			<td>vscode.service.loadBalancerIP</td>
+			<td>vscode.service.nodePort</td>
 			<td>string</td>
 			<td><pre lang="json">
 ""
 </pre>
 </td>
-			<td>LoadBalancer IP to request, when service.type is LoadBalancer</td>
-		</tr>
-		<tr>
-			<td>vscode.service.loadBalancerSourceRanges</td>
-			<td>list</td>
-			<td><pre lang="json">
-[]
-</pre>
-</td>
-			<td>Source ranges allowed to reach the code-server Service, when service.type is LoadBalancer</td>
+			<td>NodePort to request for the code-server port, when service.type (the shared Service's type) is NodePort</td>
 		</tr>
 		<tr>
 			<td>vscode.service.port</td>
 			<td>int</td>
 			<td><pre lang="json">
-80
+8080
 </pre>
 </td>
-			<td>code-server service port</td>
-		</tr>
-		<tr>
-			<td>vscode.service.type</td>
-			<td>string</td>
-			<td><pre lang="json">
-"ClusterIP"
-</pre>
-</td>
-			<td>Kubernetes Service type used to expose code-server</td>
+			<td>code-server service port, exposed alongside the main Home Assistant port on the same Service. Also used as the container's listen port, so it must be >1024 since the image runs as a non-root user</td>
 		</tr>
 		<tr>
 			<td>vscode.vscodePath</td>

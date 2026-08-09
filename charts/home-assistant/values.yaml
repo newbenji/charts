@@ -51,6 +51,15 @@ service:
   # -- Service port. Also used as the backend port by the ingress and httpRoute
   port: 8123
 
+# -- Additional ports to open on the Home Assistant container, e.g. for integrations that listen on their own port (ESPHome dashboard, Matter, HomeKit Bridge, etc). Set `count` greater than 1 to open a contiguous range starting at containerPort. Port names must stay within Kubernetes' 15-character limit and be unique
+extraContainerPorts: []
+# - name: esphome
+#   containerPort: 6052
+# - name: matter
+#   containerPort: 5540
+#   count: 10
+#   protocol: TCP
+
 # -- Enables host networking (so that home assistant can scan devices automatically on the same network). If set to false, you might want to amend dnsPolicy value as well
 hostNetwork: true
 
@@ -130,13 +139,13 @@ persistence:
   additionalMounts: []
 
 vscode:
-  # -- Run a code-server (VS Code in the browser) sidecar for editing the Home Assistant config directory
+  # -- Run a code-server (VS Code in the browser) sidecar, in the same pod, for editing the Home Assistant config directory
   enabled: false
   image:
     # -- code-server image repository
     repository: codercom/code-server
     # -- code-server image tag
-    tag: 4.11.0
+    tag: 4.131.0
     # -- code-server image pull policy
     pullPolicy: IfNotPresent
   # -- Path to the Home Assistant config directory, mounted into the code-server container
@@ -145,43 +154,16 @@ vscode:
   vscodePath: /config/.vscode
   # -- Additional environment variables for the code-server container
   extraEnv: {}
+  # -- Password to require for code-server, stored in a Secret. Leave empty to disable auth (--auth=none) — only safe if the service isn't exposed outside the cluster
+  password: ""
+  # -- Resource requests/limits for the code-server container
+  resources: {}
 
-  ingress:
-    # -- Expose code-server via an Ingress
-    enabled: false
-    # -- Annotations to add to the code-server Ingress
-    annotations: {}
-    # -- Path routed to the code-server service
-    path: /
-    # -- Hosts routed to the code-server service
-    hosts:
-      - home-assistant.local
-    # -- TLS configuration for the code-server Ingress
-    tls: []
-      # - secretName: home-assistant-tls
-      #   hosts:
-      #     - home-assistant.local
   service:
-    # -- Kubernetes Service type used to expose code-server
-    type: ClusterIP
-    # -- code-server service port
-    port: 80
-    # -- Annotations to add to the code-server Service
-    annotations: {}
-    # -- Additional labels to add to the code-server Service
-    labels: {}
-    # -- Static ClusterIP to request for the code-server Service
-    clusterIP: ""
-    ## List of IP addresses at which the hass-vscode service is available
-    ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
-    ##
-    # -- External IPs for the code-server Service
-    externalIPs: []
-    # -- LoadBalancer IP to request, when service.type is LoadBalancer
-    loadBalancerIP: ""
-    # -- Source ranges allowed to reach the code-server Service, when service.type is LoadBalancer
-    loadBalancerSourceRanges: []
-    # nodePort: 30000
+    # -- code-server service port, exposed alongside the main Home Assistant port on the same Service. Also used as the container's listen port, so it must be >1024 since the image runs as a non-root user
+    port: 8080
+    # -- NodePort to request for the code-server port, when service.type (the shared Service's type) is NodePort
+    nodePort: ""
 
 
 whisper:
