@@ -5,7 +5,7 @@ HomeAssistant is an open source home automation that puts local control and priv
 Powered by a worldwide community of tinkerers and DIY enthusiasts.
 Perfect to run on a Raspberry Pi or a local server..
 
-![Version: 0.5.0](https://img.shields.io/badge/Version-0.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
+![Version: 0.5.1](https://img.shields.io/badge/Version-0.5.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
 
 ## Installing the Chart
 
@@ -18,19 +18,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/home-assistant --version 0.5.0
+$ helm install my-release newbenji-charts/home-assistant --version 0.5.1
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.0
+$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.1
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.0
+$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.1
 ```
 
 ## Values
@@ -70,17 +70,12 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.0
 | ingress.enabled | bool | `false` | Expose Home Assistant via a classic Ingress resource. Mutually exclusive with httpRoute.enabled |
 | ingress.hosts | list | `[{"host":"chart-example.local","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Host/path rules routed to the Home Assistant service |
 | ingress.tls | list | `[]` | TLS configuration for the Ingress |
-| matterServer.enabled | bool | `false` | Run matterjs-server (the Open Home Foundation's Matter controller, successor to the archived python-matter-server) as a sidecar in the same pod as Home Assistant - not a separate Deployment, because it needs the pod's host network for Matter/Thread mDNS discovery, and colocating guarantees it stays reachable at a stable localhost address regardless of scheduling. Add it in HA via Settings > Devices & Services > Matter, pointing at ws://localhost:<port>/ws |
+| matterServer.enabled | bool | `false` | IMPORTANT: the image runs as a non-root user (uid 1000). If the Home Assistant container runs as root (the chart's default - see securityContext above), that user can't write to the shared config volume unless you set podSecurityContext.fsGroup: 1000 (or matching whatever uid the image uses) - otherwise this crash-loops on "EACCES: permission denied, mkdir '/data/config'" and, since Kubernetes requires every container in the pod Ready before the pod joins its Service, takes Home Assistant itself offline too even though it isn't the one failing |
 | matterServer.extraArgs | list | `[]` | Additional command-line arguments, e.g. ["--primary-interface", "eth0"] if host network binds to the wrong interface for mDNS |
 | matterServer.extraEnv | object | `{}` | Additional environment variables for the matter-server container |
 | matterServer.image.pullPolicy | string | `"IfNotPresent"` | matterjs-server image pull policy |
 | matterServer.image.repository | string | `"ghcr.io/matter-js/matterjs-server"` | matterjs-server image repository |
 | matterServer.image.tag | string | `"stable"` | matterjs-server image tag |
-| matterServer.persistence.accessMode | string | `"ReadWriteOnce"` | Access mode for the matter-server PVC |
-| matterServer.persistence.enabled | bool | `true` | Persist the Matter fabric/commissioning data across restarts. Strongly recommended - losing this means re-commissioning every Matter device |
-| matterServer.persistence.existingClaim | string | `""` | Use an existing PVC instead of creating one. Leave empty to let the chart create it |
-| matterServer.persistence.size | string | `"1Gi"` | Size of the matter-server PVC |
-| matterServer.persistence.storageClass | string | `""` | StorageClass to request for the matter-server PVC. Leave empty to use the cluster's default StorageClass |
 | matterServer.port | int | `5580` | WebSocket API port |
 | matterServer.resources | object | `{}` | Resource requests/limits for the matter-server container |
 | matterServer.securityContext | object | `{}` | Security context for the matter-server container. Add capabilities: [NET_RAW] here if you need its device-ping functionality |
@@ -516,7 +511,7 @@ false
 false
 </pre>
 </td>
-			<td>Run matterjs-server (the Open Home Foundation's Matter controller, successor to the archived python-matter-server) as a sidecar in the same pod as Home Assistant - not a separate Deployment, because it needs the pod's host network for Matter/Thread mDNS discovery, and colocating guarantees it stays reachable at a stable localhost address regardless of scheduling. Add it in HA via Settings > Devices & Services > Matter, pointing at ws://localhost:<port>/ws</td>
+			<td>IMPORTANT: the image runs as a non-root user (uid 1000). If the Home Assistant container runs as root (the chart's default - see securityContext above), that user can't write to the shared config volume unless you set podSecurityContext.fsGroup: 1000 (or matching whatever uid the image uses) - otherwise this crash-loops on "EACCES: permission denied, mkdir '/data/config'" and, since Kubernetes requires every container in the pod Ready before the pod joins its Service, takes Home Assistant itself offline too even though it isn't the one failing</td>
 		</tr>
 		<tr>
 			<td>matterServer.extraArgs</td>
@@ -562,51 +557,6 @@ false
 </pre>
 </td>
 			<td>matterjs-server image tag</td>
-		</tr>
-		<tr>
-			<td>matterServer.persistence.accessMode</td>
-			<td>string</td>
-			<td><pre lang="json">
-"ReadWriteOnce"
-</pre>
-</td>
-			<td>Access mode for the matter-server PVC</td>
-		</tr>
-		<tr>
-			<td>matterServer.persistence.enabled</td>
-			<td>bool</td>
-			<td><pre lang="json">
-true
-</pre>
-</td>
-			<td>Persist the Matter fabric/commissioning data across restarts. Strongly recommended - losing this means re-commissioning every Matter device</td>
-		</tr>
-		<tr>
-			<td>matterServer.persistence.existingClaim</td>
-			<td>string</td>
-			<td><pre lang="json">
-""
-</pre>
-</td>
-			<td>Use an existing PVC instead of creating one. Leave empty to let the chart create it</td>
-		</tr>
-		<tr>
-			<td>matterServer.persistence.size</td>
-			<td>string</td>
-			<td><pre lang="json">
-"1Gi"
-</pre>
-</td>
-			<td>Size of the matter-server PVC</td>
-		</tr>
-		<tr>
-			<td>matterServer.persistence.storageClass</td>
-			<td>string</td>
-			<td><pre lang="json">
-""
-</pre>
-</td>
-			<td>StorageClass to request for the matter-server PVC. Leave empty to use the cluster's default StorageClass</td>
 		</tr>
 		<tr>
 			<td>matterServer.port</td>

@@ -328,7 +328,8 @@ zigbee2mqtt:
   podAnnotations: {}
 
 matterServer:
-  # -- Run matterjs-server (the Open Home Foundation's Matter controller, successor to the archived python-matter-server) as a sidecar in the same pod as Home Assistant - not a separate Deployment, because it needs the pod's host network for Matter/Thread mDNS discovery, and colocating guarantees it stays reachable at a stable localhost address regardless of scheduling. Add it in HA via Settings > Devices & Services > Matter, pointing at ws://localhost:<port>/ws
+  # -- Run matterjs-server (the Open Home Foundation's Matter controller, successor to the archived python-matter-server) as a sidecar in the same pod as Home Assistant - not a separate Deployment, because it needs the pod's host network for Matter/Thread mDNS discovery, and colocating guarantees it stays reachable at a stable localhost address regardless of scheduling. Its data lives in a matter-server/ subdirectory of the Home Assistant config volume (shared safely since it's the same pod, no separate PVC needed). Add it in HA via Settings > Devices & Services > Matter, pointing at ws://localhost:<port>/ws
+  # -- IMPORTANT: the image runs as a non-root user (uid 1000). If the Home Assistant container runs as root (the chart's default - see securityContext above), that user can't write to the shared config volume unless you set podSecurityContext.fsGroup: 1000 (or matching whatever uid the image uses) - otherwise this crash-loops on "EACCES: permission denied, mkdir '/data/config'" and, since Kubernetes requires every container in the pod Ready before the pod joins its Service, takes Home Assistant itself offline too even though it isn't the one failing
   enabled: false
   image:
     # -- matterjs-server image repository
@@ -343,17 +344,6 @@ matterServer:
   extraArgs: []
   # -- Additional environment variables for the matter-server container
   extraEnv: {}
-  persistence:
-    # -- Persist the Matter fabric/commissioning data across restarts. Strongly recommended - losing this means re-commissioning every Matter device
-    enabled: true
-    # -- StorageClass to request for the matter-server PVC. Leave empty to use the cluster's default StorageClass
-    storageClass: ""
-    # -- Use an existing PVC instead of creating one. Leave empty to let the chart create it
-    existingClaim: ""
-    # -- Access mode for the matter-server PVC
-    accessMode: ReadWriteOnce
-    # -- Size of the matter-server PVC
-    size: 1Gi
   # -- Security context for the matter-server container. Add capabilities: [NET_RAW] here if you need its device-ping functionality
   securityContext: {}
   # -- Resource requests/limits for the matter-server container

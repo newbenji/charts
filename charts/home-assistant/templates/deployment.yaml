@@ -56,15 +56,6 @@ spec:
         - name: config-notify
           configMap:
             name: config-notify
-        {{- if .Values.matterServer.enabled }}
-        - name: matter-server-data
-          {{- if .Values.matterServer.persistence.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.matterServer.persistence.existingClaim | default (include "home-assistant.matterServerFullname" .) }}
-          {{- else }}
-          emptyDir: {}
-          {{- end }}
-        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -192,7 +183,8 @@ spec:
             initialDelaySeconds: 15
           volumeMounts:
             - mountPath: /data
-              name: matter-server-data
+              name: config
+              subPath: matter-server
           securityContext:
             {{- toYaml .Values.matterServer.securityContext | nindent 12 }}
           resources:
