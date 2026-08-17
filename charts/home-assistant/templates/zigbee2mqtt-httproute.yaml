@@ -1,4 +1,4 @@
-{{- if .Values.zigbee2mqtt.httpRoute.enabled -}}
+{{- if and .Values.zigbee2mqtt.enabled .Values.zigbee2mqtt.httpRoute.enabled -}}
 {{- if .Values.zigbee2mqtt.ingress.enabled -}}
 {{- fail "zigbee2mqtt.ingress.enabled and zigbee2mqtt.httpRoute.enabled are mutually exclusive; enable only one" -}}
 {{- end -}}
