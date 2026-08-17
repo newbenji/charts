@@ -13,6 +13,17 @@ on:
       - synchronize
       - reopened
       - closed
+  # Fallback for when a merged PR doesn't trigger the closed event above (seen
+  # in practice - GitHub occasionally drops it, e.g. on a ruleset-bypass
+  # merge - with no error surfaced anywhere, so it's easy to miss). Manually
+  # packages+publishes Chart.yaml's current version from main as-is, same as
+  # a normal merge release would.
+  workflow_dispatch:
+    inputs:
+      chart_path:
+        description: "Chart directory to release, e.g. charts/home-assistant"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -30,24 +41,27 @@ env:
 
 jobs:
   detect-changed-folders:
-    if: github.event_name == 'push' || github.event.action != 'closed' || github.event.pull_request.merged == true
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.action != 'closed' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
-      folders: ${{ steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
-      has_changes: ${{ steps.get_changed_dirs.outputs.any_changed }}
+      folders: ${{ steps.manual-dispatch.outputs.folders || steps.get_changed_dirs.outputs.all_changed_and_modified_files }}
+      has_changes: ${{ steps.manual-dispatch.outputs.has_changes || steps.get_changed_dirs.outputs.any_changed }}
     steps:
       - name: Install dependencies
+        if: github.event_name != 'workflow_dispatch'
         uses: ConorMacBride/install-package@v1.1.0
         with:
           apt: git
 
       - name: Checkout repository
+        if: github.event_name != 'workflow_dispatch'
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
 
       - name: Determine base SHA
+        if: github.event_name != 'workflow_dispatch'
         id: base-sha
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -57,6 +71,7 @@ jobs:
           fi
 
       - name: Detect changed chart directories
+        if: github.event_name != 'workflow_dispatch'
         id: get_changed_dirs
         uses: tj-actions/changed-files@v47
         with:
@@ -65,6 +80,14 @@ jobs:
           base_sha: "${{ steps.base-sha.outputs.sha }}"
           dir_names_max_depth: 2
           dir_names: true
+
+      - name: Set manual dispatch target
+        if: github.event_name == 'workflow_dispatch'
+        id: manual-dispatch
+        run: |
+          set -e
+          echo 'folders=["${{ inputs.chart_path }}"]' >> "$GITHUB_OUTPUT"
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
 
   validate-charts:
     needs: [detect-changed-folders]
@@ -179,7 +202,7 @@ jobs:
     needs: [detect-changed-folders, validate-charts]
     if: >
       needs.detect-changed-folders.outputs.has_changes == 'true' &&
-      (github.event_name == 'push' || github.event.pull_request.merged == true)
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -248,7 +271,7 @@ jobs:
       # is superseded and just clutters the registry. GITHUB_TOKEN can't
       # delete packages, so this uses a PAT with delete:packages instead.
       - name: Delete superseded alpha package
-        if: github.event.pull_request.merged == true
+        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.PACKAGES_PAT }}
         run: |
@@ -292,12 +315,13 @@ jobs:
   # any chart+version that already has a release.
   release-to-pages:
     needs: [detect-changed-folders, build-and-publish]
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      # Always merged-PR-triggered (see the `if` above).
+      # Normally merged-PR-triggered; also runs on the workflow_dispatch
+      # fallback (see the `if` above).
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
