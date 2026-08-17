@@ -327,6 +327,38 @@ zigbee2mqtt:
   # -- Annotations to add to the zigbee2mqtt pod
   podAnnotations: {}
 
+matterServer:
+  # -- Run matterjs-server (the Open Home Foundation's Matter controller, successor to the archived python-matter-server) as a sidecar in the same pod as Home Assistant - not a separate Deployment, because it needs the pod's host network for Matter/Thread mDNS discovery, and colocating guarantees it stays reachable at a stable localhost address regardless of scheduling. Add it in HA via Settings > Devices & Services > Matter, pointing at ws://localhost:<port>/ws
+  enabled: false
+  image:
+    # -- matterjs-server image repository
+    repository: ghcr.io/matter-js/matterjs-server
+    # -- matterjs-server image tag
+    tag: stable
+    # -- matterjs-server image pull policy
+    pullPolicy: IfNotPresent
+  # -- WebSocket API port
+  port: 5580
+  # -- Additional command-line arguments, e.g. ["--primary-interface", "eth0"] if host network binds to the wrong interface for mDNS
+  extraArgs: []
+  # -- Additional environment variables for the matter-server container
+  extraEnv: {}
+  persistence:
+    # -- Persist the Matter fabric/commissioning data across restarts. Strongly recommended - losing this means re-commissioning every Matter device
+    enabled: true
+    # -- StorageClass to request for the matter-server PVC. Leave empty to use the cluster's default StorageClass
+    storageClass: ""
+    # -- Use an existing PVC instead of creating one. Leave empty to let the chart create it
+    existingClaim: ""
+    # -- Access mode for the matter-server PVC
+    accessMode: ReadWriteOnce
+    # -- Size of the matter-server PVC
+    size: 1Gi
+  # -- Security context for the matter-server container. Add capabilities: [NET_RAW] here if you need its device-ping functionality
+  securityContext: {}
+  # -- Resource requests/limits for the matter-server container
+  resources: {}
+
 # -- Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. Must be set to a real connection string.
 hadbconfig: ""
 
