@@ -290,7 +290,7 @@ zigbee2mqtt:
     # -- Size of the zigbee2mqtt PVC
     size: 1Gi
   ingress:
-    # -- Expose the zigbee2mqtt web UI via a classic Ingress resource
+    # -- Expose the zigbee2mqtt web UI via a classic Ingress resource. Mutually exclusive with zigbee2mqtt.httpRoute.enabled
     enabled: false
     # -- IngressClass to use, e.g. "nginx". Leave empty to use the cluster's default IngressClass
     className: ""
@@ -304,6 +304,24 @@ zigbee2mqtt:
     #       pathType: ImplementationSpecific
     # -- TLS configuration for the Ingress
     tls: []
+  httpRoute:
+    # -- Expose the zigbee2mqtt web UI via a Gateway API HTTPRoute instead of an Ingress. Requires the Gateway API CRDs and a Gateway to already exist in the cluster. Mutually exclusive with zigbee2mqtt.ingress.enabled
+    enabled: false
+    # -- Annotations to add to the HTTPRoute
+    annotations: {}
+    # -- Additional labels to add to the HTTPRoute
+    labels: {}
+    # -- References to the Gateway(s) this route attaches to
+    parentRefs:
+      - name: ""
+        # namespace: gateway-system
+        # sectionName: https
+    # -- Hostnames the route matches. Leave empty to match all hostnames on the parent Gateway listener(s)
+    hostnames: []
+    # -- Path matches routed to the zigbee2mqtt service
+    matches:
+      - path: /
+        pathType: PathPrefix
   # -- Resource requests/limits for the zigbee2mqtt container
   resources: {}
   # -- Annotations to add to the zigbee2mqtt pod
