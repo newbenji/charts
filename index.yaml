@@ -108,6 +108,42 @@ entries:
         - "[Added] extraContainerPorts to open additional ports (optionally a contiguous range) on the Home Assistant container"
         - "[Added] extraManifests to render arbitrary additional Kubernetes manifests alongside the chart (e.g. an ExternalSecret)"
         - "[Added] Optional zigbee2mqtt service, bridging a Zigbee network (USB or network-attached coordinator) to MQTT, with its own PVC and a choice of Ingress or Gateway API HTTPRoute, disabled by default"
+        - "[Fixed] zigbee2mqtt Ingress/HTTPRoute rendered regardless of zigbee2mqtt.enabled - disabling the addon left them pointed at a deleted Service instead of being removed too"
+      artifacthub.io/images: |
+        - name: home-assistant
+          image: homeassistant/home-assistant
+      artifacthub.io/links: |
+        - name: Home assistant source repo
+          url: https://github.com/home-assistant
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 2026.8.0
+    created: "2026-08-17T11:42:50.934774291Z"
+    description: 'HomeAssistant is an open source home automation that puts local
+      control and privacy first. Powered by a worldwide community of tinkerers and
+      DIY enthusiasts. Perfect to run on a Raspberry Pi or a local server.. '
+    digest: aea71735eb31a716d37a8c6e74ef96eca3e6708b6c65be2fb38010439a621aa2
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
+    keywords:
+    - homeassistant
+    - home-assistant
+    - smart home
+    name: home-assistant
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/home-assistant-0.4.1/home-assistant-0.4.1.tgz
+    version: 0.4.1
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed] Bumped default appVersion to 2026.8.0"
+        - "[Added] Optional whisper (speech-to-text) and piper (text-to-speech) Wyoming services, disabled by default"
+        - "[Changed] Cleaned up the ingress template to the current Helm standard and added Gateway API httpRoute support as an alternative"
+        - "[Fixed] vscode sidecar: fixed the default port (was 80, unusable by the non-root code-server user), wired up the password and resources values that templates already referenced but values.yaml never defined, and removed the vscode.ingress/vscode.service.* fields that had no template backing them"
+        - "[Changed] Bumped default code-server image to 4.131.0"
+        - "[Added] extraContainerPorts to open additional ports (optionally a contiguous range) on the Home Assistant container"
+        - "[Added] extraManifests to render arbitrary additional Kubernetes manifests alongside the chart (e.g. an ExternalSecret)"
+        - "[Added] Optional zigbee2mqtt service, bridging a Zigbee network (USB or network-attached coordinator) to MQTT, with its own PVC and a choice of Ingress or Gateway API HTTPRoute, disabled by default"
       artifacthub.io/images: |
         - name: home-assistant
           image: homeassistant/home-assistant
@@ -195,4 +231,4 @@ entries:
     urls:
     - https://github.com/newbenji/charts/releases/download/home-assistant-0.2.1/home-assistant-0.2.1.tgz
     version: 0.2.1
-generated: "2026-08-17T09:45:27.695516353Z"
+generated: "2026-08-17T11:42:50.934792749Z"
