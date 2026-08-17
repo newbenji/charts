@@ -1,0 +1,17 @@
+{{- if and .Values.zigbee2mqtt.enabled .Values.zigbee2mqtt.persistence.enabled (not .Values.zigbee2mqtt.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "home-assistant.zigbee2mqttFullname" . }}
+  labels:
+    {{- include "home-assistant.labelsZigbee2mqtt" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.zigbee2mqtt.persistence.accessMode | quote }}
+  {{- if .Values.zigbee2mqtt.persistence.storageClass }}
+  storageClassName: {{ .Values.zigbee2mqtt.persistence.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.zigbee2mqtt.persistence.size | quote }}
+{{- end }}

@@ -236,6 +236,79 @@ piper:
   # -- Annotations to add to the piper pod
   podAnnotations: {}
 
+zigbee2mqtt:
+  # -- Deploy Zigbee2MQTT alongside Home Assistant, bridging a Zigbee network to the MQTT broker configured below. Devices show up in Home Assistant automatically via MQTT discovery, no separate HA-side config needed
+  enabled: false
+  image:
+    # -- zigbee2mqtt image repository
+    repository: docker.io/koenkk/zigbee2mqtt
+    # -- zigbee2mqtt image tag
+    tag: "2.13.0"
+    # -- zigbee2mqtt image pull policy
+    pullPolicy: IfNotPresent
+  # -- Timezone passed to the container, used for log timestamps
+  timezone: UTC
+  mqtt:
+    # -- MQTT broker URL, e.g. mqtt://mosquitto.mosquitto.svc.cluster.local:1883
+    server: ""
+    # -- MQTT base topic
+    baseTopic: zigbee2mqtt
+    # -- MQTT username, leave empty if the broker allows anonymous access
+    user: ""
+    # -- MQTT password, leave empty if the broker allows anonymous access
+    password: ""
+  serial:
+    # -- Zigbee adapter connection string. For a USB dongle this is a /dev/tty* path (see zigbee2mqtt.persistence.device below); for a network-attached coordinator (e.g. SMLIGHT SLZB-* devices) this is a tcp://host:port URL
+    port: ""
+    # -- Zigbee adapter type: auto, zstack, ember, deconz, zigate, or zboss. See https://www.zigbee2mqtt.io/guide/adapters/
+    adapter: auto
+    # -- Serial baudrate. Leave empty to use the adapter's default
+    baudrate: ""
+    # -- Disable the adapter's status LED, if supported
+    disableLed: false
+  advanced:
+    # -- Radio transmit power in dBm, if supported by the adapter. Leave empty for the adapter default
+    transmitPower: ""
+  # -- Allow new devices to join the Zigbee network. Prefer toggling this from the zigbee2mqtt web UI while pairing instead of leaving it enabled permanently
+  permitJoin: false
+  # -- Additional environment variables for the zigbee2mqtt container, e.g. further ZIGBEE2MQTT_CONFIG_* overrides. See https://www.zigbee2mqtt.io/guide/configuration/ for the env var naming convention
+  extraEnv: {}
+  service:
+    # -- Kubernetes Service type used to expose the zigbee2mqtt frontend
+    type: ClusterIP
+    # -- zigbee2mqtt frontend (web UI + API) port
+    port: 8080
+  persistence:
+    # -- Persist the zigbee2mqtt database (network key, paired devices, logs) across restarts. Strongly recommended - losing this means re-pairing every Zigbee device
+    enabled: true
+    # -- StorageClass to request for the zigbee2mqtt PVC. Leave empty to use the cluster's default StorageClass
+    storageClass: ""
+    # -- Use an existing PVC instead of creating one. Leave empty to let the chart create it
+    existingClaim: ""
+    # -- Access mode for the zigbee2mqtt PVC
+    accessMode: ReadWriteOnce
+    # -- Size of the zigbee2mqtt PVC
+    size: 1Gi
+  ingress:
+    # -- Expose the zigbee2mqtt web UI via a classic Ingress resource
+    enabled: false
+    # -- IngressClass to use, e.g. "nginx". Leave empty to use the cluster's default IngressClass
+    className: ""
+    # -- Annotations to add to the Ingress
+    annotations: {}
+    # -- Host/path rules routed to the zigbee2mqtt service
+    hosts: []
+    # - host: zigbee2mqtt.local
+    #   paths:
+    #     - path: /
+    #       pathType: ImplementationSpecific
+    # -- TLS configuration for the Ingress
+    tls: []
+  # -- Resource requests/limits for the zigbee2mqtt container
+  resources: {}
+  # -- Annotations to add to the zigbee2mqtt pod
+  podAnnotations: {}
+
 # -- Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. Must be set to a real connection string.
 hadbconfig: ""
 

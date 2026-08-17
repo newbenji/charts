@@ -1,0 +1,17 @@
+{{- if .Values.zigbee2mqtt.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "home-assistant.zigbee2mqttFullname" . }}
+  labels:
+    {{- include "home-assistant.labelsZigbee2mqtt" . | nindent 4 }}
+spec:
+  type: {{ .Values.zigbee2mqtt.service.type }}
+  ports:
+    - port: {{ .Values.zigbee2mqtt.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "home-assistant.selectorLabelsZigbee2mqtt" . | nindent 4 }}
+{{- end }}

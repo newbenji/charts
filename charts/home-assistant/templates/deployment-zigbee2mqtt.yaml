@@ -1,0 +1,108 @@
+{{- if .Values.zigbee2mqtt.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "home-assistant.zigbee2mqttFullname" . }}
+  labels:
+    {{- include "home-assistant.labelsZigbee2mqtt" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "home-assistant.selectorLabelsZigbee2mqtt" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.zigbee2mqtt.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "home-assistant.selectorLabelsZigbee2mqtt" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "home-assistant.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      dnsPolicy: {{ .Values.dnsPolicy }}
+      volumes:
+        - name: data
+          {{- if .Values.zigbee2mqtt.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.zigbee2mqtt.persistence.existingClaim | default (include "home-assistant.zigbee2mqttFullname" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+      containers:
+        - name: zigbee2mqtt
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.zigbee2mqtt.image.repository }}:{{ .Values.zigbee2mqtt.image.tag }}"
+          imagePullPolicy: {{ .Values.zigbee2mqtt.image.pullPolicy }}
+          env:
+            - name: TZ
+              value: {{ .Values.zigbee2mqtt.timezone | quote }}
+            - name: ZIGBEE2MQTT_DATA
+              value: /data
+            - name: ZIGBEE2MQTT_CONFIG_FRONTEND_PORT
+              value: {{ .Values.zigbee2mqtt.service.port | quote }}
+            - name: ZIGBEE2MQTT_CONFIG_PERMIT_JOIN
+              value: {{ .Values.zigbee2mqtt.permitJoin | quote }}
+            - name: ZIGBEE2MQTT_CONFIG_MQTT_SERVER
+              value: {{ required "zigbee2mqtt.mqtt.server is required when zigbee2mqtt.enabled is true" .Values.zigbee2mqtt.mqtt.server | quote }}
+            - name: ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC
+              value: {{ .Values.zigbee2mqtt.mqtt.baseTopic | quote }}
+            {{- with .Values.zigbee2mqtt.mqtt.user }}
+            - name: ZIGBEE2MQTT_CONFIG_MQTT_USER
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.zigbee2mqtt.mqtt.password }}
+            - name: ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD
+              value: {{ . | quote }}
+            {{- end }}
+            - name: ZIGBEE2MQTT_CONFIG_SERIAL_PORT
+              value: {{ required "zigbee2mqtt.serial.port is required when zigbee2mqtt.enabled is true" .Values.zigbee2mqtt.serial.port | quote }}
+            - name: ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER
+              value: {{ .Values.zigbee2mqtt.serial.adapter | quote }}
+            {{- with .Values.zigbee2mqtt.serial.baudrate }}
+            - name: ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE
+              value: {{ . | quote }}
+            {{- end }}
+            {{- if .Values.zigbee2mqtt.serial.disableLed }}
+            - name: ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED
+              value: "true"
+            {{- end }}
+            {{- with .Values.zigbee2mqtt.advanced.transmitPower }}
+            - name: ZIGBEE2MQTT_CONFIG_ADVANCED_TRANSMIT_POWER
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.zigbee2mqtt.extraEnv }}
+            {{- range $key, $value := . }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+          volumeMounts:
+            - mountPath: /data
+              name: data
+          ports:
+            - name: http
+              containerPort: {{ .Values.zigbee2mqtt.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.zigbee2mqtt.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -107,6 +107,34 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
+{{/*
+Selector labels
+*/}}
+{{- define "home-assistant.selectorLabelsZigbee2mqtt" -}}
+app.kubernetes.io/name: {{ include "home-assistant.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: zigbee2mqtt
+{{- end }}
+
+{{/*
+Zigbee2mqtt fullname
+*/}}
+{{- define "home-assistant.zigbee2mqttFullname" -}}
+{{- printf "%s-zigbee2mqtt" (include "home-assistant.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Zigbee2mqtt labels
+*/}}
+{{- define "home-assistant.labelsZigbee2mqtt" -}}
+helm.sh/chart: {{ include "home-assistant.chart" . }}
+{{ include "home-assistant.selectorLabelsZigbee2mqtt" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
 
 
 
