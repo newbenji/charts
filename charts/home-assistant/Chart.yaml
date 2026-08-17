@@ -5,7 +5,7 @@ description: |
   Powered by a worldwide community of tinkerers and DIY enthusiasts.
   Perfect to run on a Raspberry Pi or a local server..
 type: application
-version: 0.5.0
+version: 0.5.1
 appVersion: "2026.8.0"
 icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
 keywords:
@@ -24,6 +24,7 @@ annotations:
     - "[Added] Optional zigbee2mqtt service, bridging a Zigbee network (USB or network-attached coordinator) to MQTT, with its own PVC and a choice of Ingress or Gateway API HTTPRoute, disabled by default"
     - "[Fixed] zigbee2mqtt Ingress/HTTPRoute rendered regardless of zigbee2mqtt.enabled - disabling the addon left them pointed at a deleted Service instead of being removed too"
     - "[Added] Optional matterServer sidecar (matterjs-server, successor to the archived python-matter-server) running in the same pod as Home Assistant to share its host network for Matter/Thread mDNS discovery, with its own PVC for fabric data, disabled by default"
+    - "[Changed] matterServer now stores its data in a matter-server/ subdirectory of the shared Home Assistant config volume instead of its own PVC - it's a sidecar in the same pod, so a separate volume isn't needed. Documented that it needs podSecurityContext.fsGroup to match its non-root image user or it crash-loops on EACCES and, since Kubernetes won't ready a pod until every container is, takes Home Assistant itself offline too"
   artifacthub.io/images: |
     - name: home-assistant
       image: homeassistant/home-assistant
