@@ -21,7 +21,7 @@ annotations:
     - "[Changed] Bumped default code-server image to 4.131.0"
     - "[Added] extraContainerPorts to open additional ports (optionally a contiguous range) on the Home Assistant container"
     - "[Added] extraManifests to render arbitrary additional Kubernetes manifests alongside the chart (e.g. an ExternalSecret)"
-    - "[Added] Optional zigbee2mqtt service, bridging a Zigbee network (USB or network-attached coordinator) to MQTT, with its own PVC and Ingress, disabled by default"
+    - "[Added] Optional zigbee2mqtt service, bridging a Zigbee network (USB or network-attached coordinator) to MQTT, with its own PVC and a choice of Ingress or Gateway API HTTPRoute, disabled by default"
   artifacthub.io/images: |
     - name: home-assistant
       image: homeassistant/home-assistant
