@@ -135,6 +135,28 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
+{{/*
+Matter-server fullname - only used to name its PVC, since it runs as a
+sidecar in the main Home Assistant pod rather than its own Deployment/Service
+*/}}
+{{- define "home-assistant.matterServerFullname" -}}
+{{- printf "%s-matter-server" (include "home-assistant.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Matter-server labels
+*/}}
+{{- define "home-assistant.labelsMatterServer" -}}
+helm.sh/chart: {{ include "home-assistant.chart" . }}
+app.kubernetes.io/name: {{ include "home-assistant.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: matter-server
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
 
 
 

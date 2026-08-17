@@ -5,7 +5,7 @@ description: |
   Powered by a worldwide community of tinkerers and DIY enthusiasts.
   Perfect to run on a Raspberry Pi or a local server..
 type: application
-version: 0.4.1
+version: 0.5.0
 appVersion: "2026.8.0"
 icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
 keywords:
@@ -23,6 +23,7 @@ annotations:
     - "[Added] extraManifests to render arbitrary additional Kubernetes manifests alongside the chart (e.g. an ExternalSecret)"
     - "[Added] Optional zigbee2mqtt service, bridging a Zigbee network (USB or network-attached coordinator) to MQTT, with its own PVC and a choice of Ingress or Gateway API HTTPRoute, disabled by default"
     - "[Fixed] zigbee2mqtt Ingress/HTTPRoute rendered regardless of zigbee2mqtt.enabled - disabling the addon left them pointed at a deleted Service instead of being removed too"
+    - "[Added] Optional matterServer sidecar (matterjs-server, successor to the archived python-matter-server) running in the same pod as Home Assistant to share its host network for Matter/Thread mDNS discovery, with its own PVC for fabric data, disabled by default"
   artifacthub.io/images: |
     - name: home-assistant
       image: homeassistant/home-assistant

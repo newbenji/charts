@@ -56,6 +56,15 @@ spec:
         - name: config-notify
           configMap:
             name: config-notify
+        {{- if .Values.matterServer.enabled }}
+        - name: matter-server-data
+          {{- if .Values.matterServer.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.matterServer.persistence.existingClaim | default (include "home-assistant.matterServerFullname" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -151,6 +160,43 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.vscode.resources | nindent 12 }}
+        {{- end }}
+        {{- if .Values.matterServer.enabled }}
+        - name: matter-server
+          image: "{{ .Values.matterServer.image.repository }}:{{ .Values.matterServer.image.tag }}"
+          imagePullPolicy: {{ .Values.matterServer.image.pullPolicy }}
+          args:
+            - --storage-path
+            - /data
+            - --port
+            - {{ .Values.matterServer.port | quote }}
+            {{- with .Values.matterServer.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          env:
+            {{- range $key, $value := .Values.matterServer.extraEnv }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - name: matter
+              containerPort: {{ .Values.matterServer.port }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: matter
+            initialDelaySeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: matter
+            initialDelaySeconds: 15
+          volumeMounts:
+            - mountPath: /data
+              name: matter-server-data
+          securityContext:
+            {{- toYaml .Values.matterServer.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.matterServer.resources | nindent 12 }}
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
