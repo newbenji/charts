@@ -5,7 +5,7 @@ HomeAssistant is an open source home automation that puts local control and priv
 Powered by a worldwide community of tinkerers and DIY enthusiasts.
 Perfect to run on a Raspberry Pi or a local server..
 
-![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
+![Version: 0.4.1](https://img.shields.io/badge/Version-0.4.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
 
 ## Installing the Chart
 
@@ -18,19 +18,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/home-assistant --version 0.4.0
+$ helm install my-release newbenji-charts/home-assistant --version 0.4.1
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.4.0
+$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.4.1
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.4.0
+$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.4.1
 ```
 
 ## Values
