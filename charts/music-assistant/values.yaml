@@ -1,0 +1,255 @@
+# Default values for music-assistant.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  # -- Docker registry/repository to pull the image from
+  repository: ghcr.io/music-assistant/server
+  # -- Docker image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the default tag (appVersion) used in Chart.yaml. Defaults to the chart's appVersion (2.10.6) when left empty. Don't switch an existing install between the stable and `beta` channels by changing the tag - upstream doesn't support moving a database between channels. See available tags at https://github.com/music-assistant/server/pkgs/container/server
+  tag: ""
+  # -- Pin the image by digest (e.g. `sha256:...`). When set, it's used in addition to the tag (`repo:tag@digest`), so the tag stays readable but can't be silently re-pointed
+  digest: ""
+
+# -- Docker image pull secrets
+imagePullSecrets: []
+
+# -- Overrides the name of resources
+nameOverride: ""
+# -- Overrides the Full Name of resources
+fullnameOverride: ""
+
+# -- Labels added to every resource the chart creates
+commonLabels: {}
+# -- Annotations added to every resource the chart creates
+commonAnnotations: {}
+
+# -- Annotations to add to the Deployment
+deploymentAnnotations: {}
+
+# -- Number of old ReplicaSets to keep for rollback
+revisionHistoryLimit: 3
+
+# -- Run the pod in the node's network namespace. Upstream only supports host (or macvlan) networking: player discovery (mDNS/SSDP for Chromecast, AirPlay, Sonos, DLNA, ...) is multicast and the speakers pull audio back from the server's own LAN address, neither of which works through pod networking. Only turn this off if you attach the pod to the LAN another way (e.g. Multus/macvlan via podAnnotations)
+hostNetwork: true
+# -- DNS policy for the pod. `ClusterFirstWithHostNet` keeps cluster DNS (Service names) resolvable while on the host network; plain `ClusterFirst` silently falls back to the node's resolv.conf when hostNetwork is on. Leave empty to use `ClusterFirstWithHostNet` with hostNetwork and `ClusterFirst` without
+dnsPolicy: ""
+
+ports:
+  # -- Port the web UI/API listens on. Music Assistant always binds 8095; only change this if you've changed it upstream too. With hostNetwork this port must be free on every node the pod can be scheduled on
+  web: 8095
+  # -- Port the built-in streamserver listens on, which players pull audio from. Configured in the Music Assistant UI (Settings > Core > Streamserver), not by this chart - this value only documents/exposes it. With hostNetwork this port must be free on every node the pod can be scheduled on (Music Assistant moves on to the next free port if it isn't)
+  stream: 8097
+
+# -- Log level passed as LOG_LEVEL (critical, error, warning, info, debug)
+logLevel: info
+
+# -- Timezone passed as TZ, e.g. Europe/Copenhagen. Left unset when empty
+timezone: ""
+
+# -- Additional environment variables, as a name/value map
+env: {}
+  # PYTHONASYNCIODEBUG: "0"
+
+# -- Additional environment variables in full Kubernetes EnvVar form (e.g. for valueFrom)
+extraEnv: []
+  # - name: SOME_TOKEN
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: my-secret
+  #       key: token
+
+# -- Set environment variables from Secret(s)
+envFromSecrets: []
+  # - music-assistant-env
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use. If not set and create is true, a name is generated using the fullname template
+  name: ""
+  # -- Mount the service account token into the pod. Music Assistant doesn't talk to the Kubernetes API, so this is off by default
+  automountServiceAccountToken: false
+
+# -- Set additional pod annotations
+podAnnotations: {}
+# -- Set additional pod labels
+podLabels: {}
+
+# -- Set Pod level Security Context. The container level security context defined below will override it
+podSecurityContext: {}
+  # fsGroup: 1000
+
+# -- Set Container Security Context. The upstream image runs as root. Only if you want Music Assistant itself to mount SMB/NFS shares from inside the container (instead of mounting them via persistence.media), it needs the SYS_ADMIN and DAC_READ_SEARCH capabilities and an unconfined AppArmor profile - which significantly weakens isolation
+securityContext: {}
+  # capabilities:
+  #   add:
+  #     - SYS_ADMIN
+  #     - DAC_READ_SEARCH
+  # appArmorProfile:
+  #   type: Unconfined
+
+# -- Seconds to wait for a graceful shutdown before the container is killed. Music Assistant flushes its database and stops players on shutdown
+terminationGracePeriodSeconds: 30
+
+# -- Priority class name for the pod
+priorityClassName: ""
+
+# -- RuntimeClass for the pod (e.g. a gVisor/Kata class). Leave empty for the cluster default
+runtimeClassName: ""
+
+# -- Extra /etc/hosts entries for the pod, e.g. to reach a NAS or speaker by a name your DNS doesn't serve
+hostAliases: []
+  # - ip: 192.168.0.20
+  #   hostnames:
+  #     - nas.lan
+
+# -- Init containers to run before Music Assistant starts (rendered with tpl)
+initContainers: []
+
+# -- Sidecar containers to run next to Music Assistant (rendered with tpl), e.g. a snapserver or a backup agent
+extraContainers: []
+
+# -- Lifecycle hooks for the Music Assistant container
+lifecycle: {}
+
+service:
+  # -- Type of Service to use. A ClusterIP Service gives in-cluster clients (like the Home Assistant integration) a stable address, `http://<fullname>.<namespace>.svc:<port>`, no matter which node the host-networked pod lands on
+  type: ClusterIP
+  # -- Port the Service exposes the web UI/API on
+  port: 8095
+  # -- Also expose the stream port on the Service. Normally unnecessary: players are handed the server's own LAN address for streams, not the Service's
+  exposeStreamPort: false
+  # -- Annotations to add to the Service
+  annotations: {}
+
+ingress:
+  # -- Enables the use of an Ingress Controller to front the web UI and can provide HTTPS. Mutually exclusive with httpRoute.enabled. The UI uses a long-lived WebSocket (/ws), so raise your controller's proxy read/send timeouts (e.g. `nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"`)
+  enabled: false
+  # -- ingressClassName for using on clusters with multiple ingresses, default is null
+  className: ""
+  # -- annotations to configure your Ingress. See your Ingress Controller's Docs for more info.
+  annotations: {}
+    # nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    # nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  # -- list of hosts and their paths that the ingress controller should respond to. Each path may also set `pathType` (defaults to `ImplementationSpecific` when unset)
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  # -- list of TLS configurations
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+httpRoute:
+  # -- Expose the web UI via a Gateway API HTTPRoute instead of an Ingress. Requires the Gateway API CRDs and a Gateway to already exist in the cluster. Mutually exclusive with ingress.enabled
+  enabled: false
+  # -- Annotations to add to the HTTPRoute
+  annotations: {}
+  # -- Additional labels to add to the HTTPRoute
+  labels: {}
+  # -- References to the Gateway(s) this route attaches to
+  parentRefs:
+    - name: ""
+      # namespace: gateway-system
+      # sectionName: https
+  # -- Hostnames the route matches. Leave empty to match all hostnames on the parent Gateway listener(s)
+  hostnames: []
+  # -- Path matches routed to the web UI Service
+  matches:
+    - path: /
+      pathType: PathPrefix
+
+persistence:
+  data:
+    # -- Enables persistence for /data, which holds the library database, provider logins (e.g. Spotify), player and core settings. Without it, everything is lost whenever the pod restarts. Strongly recommended. Music Assistant keeps SQLite databases here, so prefer block storage (iSCSI, Longhorn, local) over NFS where you can
+    enabled: true
+    # -- Use an existing PVC instead of creating one
+    existingClaim: ""
+    # -- size/capacity of the PVC. Artwork/metadata cache lives here too (/data/.cache), so large libraries need more
+    size: 2Gi
+    # -- access mode to use for the PVC
+    accessMode: ReadWriteOnce
+    # -- storageClassName for the PVC. Leave empty to use the cluster default, `-` to disable dynamic provisioning
+    storageClass: ""
+    # -- Keep the PVC when the release is uninstalled (sets helm.sh/resource-policy: keep)
+    skipuninstall: true
+    # -- Annotations to add to the PVC, e.g. for a backup tool
+    annotations: {}
+  media:
+    # -- Mount a local music library at /media, for the Filesystem (local disk) music provider
+    enabled: false
+    # -- Existing PVC to mount. Takes precedence over `nfs`
+    existingClaim: ""
+    # -- Mount an NFS export directly instead of a PVC, e.g. `{server: nas.lan, path: /volume1/music}`
+    nfs: {}
+    # -- Path the library is mounted at inside the container
+    mountPath: /media
+    # -- Mount the library read-only, as upstream recommends
+    readOnly: true
+
+# -- Additional volumes to add to the pod
+extraVolumes: []
+# -- Additional volume mounts to add to the container
+extraVolumeMounts: []
+
+probes:
+  # -- Startup probe. Music Assistant loads all providers before its webserver answers, which can take a while on first start or with large libraries, so this allows up to 5 minutes. Probes hit /info, the same lightweight unauthenticated endpoint the Home Assistant integration uses
+  startup:
+    httpGet:
+      path: /info
+      port: http
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+  # -- Liveness probe
+  liveness:
+    httpGet:
+      path: /info
+      port: http
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  # -- Readiness probe
+  readiness:
+    httpGet:
+      path: /info
+      port: http
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# -- Set resource limits/requests for the Pod. Upstream asks for at least 2GB of RAM available to the server; actual usage is usually well below that, but transcoding and large library syncs can spike
+resources: {}
+  # requests:
+  #   cpu: 100m
+  #   memory: 512Mi
+  # limits:
+  #   memory: 2Gi
+
+# -- Node Selector configuration
+nodeSelector: {}
+
+# -- Node toleration configuration
+tolerations: []
+
+# -- Set Pod affinity rules
+affinity: {}
+
+# -- Extra Kubernetes manifests to deploy with the release (list or map of objects or YAML strings, rendered with tpl), e.g. an ExternalSecret or a backup schedule for the /data PVC
+extraManifests: []
+
+tests:
+  # -- Create the `helm test` pod that checks the Service answers on /info
+  enabled: true
+  image:
+    # -- Image used by the test pod
+    repository: docker.io/library/busybox
+    # -- Test image tag
+    tag: "1.37"

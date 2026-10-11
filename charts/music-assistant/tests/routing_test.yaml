@@ -1,0 +1,53 @@
+suite: ingress and httproute
+templates:
+  - templates/ingress.yaml
+  - templates/httproute.yaml
+tests:
+  - it: renders nothing by default
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: points the ingress at the service port
+    template: templates/ingress.yaml
+    set:
+      ingress:
+        enabled: true
+        className: nginx
+        hosts:
+          - host: ma.example.com
+            paths: [{ path: /, pathType: Prefix }]
+        tls:
+          - secretName: ma-tls
+            hosts: [ma.example.com]
+    asserts:
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.port.number
+          value: 8095
+      - equal:
+          path: spec.ingressClassName
+          value: nginx
+      - equal:
+          path: spec.tls[0].secretName
+          value: ma-tls
+
+  - it: refuses ingress and httpRoute together
+    template: templates/ingress.yaml
+    set:
+      ingress.enabled: true
+      httpRoute.enabled: true
+    asserts:
+      - failedTemplate:
+          errorPattern: mutually exclusive
+
+  - it: renders an httproute
+    template: templates/httproute.yaml
+    set:
+      httpRoute:
+        enabled: true
+        parentRefs: [{ name: gw }]
+        hostnames: [ma.example.com]
+    asserts:
+      - equal:
+          path: spec.rules[0].backendRefs[0].port
+          value: 8095

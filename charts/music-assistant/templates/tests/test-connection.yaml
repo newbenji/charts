@@ -1,0 +1,18 @@
+{{- if .Values.tests.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "music-assistant.fullname" . }}-test-connection
+  labels:
+    {{- include "music-assistant.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  containers:
+    - name: wget
+      image: "{{ .Values.tests.image.repository }}:{{ .Values.tests.image.tag }}"
+      command: ["wget", "-q", "-O", "-", "http://{{ include "music-assistant.fullname" . }}:{{ .Values.service.port }}/info"]
+{{- end }}
