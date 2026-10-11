@@ -268,4 +268,45 @@ entries:
     urls:
     - https://github.com/newbenji/charts/releases/download/home-assistant-0.2.1/home-assistant-0.2.1.tgz
     version: 0.2.1
-generated: "2026-08-17T12:32:57.834112484Z"
+  music-assistant:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Added] Initial chart: host-networked Music Assistant server with a ClusterIP Service for in-cluster clients (e.g. the Home Assistant integration), optional Ingress or Gateway API HTTPRoute for the web UI, persistence for /data, and optional /media library mount"
+      artifacthub.io/images: |
+        - name: music-assistant-server
+          image: ghcr.io/music-assistant/server:2.10.6
+      artifacthub.io/links: |
+        - name: Music Assistant source repo
+          url: https://github.com/music-assistant/server
+        - name: Music Assistant docs
+          url: https://music-assistant.io/
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 2.10.6
+    created: "2026-10-11T20:10:06.376078782Z"
+    description: Music Assistant server - a music library manager that connects your
+      streaming services to a wide range of connected speakers (Chromecast/Google
+      Cast, AirPlay, Sonos, DLNA, Squeezebox, ...)
+    digest: bd8dda969c649c6682c70409e9f22362ec66a17cb4ea488734cda59b4f9e4821
+    home: https://github.com/newbenji/charts/tree/main/charts/music-assistant
+    icon: https://raw.githubusercontent.com/music-assistant/server/main/music_assistant/logo.png
+    keywords:
+    - music-assistant
+    - music
+    - audio
+    - multiroom-audio
+    - chromecast
+    - home-assistant
+    - smart home
+    maintainers:
+    - email: benji@newbenji.dk
+      name: newbenji
+    name: music-assistant
+    sources:
+    - https://github.com/music-assistant/server
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/music-assistant-0.1.0/music-assistant-0.1.0.tgz
+    version: 0.1.0
+generated: "2026-10-11T20:10:06.376092212Z"
