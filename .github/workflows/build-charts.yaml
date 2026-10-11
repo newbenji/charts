@@ -137,8 +137,9 @@ jobs:
         run: |
           set -e
           if compgen -G "tests/*_test.yaml" > /dev/null; then
-            helm plugin install https://github.com/helm-unittest/helm-unittest.git --version v1.2.1 > /dev/null
-            helm unittest .
+            # Run from the upstream image rather than as a plugin: current
+            # helm-unittest releases need a newer helm than the one above.
+            docker run --rm -v "$PWD:/apps" helmunittest/helm-unittest:4.3.0-1.2.1 .
           else
             echo "No tests/*_test.yaml suites - skipping"
           fi
