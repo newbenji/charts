@@ -1,0 +1,35 @@
+suite: data pvc
+templates:
+  - templates/data-pvc.yaml
+tests:
+  - it: is kept on uninstall by default
+    asserts:
+      - equal:
+          path: metadata.annotations["helm.sh/resource-policy"]
+          value: keep
+      - equal:
+          path: spec.resources.requests.storage
+          value: 2Gi
+
+  - it: sets the storage class
+    set:
+      persistence.data.storageClass: fast
+    asserts:
+      - equal:
+          path: spec.storageClassName
+          value: fast
+
+  - it: disables dynamic provisioning with "-"
+    set:
+      persistence.data.storageClass: "-"
+    asserts:
+      - equal:
+          path: spec.storageClassName
+          value: ""
+
+  - it: is not created for an existing claim
+    set:
+      persistence.data.existingClaim: mine
+    asserts:
+      - hasDocuments:
+          count: 0

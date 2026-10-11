@@ -1,0 +1,40 @@
+Music Assistant {{ .Values.image.tag | default .Chart.AppVersion }} is starting up.
+
+1. Web UI:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if .Values.httpRoute.enabled }}
+  via the HTTPRoute {{ include "music-assistant.fullname" . }}{{ with .Values.httpRoute.hostnames }} ({{ join ", " . }}){{ end }}
+{{- else if .Values.hostNetwork }}
+  http://<node-ip>:{{ .Values.ports.web }}  (the node the pod runs on:)
+  kubectl get pod --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}" -o wide
+{{- else }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "music-assistant.fullname" . }} {{ .Values.service.port }}
+  then open http://127.0.0.1:{{ .Values.service.port }}
+{{- end }}
+
+   On first visit you create the admin account. The web UI requires a login.
+
+2. Home Assistant integration (Settings > Devices & services > Add > Music Assistant):
+  http://{{ include "music-assistant.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+   If Home Assistant itself runs with hostNetwork, it needs dnsPolicy ClusterFirstWithHostNet to resolve that name.
+
+{{- if not .Values.hostNetwork }}
+
+WARNING: hostNetwork is disabled. Player discovery (mDNS/SSDP) and streaming to
+LAN speakers will not work unless the pod is attached to the LAN another way
+(e.g. Multus/macvlan).
+{{- else }}
+
+3. Ports {{ .Values.ports.web }} (web) and {{ .Values.ports.stream }} (stream) are bound directly on the node and must be free
+   on every node the pod can be scheduled on. Speakers stream from <node-ip>:{{ .Values.ports.stream }}.
+{{- end }}
+{{- if not .Values.persistence.data.enabled }}
+
+WARNING: persistence.data is disabled. The library, provider logins and all settings are lost
+on every restart.
+{{- end }}

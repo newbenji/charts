@@ -1,0 +1,23 @@
+suite: service
+templates:
+  - templates/service.yaml
+tests:
+  - it: exposes only the web port by default
+    asserts:
+      - equal:
+          path: spec.type
+          value: ClusterIP
+      - lengthEqual:
+          path: spec.ports
+          count: 1
+      - equal:
+          path: spec.ports[0].port
+          value: 8095
+
+  - it: can also expose the stream port
+    set:
+      service.exposeStreamPort: true
+    asserts:
+      - contains:
+          path: spec.ports
+          content: { port: 8097, targetPort: stream, protocol: TCP, name: stream }

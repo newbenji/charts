@@ -1,0 +1,99 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+This chart installs the [Music Assistant](https://music-assistant.io/) server on Kubernetes. Upstream only
+supports running it as a standalone, host-networked container; this chart
+keeps that model (one host-networked pod) and adds the Kubernetes pieces
+around it: a Service, an optional Ingress/HTTPRoute, persistence, and probes.
+
+## Networking
+
+The pod runs with `hostNetwork: true` by default, and that's required for
+normal use, for two reasons:
+
+- **Player discovery** (Chromecast/Google Cast, AirPlay, Sonos, DLNA, ...) is
+  mDNS/SSDP multicast on the LAN, which doesn't cross pod networking.
+- **Streaming is pull-based.** Music Assistant hands each speaker a URL on
+  its own LAN address and the streamserver port (8097 by default), and the
+  speaker fetches the audio from there.
+
+Consequences:
+
+- Ports `8095` (web UI/API) and `8097` (stream) are bound on the node. They
+  must be free on every node the pod can be scheduled on. Use `nodeSelector`/`affinity` to
+  restrict that set if needed.
+- If the pod moves to another node, Music Assistant picks up the new node's
+  address by itself. Playback in progress at that moment stops, and
+  speakers are rediscovered within a few seconds.
+- `dnsPolicy` defaults to `ClusterFirstWithHostNet`, so the server can still
+  resolve in-cluster Service names (e.g. Home Assistant's).
+
+A ClusterIP **Service** is always created for port 8095. It's the stable
+address for in-cluster clients and the backend for the Ingress/HTTPRoute.
+Speakers don't use it.
+
+## Connecting Home Assistant
+
+Add the **Music Assistant** integration in Home Assistant and point it at the
+Service:
+
+```
+http://<release-fullname>.<namespace>.svc.cluster.local:8095
+```
+
+If Home Assistant itself runs with `hostNetwork: true`, it needs
+`dnsPolicy: ClusterFirstWithHostNet` to resolve that name. Music Assistant
+2.7+ requires authentication; the integration's config flow takes care of
+logging in.
+
+## Web UI behind an Ingress / HTTPRoute
+
+The UI keeps a long-lived WebSocket open to `/ws`. With ingress-nginx, raise
+the proxy timeouts so idle sessions aren't cut every 60s:
+
+```yaml
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+```
+
+Note that with host networking, port 8095 is also reachable directly on the
+node's address regardless of the Ingress, so an Ingress-level IP allowlist
+doesn't restrict it. Music Assistant's own login does.
+
+## Persistence
+
+`/data` holds the library database, provider logins (e.g. Spotify), and all
+settings, plus the artwork/metadata cache under `/data/.cache`. It's enabled by
+default and kept on uninstall (`persistence.data.skipuninstall`). Music
+Assistant uses SQLite, so block storage is preferable to NFS where you have
+the choice.
+
+For a local music library, enable `persistence.media` with either an existing
+PVC or an NFS export. It's mounted read-only at `/media` and used through the
+Filesystem (local disk) provider. Mounting SMB/NFS shares from *inside* Music
+Assistant instead requires extra capabilities. See `securityContext` in the
+values below.
+
+## Upgrades
+
+Pin `image.tag` (or rely on the chart's appVersion) rather than `latest`, so a
+pod restart never upgrades the server unexpectedly. Don't switch an existing
+install between the stable and `beta` image channels: upstream doesn't support
+moving a database between them.
+
+{{ template "chart.install" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

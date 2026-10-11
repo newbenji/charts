@@ -130,6 +130,21 @@ jobs:
             helm lint -f values.yaml . --with-subcharts
           fi
 
+      # Charts opt in to unit tests by shipping helm-unittest suites under
+      # tests/ (excluded from the package via .helmignore).
+      - name: Unit test Helm chart
+        working-directory: ${{ matrix.chart_path }}
+        run: |
+          set -e
+          if compgen -G "tests/*_test.yaml" > /dev/null; then
+            # Run from the upstream image rather than as a plugin: current
+            # helm-unittest releases need a newer helm than the one above.
+            # Run as the runner user so it can write into the checkout.
+            docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/apps" helmunittest/helm-unittest:4.3.0-1.2.1 .
+          else
+            echo "No tests/*_test.yaml suites - skipping"
+          fi
+
   # Docs are regenerated on the feature branch itself, on every push (a
   # feature branch has no ruleset, so - unlike main - GITHUB_TOKEN can just
   # push straight to it). By the time a PR is opened or merged, the README is

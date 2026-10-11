@@ -1,0 +1,188 @@
+suite: deployment
+templates:
+  - templates/deployment.yaml
+tests:
+  - it: runs a single host-networked replica with Recreate
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.replicas
+          value: 1
+      - equal:
+          path: spec.strategy.type
+          value: Recreate
+      - equal:
+          path: spec.template.spec.hostNetwork
+          value: true
+
+  - it: keeps cluster DNS on the host network by default
+    asserts:
+      - equal:
+          path: spec.template.spec.dnsPolicy
+          value: ClusterFirstWithHostNet
+
+  - it: uses ClusterFirst when hostNetwork is off
+    set:
+      hostNetwork: false
+    asserts:
+      - equal:
+          path: spec.template.spec.dnsPolicy
+          value: ClusterFirst
+
+  - it: honours an explicit dnsPolicy
+    set:
+      dnsPolicy: Default
+    asserts:
+      - equal:
+          path: spec.template.spec.dnsPolicy
+          value: Default
+
+  - it: defaults the image tag to appVersion
+    chart:
+      appVersion: 9.9.9
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/music-assistant/server:9.9.9
+
+  - it: appends the digest when set
+    set:
+      image.tag: 2.10.6
+      image.digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/music-assistant/server:2.10.6@sha256:0000000000000000000000000000000000000000000000000000000000000000
+
+  - it: sets LOG_LEVEL and TZ
+    set:
+      logLevel: debug
+      timezone: Europe/Copenhagen
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content: { name: LOG_LEVEL, value: debug }
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content: { name: TZ, value: Europe/Copenhagen }
+
+  - it: leaves TZ unset by default
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content: { name: TZ, value: "" }
+          any: true
+
+  - it: probes the lightweight /info endpoint
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.httpGet.path
+          value: /info
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /info
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /info
+
+  - it: can disable a probe
+    set:
+      probes.liveness: null
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].livenessProbe
+
+  - it: mounts the generated data PVC at /data
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content: { name: data, mountPath: /data }
+      - equal:
+          path: spec.template.spec.volumes[0].persistentVolumeClaim.claimName
+          value: RELEASE-NAME-music-assistant-data
+
+  - it: uses an existing data claim
+    set:
+      persistence.data.existingClaim: my-claim
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes[0].persistentVolumeClaim.claimName
+          value: my-claim
+
+  - it: falls back to emptyDir without persistence
+    set:
+      persistence.data.enabled: false
+    asserts:
+      - exists:
+          path: spec.template.spec.volumes[0].emptyDir
+
+  - it: mounts an NFS media library read-only
+    set:
+      persistence.media:
+        enabled: true
+        nfs: { server: nas.lan, path: /volume1/music }
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content: { name: media, mountPath: /media, readOnly: true }
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: media
+            nfs: { server: nas.lan, path: /volume1/music, readOnly: true }
+
+  - it: prefers an existing media claim over nfs
+    set:
+      persistence.media:
+        enabled: true
+        existingClaim: music
+        nfs: { server: nas.lan, path: /music }
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: media
+            persistentVolumeClaim: { claimName: music, readOnly: true }
+
+  - it: fails when media has no source
+    set:
+      persistence.media.enabled: true
+    asserts:
+      - failedTemplate:
+          errorPattern: requires persistence.media.existingClaim or persistence.media.nfs
+
+  - it: renders extra containers through tpl
+    set:
+      extraContainers:
+        - name: sidecar
+          image: busybox
+          args: ["{{ .Release.Name }}"]
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[1].args[0]
+          value: RELEASE-NAME
+
+  - it: adds common labels to the pod and common annotations to the deployment
+    set:
+      commonLabels: { team: home }
+      commonAnnotations: { owner: benji }
+      deploymentAnnotations: { note: x }
+    asserts:
+      - equal:
+          path: spec.template.metadata.labels.team
+          value: home
+      - equal:
+          path: metadata.annotations
+          value: { owner: benji, note: x }
+
+  - it: keeps the chart version out of pod labels so chart bumps don't restart the pod
+    asserts:
+      - notExists:
+          path: spec.template.metadata.labels["helm.sh/chart"]
+
+  - it: does not mount a service account token by default
+    asserts:
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false

@@ -1,0 +1,28 @@
+{{- if and .Values.persistence.data.enabled (not .Values.persistence.data.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "music-assistant.dataClaimName" . }}
+  {{- $pvcAnnotations := .Values.persistence.data.annotations | default dict }}
+  {{- if .Values.persistence.data.skipuninstall }}
+  {{- $pvcAnnotations = merge (dict "helm.sh/resource-policy" "keep") $pvcAnnotations }}
+  {{- end }}
+  {{- with include "music-assistant.annotations" (dict "ctx" $ "extra" $pvcAnnotations) }}
+  {{- . | trim | nindent 2 }}
+  {{- end }}
+  labels:
+    {{- include "music-assistant.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.data.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.data.size | quote }}
+  {{- if .Values.persistence.data.storageClass }}
+  {{- if eq "-" .Values.persistence.data.storageClass }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.persistence.data.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}
