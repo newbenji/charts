@@ -25,3 +25,11 @@ A wyoming-piper text-to-speech service is running at:
 
 Add it to Home Assistant via Settings > Devices & Services > Add Integration > Wyoming Protocol.
 {{- end }}
+
+{{- if .Values.config.telegram_bot }}
+
+WARNING: config.telegram_bot is set, but current Home Assistant no longer
+supports YAML setup for telegram_bot and errors on load. Remove it from your
+values and set the bot up via Settings > Devices & Services > Add Integration
+> Telegram bot instead.
+{{- end }}

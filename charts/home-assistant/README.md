@@ -5,7 +5,7 @@ HomeAssistant is an open source home automation that puts local control and priv
 Powered by a worldwide community of tinkerers and DIY enthusiasts.
 Perfect to run on a Raspberry Pi or a local server..
 
-![Version: 0.5.1](https://img.shields.io/badge/Version-0.5.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
+![Version: 0.5.2](https://img.shields.io/badge/Version-0.5.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
 
 ## Installing the Chart
 
@@ -18,19 +18,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/home-assistant --version 0.5.1
+$ helm install my-release newbenji-charts/home-assistant --version 0.5.2
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.1
+$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.2
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.1
+$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.2
 ```
 
 ## Values
@@ -38,16 +38,17 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.1
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| config.automations | object | `{}` | Rendered into configmap-automations.yaml as Home Assistant's automations.yaml. See https://www.home-assistant.io/docs/automation/yaml/ |
-| config.blueprints | object | `{}` | Rendered into configmap-blueprints.yaml as Home Assistant blueprints. See https://www.home-assistant.io/docs/automation/using_blueprints/ |
+| config.automations | list | `[]` | List of automations, mounted read-only at /config/automations/automations.yaml - deliberately not /config/automations.yaml, which HA's UI automation editor writes to. Load them alongside the UI ones by adding `automation chart: !include automations/automations.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/automation/yaml/ |
+| config.blueprints.automation | object | `{}` | Automation blueprints as a map of file name to blueprint, mounted read-only into /config/blueprints/automation/helm/. Each blueprint is either a YAML string, or a map in which HA tags must be quoted (`"!input motion_entity"`) since Helm drops unquoted custom tags. See https://www.home-assistant.io/docs/automation/using_blueprints/ |
+| config.blueprints.script | object | `{}` | Script blueprints, same format as blueprints.automation, mounted into /config/blueprints/script/helm/ |
 | config.http.ip_ban_enabled | bool | `false` | Ban IPs after too many failed login attempts |
 | config.http.login_attempts_threshold | int | `5` | Number of failed login attempts before an IP is banned |
 | config.http.trusted_proxies | list | `[]` | CIDR ranges of reverse proxies trusted to set X-Forwarded-For/X-Forwarded-Proto |
 | config.http.use_x_forwarded_for | bool | `false` | Trust the X-Forwarded-For header from trusted_proxies. See https://www.home-assistant.io/integrations/http/ |
 | config.notify | list | `[]` | Rendered into configmap-notify.yaml as Home Assistant's notify platform config |
 | config.recorder.purge_keep_days | int | `30` | Number of days of history to keep in the recorder database. See https://www.home-assistant.io/integrations/recorder/ |
-| config.scripts | object | `{}` | Rendered into configmap-scripts.yaml as Home Assistant's scripts.yaml. See https://www.home-assistant.io/docs/scripts/ |
-| config.telegram_bot | list | `[]` | Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config |
+| config.scripts | object | `{}` | Scripts, mounted read-only at /config/scripts/scripts.yaml. Load them by adding e.g. `script chart: !include scripts/scripts.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/scripts/ |
+| config.telegram_bot | list | `[]` | Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config. DEPRECATED: current Home Assistant no longer supports YAML setup for telegram_bot and errors on load - set it up via Settings > Devices & Services instead |
 | dnsPolicy | string | `"ClusterFirstWithHostNet"` | Dns policy |
 | extraContainerPorts | list | `[]` | Additional ports to open on the Home Assistant container, e.g. for integrations that listen on their own port (ESPHome dashboard, Matter, HomeKit Bridge, etc). Set `count` greater than 1 to open a contiguous range starting at containerPort. Port names must stay within Kubernetes' 15-character limit and be unique |
 | extraManifests | list | `[]` | Additional arbitrary Kubernetes manifests to render alongside the chart, e.g. an ExternalSecret or a NetworkPolicy. Each entry is either a map (rendered via toYaml) or a string (rendered as-is); both are passed through tpl, so release/values templating works inside them |
@@ -199,21 +200,30 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.5.1
 		</tr>
 		<tr>
 			<td>config.automations</td>
-			<td>object</td>
+			<td>list</td>
 			<td><pre lang="json">
-{}
+[]
 </pre>
 </td>
-			<td>Rendered into configmap-automations.yaml as Home Assistant's automations.yaml. See https://www.home-assistant.io/docs/automation/yaml/</td>
+			<td>List of automations, mounted read-only at /config/automations/automations.yaml - deliberately not /config/automations.yaml, which HA's UI automation editor writes to. Load them alongside the UI ones by adding `automation chart: !include automations/automations.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/automation/yaml/</td>
 		</tr>
 		<tr>
-			<td>config.blueprints</td>
+			<td>config.blueprints.automation</td>
 			<td>object</td>
 			<td><pre lang="json">
 {}
 </pre>
 </td>
-			<td>Rendered into configmap-blueprints.yaml as Home Assistant blueprints. See https://www.home-assistant.io/docs/automation/using_blueprints/</td>
+			<td>Automation blueprints as a map of file name to blueprint, mounted read-only into /config/blueprints/automation/helm/. Each blueprint is either a YAML string, or a map in which HA tags must be quoted (`"!input motion_entity"`) since Helm drops unquoted custom tags. See https://www.home-assistant.io/docs/automation/using_blueprints/</td>
+		</tr>
+		<tr>
+			<td>config.blueprints.script</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Script blueprints, same format as blueprints.automation, mounted into /config/blueprints/script/helm/</td>
 		</tr>
 		<tr>
 			<td>config.http.ip_ban_enabled</td>
@@ -276,7 +286,7 @@ false
 {}
 </pre>
 </td>
-			<td>Rendered into configmap-scripts.yaml as Home Assistant's scripts.yaml. See https://www.home-assistant.io/docs/scripts/</td>
+			<td>Scripts, mounted read-only at /config/scripts/scripts.yaml. Load them by adding e.g. `script chart: !include scripts/scripts.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/scripts/</td>
 		</tr>
 		<tr>
 			<td>config.telegram_bot</td>
@@ -285,7 +295,7 @@ false
 []
 </pre>
 </td>
-			<td>Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config</td>
+			<td>Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config. DEPRECATED: current Home Assistant no longer supports YAML setup for telegram_bot and errors on load - set it up via Settings > Devices & Services instead</td>
 		</tr>
 		<tr>
 			<td>dnsPolicy</td>

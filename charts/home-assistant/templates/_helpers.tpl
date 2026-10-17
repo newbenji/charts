@@ -182,17 +182,39 @@ db_url: !secret hadbconfig
 {{ end }}
 
 
-{{- define "home-assistant.blueprints" -}}
-# This file is created by the helmchart.
-# See config.blueprints in values.yaml
-# script:
-{{ .Values.config.blueprints | toYaml | indent 0 }}
-{{ end }}
-
-
 {{- define "home-assistant.automations" -}}
 # This file is created by the helmchart.
 # See config.automations in values.yaml
-# script:
-{{ .Values.config.automations | toYaml | indent 0 }}
+{{ .Values.config.automations | default list | toYaml | indent 0 }}
 {{ end }}
+
+
+{{/*
+Renders a piece of Home Assistant YAML given either as a string (passed
+through as-is) or as a map/list (via toYaml). Helm silently drops custom
+YAML tags when it parses values, so in map form HA's tags must be written
+quoted, e.g. db_url: "!secret hadbconfig"; this unquotes them again after
+toYaml. Only HA's own tags are touched - any other "!..." string stays a
+quoted string.
+*/}}
+{{- define "home-assistant.haYaml" -}}
+{{- if kindIs "string" . -}}
+{{ . }}
+{{- else -}}
+{{ regexReplaceAll "'(!(secret|include|include_dir_list|include_dir_named|include_dir_merge_list|include_dir_merge_named|env_var|input) [^']*)'" (toYaml .) "${1}" }}
+{{- end -}}
+{{- end }}
+
+
+{{/*
+Hash of every chart-rendered config file, for the deployment's
+checksum/config annotation.
+*/}}
+{{- define "home-assistant.configChecksum" -}}
+{{- $files := list "config-http.yaml" "recorder.yaml" "configmap-scripts.yaml" "configmap-automations.yaml" "configmap-blueprints.yaml" "configmap-notify.yaml" "configmap-telegram-bot.yaml" -}}
+{{- $out := "" -}}
+{{- range $files -}}
+{{- $out = print $out (include (print $.Template.BasePath "/" .) $) -}}
+{{- end -}}
+{{- $out | sha256sum -}}
+{{- end }}

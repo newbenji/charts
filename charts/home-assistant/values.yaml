@@ -368,13 +368,16 @@ config:
     ip_ban_enabled: false
     # -- Number of failed login attempts before an IP is banned
     login_attempts_threshold: 5
-  # -- Rendered into configmap-scripts.yaml as Home Assistant's scripts.yaml. See https://www.home-assistant.io/docs/scripts/
+  # -- Scripts, mounted read-only at /config/scripts/scripts.yaml. Load them by adding e.g. `script chart: !include scripts/scripts.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/scripts/
   scripts: {}
-  # -- Rendered into configmap-automations.yaml as Home Assistant's automations.yaml. See https://www.home-assistant.io/docs/automation/yaml/
-  automations: {}
-  # -- Rendered into configmap-blueprints.yaml as Home Assistant blueprints. See https://www.home-assistant.io/docs/automation/using_blueprints/
-  blueprints: {}
-  # -- Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config
+  # -- List of automations, mounted read-only at /config/automations/automations.yaml - deliberately not /config/automations.yaml, which HA's UI automation editor writes to. Load them alongside the UI ones by adding `automation chart: !include automations/automations.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/automation/yaml/
+  automations: []
+  blueprints:
+    # -- Automation blueprints as a map of file name to blueprint, mounted read-only into /config/blueprints/automation/helm/. Each blueprint is either a YAML string, or a map in which HA tags must be quoted (`"!input motion_entity"`) since Helm drops unquoted custom tags. See https://www.home-assistant.io/docs/automation/using_blueprints/
+    automation: {}
+    # -- Script blueprints, same format as blueprints.automation, mounted into /config/blueprints/script/helm/
+    script: {}
+  # -- Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config. DEPRECATED: current Home Assistant no longer supports YAML setup for telegram_bot and errors on load - set it up via Settings > Devices & Services instead
   telegram_bot: []
   # -- Rendered into configmap-notify.yaml as Home Assistant's notify platform config
   notify: []
