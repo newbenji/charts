@@ -381,6 +381,24 @@ config:
   telegram_bot: []
   # -- Rendered into configmap-notify.yaml as Home Assistant's notify platform config
   notify: []
+  # -- Home Assistant packages (https://www.home-assistant.io/docs/configuration/packages/) as a map of file name (must end in .yaml) to package, mounted read-only into /config/packages/. A package can hold any mix of integrations - automation, script, template, sensor, recorder, ... Each is either a YAML string (rendered as-is, comments kept), or a map in which HA tags must be quoted (`db_url: "!secret hadbconfig"`), since Helm silently drops unquoted custom tags from values. Load them all by adding this once to configuration.yaml: `homeassistant: {packages: !include_dir_named packages}`. Mounting this hides any packages/ directory already on the PVC. A change rolls the pod
+  packages: {}
+  # lights.yaml: |
+  #   automation:
+  #     - alias: Hall light at sunset
+  #       triggers: [{ trigger: sun, event: sunset }]
+  #       actions: [{ action: light.turn_on, target: { entity_id: light.hall } }]
+  # database.yaml:
+  #   recorder:
+  #     db_url: "!secret hadbconfig"
+  #     purge_keep_days: 30
+  secrets:
+    # -- Mount /config/secrets.yaml (what `!secret` reads) from this existing Secret, e.g. one created by ExternalSecrets, SOPS or SealedSecrets. Each key in the Secret becomes one `key: value` entry, written by an initContainer at pod start (a single trailing newline is stripped from each value). Replaces any secrets.yaml already on the PVC - move its entries into the Secret first. Changes only apply on the next pod start; use e.g. Reloader via podAnnotations to restart automatically
+    existingSecret: ""
+    # -- Instead of building secrets.yaml from all keys, mount this one key of the Secret as the complete secrets.yaml file
+    fileKey: ""
+    # -- Secrets to put in a chart-created Secret instead of existingSecret, as key: value. Convenient but lands in your values in plain text - prefer existingSecret for anything committed to Git
+    values: {}
 
 # -- Additional arbitrary Kubernetes manifests to render alongside the chart, e.g. an ExternalSecret or a NetworkPolicy. Each entry is either a map (rendered via toYaml) or a string (rendered as-is); both are passed through tpl, so release/values templating works inside them
 extraManifests: []

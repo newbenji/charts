@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config-telegram-bot
+  name: {{ include "home-assistant.configName" (list . "telegram-bot") }}
   labels:
     app.kubernetes.io/name: {{ include "home-assistant.name" . }}
     helm.sh/chart: {{ include "home-assistant.chart" . }}

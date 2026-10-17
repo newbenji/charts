@@ -8,6 +8,10 @@ templates:
   - templates/configmap-scripts.yaml
   - templates/configmap-notify.yaml
   - templates/configmap-telegram-bot.yaml
+  - templates/configmap-packages.yaml
+  - templates/secret-ha-secrets.yaml
+release:
+  name: ha
 tests:
   - it: renders automations under automations.yaml, as an empty list by default
     template: templates/configmap-automations.yaml
@@ -76,7 +80,7 @@ tests:
           content:
             name: config-blueprints-automation
             configMap:
-              name: config-blueprints
+              name: ha-home-assistant-blueprints
               items:
                 - key: automation.motion.yaml
                   path: motion.yaml

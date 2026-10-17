@@ -33,3 +33,11 @@ supports YAML setup for telegram_bot and errors on load. Remove it from your
 values and set the bot up via Settings > Devices & Services > Add Integration
 > Telegram bot instead.
 {{- end }}
+{{- if .Values.config.packages }}
+
+config.packages is mounted at /config/packages. If configuration.yaml doesn't
+load it yet, add this once:
+
+  homeassistant:
+    packages: !include_dir_named packages
+{{- end }}

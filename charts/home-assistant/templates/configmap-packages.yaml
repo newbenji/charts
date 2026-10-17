@@ -1,0 +1,16 @@
+{{- with .Values.config.packages }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "home-assistant.configName" (list $ "packages") }}
+  labels:
+    {{- include "home-assistant.labels" $ | nindent 4 }}
+data:
+  {{- range $file, $content := . }}
+  {{- if not (hasSuffix ".yaml" $file) }}
+  {{- fail (printf "config.packages.%s: package file names must end in .yaml - Home Assistant's !include_dir_named silently skips anything else" $file) }}
+  {{- end }}
+  {{ $file }}: |
+    {{- include "home-assistant.haYaml" $content | nindent 4 }}
+  {{- end }}
+{{- end }}
