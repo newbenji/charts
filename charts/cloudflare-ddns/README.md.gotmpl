@@ -1,0 +1,60 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+This chart runs [favonia/cloudflare-ddns](https://github.com/favonia/cloudflare-ddns), a small updater that
+detects the public IP address of the network it runs in and keeps Cloudflare
+DNS records pointed at it. Upstream ships only the container image (its
+Kubernetes manifests are no longer maintained); this chart is the Deployment
+around it.
+
+## API token
+
+Create a Cloudflare API token with **Zone - DNS - Edit**, scoped to the
+zone(s) of the managed domains. Nothing else is needed.
+
+Either pass it inline (`cloudflare.apiToken`, the chart stores it in a
+Secret), or reference a Secret you manage yourself (`cloudflare.existingSecret`).
+Set exactly one. The token is mounted as a file and read through
+`CLOUDFLARE_API_TOKEN_FILE`, so it never shows up in the process environment.
+
+With GitOps, keep the token out of plain-text values: for example a
+SOPS-encrypted values file (helm-secrets) for `cloudflare.apiToken`, or an
+external-secrets / sealed-secrets object for `cloudflare.existingSecret`.
+
+## Which records
+
+`domains` are managed for A and AAAA, `ip4Domains` / `ip6Domains` for one
+family only. Wildcards (`*.example.com`) work. The updater only touches the
+listed names; other records in the zone are left alone.
+
+If the records must not get AAAA records (e.g. the cluster's pods have no
+IPv6, or IPv6 isn't published on purpose), set `ip6Provider: none`.
+
+## Detection from inside the cluster
+
+The default provider (`cloudflare.trace`) asks Cloudflare which address the
+request came from, so it sees the address the cluster's outbound traffic is
+NATed to. That is what you want for a home network behind a single public IP.
+Providers that read a local interface address (`local`, `local.iface`) need
+`hostNetwork: true`.
+
+## Only one updater
+
+The Deployment always runs one replica with the `Recreate` strategy, so two
+updaters never race on the same records. `deleteOnStop` stays off by default:
+with it on, every pod restart or rollout would briefly delete the records.
+
+{{ template "chart.install" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

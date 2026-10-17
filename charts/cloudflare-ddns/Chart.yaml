@@ -1,0 +1,28 @@
+apiVersion: v2
+appVersion: "1.17.1"
+description: Cloudflare DDNS updater (favonia/cloudflare-ddns) - keeps Cloudflare DNS records pointed at the current public IP of the network the cluster runs in
+name: cloudflare-ddns
+type: application
+version: 0.1.0
+keywords:
+  - cloudflare
+  - ddns
+  - dynamic-dns
+  - dns
+home: https://github.com/newbenji/charts/tree/main/charts/cloudflare-ddns
+sources:
+  - https://github.com/favonia/cloudflare-ddns
+maintainers:
+  - name: newbenji
+    email: benji@newbenji.dk
+annotations:
+  artifacthub.io/changes: |
+    - "[Added] Initial chart: single-replica favonia/cloudflare-ddns updater with the API token from a chart-managed or existing Secret (mounted as a file), hardened pod defaults, and values for the common updater settings"
+  artifacthub.io/images: |
+    - name: cloudflare-ddns
+      image: favonia/cloudflare-ddns:1.17.1
+  artifacthub.io/links: |
+    - name: cloudflare-ddns source repo
+      url: https://github.com/favonia/cloudflare-ddns
+    - name: Helm Repo
+      url: https://github.com/newbenji/charts

@@ -1,0 +1,16 @@
+cloudflare-ddns is running as {{ include "cloudflare-ddns.fullname" . }} in {{ .Release.Namespace }}.
+
+Managed records:
+{{- with .Values.domains }}
+  A + AAAA: {{ join ", " . }}
+{{- end }}
+{{- with .Values.ip4Domains }}
+  A only:   {{ join ", " . }}
+{{- end }}
+{{- with .Values.ip6Domains }}
+  AAAA only: {{ join ", " . }}
+{{- end }}
+IPv4 provider: {{ .Values.ip4Provider }}, IPv6 provider: {{ .Values.ip6Provider }}, schedule: {{ .Values.updateCron }}
+
+Check what it detected and changed:
+  kubectl -n {{ .Release.Namespace }} logs deploy/{{ include "cloudflare-ddns.fullname" . }}

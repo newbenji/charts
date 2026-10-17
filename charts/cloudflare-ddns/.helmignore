@@ -1,0 +1,14 @@
+# Patterns to ignore when building packages.
+.DS_Store
+.git/
+.gitignore
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+.vscode/
+.idea/
+# helm-unittest suites (tests/*_test.yaml). templates/tests/ holds the `helm test` hook and is kept
+*_test.yaml
+README.md.gotmpl
