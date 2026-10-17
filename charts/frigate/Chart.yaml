@@ -3,13 +3,13 @@ appVersion: "0.17.2"
 description: NVR With Realtime Object Detection for IP Cameras
 name: frigate
 type: application
-version: 7.10.0
+version: 7.10.1
 keywords:
   - tensorflow
   - coral
   - ml
 home: https://github.com/newbenji/charts/tree/main/charts/frigate
-icon: https://github.com/blakeblackshear/frigate/blob/master/docs/static/img/frigate.png
+icon: https://raw.githubusercontent.com/blakeblackshear/frigate/dev/web/public/images/android-chrome-512x512.png
 sources:
   - https://github.com/blakeblackshear/frigate
   - https://github.com/blakeblackshear/blakeshome-charts
@@ -35,6 +35,7 @@ annotations:
     - "[Added] Optional dnsConfig passthrough"
     - "[Added] config accepts a native YAML map in addition to a string"
     - "[Added] persistence.config.seedOnly to seed config.yml once and let Frigate's UI own it afterward, instead of always overwriting it from the ConfigMap"
+    - "[Fixed] Chart icon pointed at a GitHub HTML page (blob/ URL) that has since moved, so Artifact Hub got a 404; now uses Frigate's square app icon as a raw image"
   artifacthub.io/images: |
     - name: frigate
       image: ghcr.io/blakeblackshear/frigate
