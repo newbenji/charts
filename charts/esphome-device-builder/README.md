@@ -3,7 +3,7 @@
 
 Web dashboard for building, flashing, and managing ESPHome firmware on ESP8266/ESP32 devices
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.7.4](https://img.shields.io/badge/AppVersion-2026.7.4-informational?style=flat-square)
+![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.7.4](https://img.shields.io/badge/AppVersion-2026.7.4-informational?style=flat-square)
 
 This chart installs the [ESPHome Device Builder](https://github.com/esphome/device-builder) dashboard on Kubernetes, for building and flashing ESPHome firmware to ESP8266/ESP32 devices. As of ESPHome 2026.6.0, this is the dashboard bundled in the standard `ghcr.io/esphome/esphome` image.
 
@@ -47,19 +47,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/esphome-device-builder --version 0.1.0
+$ helm install my-release newbenji-charts/esphome-device-builder --version 0.1.1
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.0
+$ helm install my-release oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.1
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.0
+$ helm pull oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.1
 ```
 
 ## Maintainers
