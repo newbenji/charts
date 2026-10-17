@@ -237,6 +237,14 @@ jobs:
         with:
           commit_message: "docs: regenerate chart READMEs"
           file_pattern: "charts/**/README.md"
+          # Author the commit as the bot rather than the default (whoever
+          # triggered the run). Besides being accurate, the bot only counts
+          # as a previous contributor - and so skips the fork-PR approval
+          # gate for the PR run this push starts - once a commit it
+          # authored has been merged.
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
 
   # Safety net for pull requests from forks: regenerate-docs above can't push
   # back to a fork, so this just fails the check instead, flagging a stale
