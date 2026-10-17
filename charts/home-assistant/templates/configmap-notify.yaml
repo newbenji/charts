@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config-notify
+  name: {{ include "home-assistant.configName" (list . "notify") }}
   labels:
     app.kubernetes.io/name: {{ include "home-assistant.name" . }}
     helm.sh/chart: {{ include "home-assistant.chart" . }}

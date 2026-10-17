@@ -46,21 +46,21 @@ spec:
           {{- end }}
         - name: recorder
           secret:
-            secretName: recorder
+            secretName: {{ include "home-assistant.configName" (list $ "recorder") }}
         - name: httpconfig
           configMap:
-            name: config-http
+            name: {{ include "home-assistant.configName" (list $ "http") }}
         - name: config-scripts
           configMap:
-            name: config-scripts
+            name: {{ include "home-assistant.configName" (list $ "scripts") }}
         - name: config-automations
           configMap:
-            name: config-automations
+            name: {{ include "home-assistant.configName" (list $ "automations") }}
         {{- range $domain := list "automation" "script" }}
         {{- with index $.Values.config.blueprints $domain }}
         - name: config-blueprints-{{ $domain }}
           configMap:
-            name: config-blueprints
+            name: {{ include "home-assistant.configName" (list $ "blueprints") }}
             items:
               {{- range $file, $_ := . }}
               - key: {{ printf "%s.%s" $domain $file }}
@@ -70,10 +70,57 @@ spec:
         {{- end }}
         - name: config-telegram-bot
           configMap:
-            name: config-telegram-bot
+            name: {{ include "home-assistant.configName" (list $ "telegram-bot") }}
         - name: config-notify
           configMap:
-            name: config-notify
+            name: {{ include "home-assistant.configName" (list $ "notify") }}
+        {{- if .Values.config.packages }}
+        - name: packages
+          configMap:
+            name: {{ include "home-assistant.configName" (list $ "packages") }}
+        {{- end }}
+        {{- if include "home-assistant.secretsEnabled" . }}
+        - name: ha-secrets
+          secret:
+            secretName: {{ include "home-assistant.secretsName" . }}
+        {{- if not .Values.config.secrets.fileKey }}
+        - name: ha-secrets-rendered
+          emptyDir:
+            medium: Memory
+        {{- end }}
+        {{- end }}
+      {{- if and (include "home-assistant.secretsEnabled" .) (not .Values.config.secrets.fileKey) }}
+      initContainers:
+        # Builds secrets.yaml from the Secret's keys, one `key: value` per
+        # key. Reuses the Home Assistant image for its python3 rather than
+        # pulling another image; values are JSON-encoded, which is valid
+        # YAML and escapes anything a shell loop would mangle.
+        - name: render-secrets
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - python3
+            - -c
+            - |
+              import json, os
+              src = "/secrets"
+              with open("/out/secrets.yaml", "w") as out:
+                  for key in sorted(os.listdir(src)):
+                      path = os.path.join(src, key)
+                      if key.startswith(".") or not os.path.isfile(path):
+                          continue
+                      with open(path) as f:
+                          value = f.read().rstrip("\n")
+                      out.write(f"{json.dumps(key)}: {json.dumps(value)}\n")
+          volumeMounts:
+            - name: ha-secrets
+              mountPath: /secrets
+              readOnly: true
+            - name: ha-secrets-rendered
+              mountPath: /out
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -117,6 +164,26 @@ spec:
               mountPath: /config/notify.yaml
               subPath: notify.yaml
               readOnly: true
+            {{- if .Values.config.packages }}
+            # A whole-directory mount, not subPath, so edits reach the pod
+            # without a restart (a pod roll still follows via checksum/config).
+            - name: packages
+              mountPath: /config/packages
+              readOnly: true
+            {{- end }}
+            {{- if include "home-assistant.secretsEnabled" . }}
+            {{- if .Values.config.secrets.fileKey }}
+            - name: ha-secrets
+              mountPath: /config/secrets.yaml
+              subPath: {{ .Values.config.secrets.fileKey }}
+              readOnly: true
+            {{- else }}
+            - name: ha-secrets-rendered
+              mountPath: /config/secrets.yaml
+              subPath: secrets.yaml
+              readOnly: true
+            {{- end }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 8123

@@ -211,10 +211,32 @@ Hash of every chart-rendered config file, for the deployment's
 checksum/config annotation.
 */}}
 {{- define "home-assistant.configChecksum" -}}
-{{- $files := list "config-http.yaml" "recorder.yaml" "configmap-scripts.yaml" "configmap-automations.yaml" "configmap-blueprints.yaml" "configmap-notify.yaml" "configmap-telegram-bot.yaml" -}}
+{{- $files := list "config-http.yaml" "recorder.yaml" "configmap-scripts.yaml" "configmap-automations.yaml" "configmap-blueprints.yaml" "configmap-notify.yaml" "configmap-telegram-bot.yaml" "configmap-packages.yaml" "secret-ha-secrets.yaml" -}}
 {{- $out := "" -}}
 {{- range $files -}}
 {{- $out = print $out (include (print $.Template.BasePath "/" .) $) -}}
 {{- end -}}
 {{- $out | sha256sum -}}
+{{- end }}
+
+
+{{/*
+Name of a chart-rendered config object: the release fullname plus a suffix,
+so two releases in one namespace don't collide. Called with (list $ "suffix").
+*/}}
+{{- define "home-assistant.configName" -}}
+{{- $root := index . 0 -}}
+{{- printf "%s-%s" (include "home-assistant.fullname" $root) (index . 1) | trunc 63 | trimSuffix "-" -}}
+{{- end }}
+
+
+{{/*
+Whether /config/secrets.yaml comes from a Secret (config.secrets).
+*/}}
+{{- define "home-assistant.secretsEnabled" -}}
+{{- if or .Values.config.secrets.existingSecret .Values.config.secrets.values }}true{{ end -}}
+{{- end }}
+
+{{- define "home-assistant.secretsName" -}}
+{{- .Values.config.secrets.existingSecret | default (include "home-assistant.configName" (list . "secrets")) -}}
 {{- end }}

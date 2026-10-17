@@ -6,7 +6,7 @@ domain's keys into /config/blueprints/<domain>/helm/.
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config-blueprints
+  name: {{ include "home-assistant.configName" (list . "blueprints") }}
   labels:
     {{- include "home-assistant.labels" . | nindent 4 }}
 data:

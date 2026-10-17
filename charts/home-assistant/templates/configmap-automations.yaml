@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config-automations
+  name: {{ include "home-assistant.configName" (list . "automations") }}
   labels:
     {{- include "home-assistant.labels" . | nindent 4 }}
 data:
