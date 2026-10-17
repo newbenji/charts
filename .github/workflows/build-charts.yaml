@@ -13,11 +13,13 @@ on:
       - synchronize
       - reopened
       - closed
-  # Fallback for when a merged PR doesn't trigger the closed event above (seen
-  # in practice - GitHub occasionally drops it, e.g. on a ruleset-bypass
-  # merge - with no error surfaced anywhere, so it's easy to miss). Manually
-  # packages+publishes Chart.yaml's current version from main as-is, same as
-  # a normal merge release would.
+  # Fallback for when a merged PR doesn't trigger the closed event above.
+  # The known cause was the docs commit below carrying `[skip ci]`: GitHub
+  # skips pull_request runs (including `closed`) when the PR's head commit
+  # says so, so merges whose last commit was the README regeneration never
+  # released. Fixed by dropping `[skip ci]`; kept as a manual escape hatch.
+  # Manually packages+publishes Chart.yaml's current version from main as-is,
+  # same as a normal merge release would.
   workflow_dispatch:
     inputs:
       chart_path:
@@ -149,9 +151,11 @@ jobs:
   # feature branch has no ruleset, so - unlike main - GITHUB_TOKEN can just
   # push straight to it). By the time a PR is opened or merged, the README is
   # already correct and part of the same diff - no separate post-merge PR
-  # needed. `[skip ci]` on the commit stops it from retriggering this same
-  # workflow (the retrigger would just find no further diff and commit
-  # nothing, but would still burn a redundant lint+alpha-build cycle first).
+  # needed. The commit doesn't retrigger this workflow: it's pushed with
+  # GITHUB_TOKEN, and pushes made with GITHUB_TOKEN never start new workflow
+  # runs. Don't add `[skip ci]` to the message: when this commit ends up as
+  # a PR's head, GitHub then skips the PR's pull_request runs too, i.e. the
+  # PR checks and, on merge, the release.
   #
   # This only works for branches pushed to this repo directly - a fork PR's
   # GITHUB_TOKEN is read-only here, so it can't push back to the fork. See
@@ -184,7 +188,7 @@ jobs:
       - name: Commit regenerated docs
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "docs: regenerate chart READMEs [skip ci]"
+          commit_message: "docs: regenerate chart READMEs"
           file_pattern: "charts/**/README.md"
 
   # Safety net for pull requests from forks: regenerate-docs above can't push
