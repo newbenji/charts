@@ -1,5 +1,40 @@
 apiVersion: v1
 entries:
+  cloudflare-ddns:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Added] Initial chart: single-replica favonia/cloudflare-ddns updater with the API token from a chart-managed or existing Secret (mounted as a file), hardened pod defaults, and values for the common updater settings"
+      artifacthub.io/images: |
+        - name: cloudflare-ddns
+          image: favonia/cloudflare-ddns:1.17.1
+      artifacthub.io/links: |
+        - name: cloudflare-ddns source repo
+          url: https://github.com/favonia/cloudflare-ddns
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 1.17.1
+    created: "2026-10-17T07:44:53.033670197Z"
+    description: Cloudflare DDNS updater (favonia/cloudflare-ddns) - keeps Cloudflare
+      DNS records pointed at the current public IP of the network the cluster runs
+      in
+    digest: 62931e8a26eb66012e4798c51023afbb566e4d569c4867a01a14311a62aae652
+    home: https://github.com/newbenji/charts/tree/main/charts/cloudflare-ddns
+    keywords:
+    - cloudflare
+    - ddns
+    - dynamic-dns
+    - dns
+    maintainers:
+    - email: benji@newbenji.dk
+      name: newbenji
+    name: cloudflare-ddns
+    sources:
+    - https://github.com/favonia/cloudflare-ddns
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/cloudflare-ddns-0.1.0/cloudflare-ddns-0.1.0.tgz
+    version: 0.1.0
   esphome-device-builder:
   - annotations:
       artifacthub.io/changes: |
@@ -347,4 +382,4 @@ entries:
     urls:
     - https://github.com/newbenji/charts/releases/download/music-assistant-0.1.0/music-assistant-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-11T20:11:17.563584115Z"
+generated: "2026-10-17T07:44:53.033692128Z"
