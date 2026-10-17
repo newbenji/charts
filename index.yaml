@@ -45,6 +45,51 @@ entries:
         - "[Fixed] liveness/readiness probes hit the full dashboard SPA (/) instead of the lightweight /version endpoint the upstream image's own Docker healthcheck uses"
         - "[Changed] Bumped default appVersion to 2026.7.4 (was stuck on 1.16.0); the image now bundles the actively-maintained esphome/device-builder dashboard (this chart's namesake) instead of the legacy dashboard"
         - "[Changed] Cleaned up the ingress template to the current Helm standard (dropped pre-1.19 Kubernetes compatibility branches)"
+        - "[Fixed] artifacthub.io/images listed the image without a tag, so Artifact Hub's security scan checked :latest instead of the deployed version. Now pinned to the appVersion"
+      artifacthub.io/images: |
+        - name: esphome-device-builder
+          image: ghcr.io/esphome/esphome:2026.7.4
+      artifacthub.io/links: |
+        - name: ESPHome source repo
+          url: https://github.com/esphome/esphome
+        - name: Device Builder dashboard source repo
+          url: https://github.com/esphome/device-builder
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 2026.7.4
+    created: "2026-10-17T09:19:56.760842504Z"
+    description: Web dashboard for building, flashing, and managing ESPHome firmware
+      on ESP8266/ESP32 devices
+    digest: b98f5151a8bd4861a42d294d6a8d38702d0a49012184af125d083b028a3d52a1
+    home: https://github.com/newbenji/charts/tree/main/charts/esphome-device-builder
+    icon: https://esphome.io/images/logo.svg
+    keywords:
+    - esphome
+    - esp8266
+    - esp32
+    - iot
+    - smart home
+    maintainers:
+    - email: benji@newbenji.dk
+      name: newbenji
+    name: esphome-device-builder
+    sources:
+    - https://github.com/esphome/esphome
+    - https://github.com/esphome/device-builder
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/esphome-device-builder-0.1.1/esphome-device-builder-0.1.1.tgz
+    version: 0.1.1
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Added] Recovered this chart from an old ChartMuseum devel repo (its source repository was lost) and republished it here going forward"
+        - "[Added] Gateway API HTTPRoute support as an alternative to Ingress"
+        - "[Added] Persistence for /config (device configs, secrets, and dashboard state - previously lost on every pod restart) and optionally /cache (PlatformIO toolchain downloads)"
+        - "[Added] env/envFromSecrets support, e.g. for ESPHOME_TRUSTED_DOMAINS (needed behind a reverse proxy/ingress that doesn't forward the original Host header) or ESPHOME_USERNAME/ESPHOME_PASSWORD"
+        - "[Fixed] liveness/readiness probes hit the full dashboard SPA (/) instead of the lightweight /version endpoint the upstream image's own Docker healthcheck uses"
+        - "[Changed] Bumped default appVersion to 2026.7.4 (was stuck on 1.16.0); the image now bundles the actively-maintained esphome/device-builder dashboard (this chart's namesake) instead of the legacy dashboard"
+        - "[Changed] Cleaned up the ingress template to the current Helm standard (dropped pre-1.19 Kubernetes compatibility branches)"
       artifacthub.io/images: |
         - name: esphome-device-builder
           image: ghcr.io/esphome/esphome
@@ -81,6 +126,59 @@ entries:
     - https://github.com/newbenji/charts/releases/download/esphome-device-builder-0.1.0/esphome-device-builder-0.1.0.tgz
     version: 0.1.0
   frigate:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed] Forked from blakeblackshear/blakeshome-charts (unmaintained since 2025-11), to be maintained and improved here going forward"
+        - "[Fixed] go2rtc admin service port (1984) was routed to the wrong container port (webrtc-tcp instead of go2rtc-admin)"
+        - "[Fixed] liveness/readiness/startup probes hit the full web UI (/) instead of a lightweight endpoint (/api/)"
+        - "[Fixed] resources.limits.nvidia.com/gpu was rendered as a YAML int instead of the string Kubernetes' Quantity type expects"
+        - "[Fixed] RSTP typos (frigate-rstp-credentials, FRIGATE_RSTP_USERNAME) corrected to RTSP"
+        - "[Fixed] stale amd64nvidia/Docker-Hub image tagging guidance replaced with current GHCR-based tagging"
+        - "[Changed] Bumped default appVersion to 0.17.2 (was stuck on 0.14.1)"
+        - "[Added] Configurable ingress pathType per host path (was hardcoded to ImplementationSpecific)"
+        - "[Added] Gateway API HTTPRoute support as an alternative to Ingress"
+        - "[Added] priorityClassName support"
+        - "[Added] Optional dnsConfig passthrough"
+        - "[Added] config accepts a native YAML map in addition to a string"
+        - "[Added] persistence.config.seedOnly to seed config.yml once and let Frigate's UI own it afterward, instead of always overwriting it from the ConfigMap"
+        - "[Fixed] Chart icon pointed at a GitHub HTML page (blob/ URL) that has since moved, so Artifact Hub got a 404; now uses Frigate's square app icon as a raw image"
+        - "[Fixed] artifacthub.io/images listed the image without a tag, so Artifact Hub's security scan fell back to :latest, which Frigate doesn't publish (image not found). Now pinned to the appVersion"
+      artifacthub.io/images: |
+        - name: frigate
+          image: ghcr.io/blakeblackshear/frigate:0.17.2
+      artifacthub.io/links: |
+        - name: Frigate source repo
+          url: https://github.com/blakeblackshear/frigate
+        - name: Upstream chart (blakeshome-charts)
+          url: https://github.com/blakeblackshear/blakeshome-charts
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 0.17.2
+    created: "2026-10-17T09:19:56.928885362Z"
+    description: NVR With Realtime Object Detection for IP Cameras
+    digest: 6899d674cda11660516c4514bbaa288f82e05b461188031a5a9e574465e7cbe2
+    home: https://github.com/newbenji/charts/tree/main/charts/frigate
+    icon: https://raw.githubusercontent.com/blakeblackshear/frigate/dev/web/public/images/android-chrome-512x512.png
+    keywords:
+    - tensorflow
+    - coral
+    - ml
+    maintainers:
+    - email: blakeb@blakeshome.com
+      name: blakeblackshear
+    - email: jeff@billimek.com
+      name: billimek
+    - email: benji@newbenji.dk
+      name: newbenji
+    name: frigate
+    sources:
+    - https://github.com/blakeblackshear/frigate
+    - https://github.com/blakeblackshear/blakeshome-charts
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/frigate-7.10.2/frigate-7.10.2.tgz
+    version: 7.10.2
   - annotations:
       artifacthub.io/changes: |
         - "[Changed] Forked from blakeblackshear/blakeshome-charts (unmaintained since 2025-11), to be maintained and improved here going forward"
@@ -185,6 +283,60 @@ entries:
     - https://github.com/newbenji/charts/releases/download/frigate-7.10.0/frigate-7.10.0.tgz
     version: 7.10.0
   home-assistant:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed] Bumped default appVersion to 2026.8.0"
+        - "[Added] Optional whisper (speech-to-text) and piper (text-to-speech) Wyoming services, disabled by default"
+        - "[Changed] Cleaned up the ingress template to the current Helm standard and added Gateway API httpRoute support as an alternative"
+        - "[Fixed] vscode sidecar: fixed the default port (was 80, unusable by the non-root code-server user), wired up the password and resources values that templates already referenced but values.yaml never defined, and removed the vscode.ingress/vscode.service.* fields that had no template backing them"
+        - "[Changed] Bumped default code-server image to 4.131.0"
+        - "[Added] extraContainerPorts to open additional ports (optionally a contiguous range) on the Home Assistant container"
+        - "[Added] extraManifests to render arbitrary additional Kubernetes manifests alongside the chart (e.g. an ExternalSecret)"
+        - "[Added] Optional zigbee2mqtt service, bridging a Zigbee network (USB or network-attached coordinator) to MQTT, with its own PVC and a choice of Ingress or Gateway API HTTPRoute, disabled by default"
+        - "[Fixed] zigbee2mqtt Ingress/HTTPRoute rendered regardless of zigbee2mqtt.enabled - disabling the addon left them pointed at a deleted Service instead of being removed too"
+        - "[Added] Optional matterServer sidecar (matterjs-server, successor to the archived python-matter-server) running in the same pod as Home Assistant to share its host network for Matter/Thread mDNS discovery, with its own PVC for fabric data, disabled by default"
+        - "[Changed] matterServer now stores its data in a matter-server/ subdirectory of the shared Home Assistant config volume instead of its own PVC - it's a sidecar in the same pod, so a separate volume isn't needed. Documented that it needs podSecurityContext.fsGroup to match its non-root image user or it crash-loops on EACCES and, since Kubernetes won't ready a pod until every container is, takes Home Assistant itself offline too"
+        - "[Fixed] config.automations was rendered under the key scripts.yaml and never mounted - it's now mounted at /config/automations/automations.yaml (not /config/automations.yaml, which HA's UI editor owns), defaulting to an empty list"
+        - "[Fixed] config.blueprints was likewise rendered as scripts.yaml and never mounted. It's now config.blueprints.automation / config.blueprints.script, each a map of file name to blueprint, mounted into /config/blueprints/<domain>/helm/"
+        - "[Added] Blueprints can be given as YAML strings or as maps; in map form, quoted HA tags (\"!input x\", \"!secret x\") are unquoted again, since Helm drops unquoted custom tags from values"
+        - "[Fixed] Changing chart-rendered config (http, recorder, scripts, automations, blueprints, notify) now rolls the pod via a checksum/config annotation - subPath-mounted files never picked up ConfigMap updates before"
+        - "[Fixed] The Deployment's labels defined app.kubernetes.io/component twice, which strict YAML parsers reject"
+        - "[Deprecated] config.telegram_bot: current Home Assistant rejects YAML setup for telegram_bot. NOTES.txt now warns when it's set"
+        - "[Added] config.packages: Home Assistant packages as a map of file name to YAML (string, or map with quoted HA tags), mounted into /config/packages/. One `homeassistant: {packages: !include_dir_named packages}` line in configuration.yaml loads them all"
+        - "[Added] config.secrets: mount /config/secrets.yaml from an existing Secret (e.g. ExternalSecrets/SOPS), built from its keys by an initContainer or taken from a single fileKey, or from inline config.secrets.values"
+        - "[Changed] Chart-rendered config objects are now prefixed with the release fullname (e.g. recorder -> <release>-home-assistant-recorder, config-http -> <release>-home-assistant-http), so two releases in one namespace no longer collide. Mount paths inside the pod are unchanged, so existing configuration.yaml includes keep working"
+        - "[Fixed] Chart icon pointed at a Wikimedia thumbnail URL that Artifact Hub can't fetch (HTTP 400); now uses Home Assistant's official brands icon"
+        - "[Added] config.configuration.mode: `seed` writes a rendered configuration.yaml only if none exists, `managed` mounts it read-only so it lives in Git and changes roll the pod. Default `unmanaged` leaves it alone as before"
+        - "[Added] config.configuration.content (HA's default configuration by default) and config.configuration.homeassistant, into which the chart merges the config.packages include. Content defining its own homeassistant: block is rejected - HA only warns on the duplicate key and silently drops one of them"
+        - "[Added] In seed/managed mode, empty automations.yaml/scripts.yaml/scenes.yaml are created if missing, since HA only creates them alongside its own default configuration.yaml"
+        - "[Fixed] checksum/config hashed whole rendered objects, including the helm.sh/chart version label, so every chart upgrade restarted Home Assistant even without config changes. It now hashes only the config data (upgrading to this version restarts it one last time)"
+        - "[Deprecated] config.http, config.recorder, hadbconfig, config.scripts, config.automations and config.notify: they only take effect via hand-written !include lines and will be removed in a future release in favour of config.packages (+ config.secrets for hadbconfig). NOTES.txt lists the ones you've changed from their defaults, with the package equivalent"
+        - "[Fixed] artifacthub.io/images listed the image without a tag, so Artifact Hub's security scan checked :latest instead of the deployed version. Now pinned to the appVersion"
+      artifacthub.io/images: |
+        - name: home-assistant
+          image: homeassistant/home-assistant:2026.8.0
+      artifacthub.io/links: |
+        - name: Home assistant source repo
+          url: https://github.com/home-assistant
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 2026.8.0
+    created: "2026-10-17T09:19:57.054612487Z"
+    description: 'HomeAssistant is an open source home automation that puts local
+      control and privacy first. Powered by a worldwide community of tinkerers and
+      DIY enthusiasts. Perfect to run on a Raspberry Pi or a local server.. '
+    digest: 8bce1bda324dd1b833c5684078d285658cf6a10226f040b7ffeff1b94013b819
+    icon: https://brands.home-assistant.io/homeassistant/icon.png
+    keywords:
+    - homeassistant
+    - home-assistant
+    - smart home
+    name: home-assistant
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/home-assistant-0.7.2/home-assistant-0.7.2.tgz
+    version: 0.7.2
   - annotations:
       artifacthub.io/changes: |
         - "[Changed] Bumped default appVersion to 2026.8.0"
@@ -631,4 +783,4 @@ entries:
     urls:
     - https://github.com/newbenji/charts/releases/download/music-assistant-0.1.0/music-assistant-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-17T09:14:06.558384379Z"
+generated: "2026-10-17T09:19:57.054686636Z"
