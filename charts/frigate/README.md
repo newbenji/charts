@@ -3,7 +3,7 @@
 
 NVR With Realtime Object Detection for IP Cameras
 
-![Version: 7.10.1](https://img.shields.io/badge/Version-7.10.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.17.2](https://img.shields.io/badge/AppVersion-0.17.2-informational?style=flat-square)
+![Version: 7.10.2](https://img.shields.io/badge/Version-7.10.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.17.2](https://img.shields.io/badge/AppVersion-0.17.2-informational?style=flat-square)
 
 This chart installs [Frigate](https://frigate.video/) on Kubernetes.
 
@@ -26,19 +26,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/frigate --version 7.10.1
+$ helm install my-release newbenji-charts/frigate --version 7.10.2
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/frigate --version 7.10.1
+$ helm install my-release oci://ghcr.io/newbenji/charts/frigate --version 7.10.2
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/frigate --version 7.10.1
+$ helm pull oci://ghcr.io/newbenji/charts/frigate --version 7.10.2
 ```
 
 #### Minimum Config
