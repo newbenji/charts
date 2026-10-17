@@ -77,6 +77,9 @@ jobs:
         with:
           matrix: true
           files: charts/**
+          # README-only changes (e.g. a docs commit that missed its PR, see
+          # regenerate-docs) don't need a build or a re-release.
+          files_ignore: charts/**/README.md
           base_sha: "${{ steps.base-sha.outputs.sha }}"
           dir_names_max_depth: 2
           dir_names: true
@@ -189,7 +192,21 @@ jobs:
           git-push: false
           fail-on-diff: false
 
+      # If the PR was merged while this job ran, GitHub has already deleted
+      # the branch, and pushing would recreate it with a docs commit that
+      # never reaches main. Skip instead; main's README catches up on the
+      # chart's next change.
+      - name: Check branch still exists
+        id: branch
+        run: |
+          if git ls-remote --exit-code --heads origin "$GITHUB_REF_NAME" > /dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Branch $GITHUB_REF_NAME is gone (merged and deleted?) - not pushing docs"
+          fi
+
       - name: Commit regenerated docs
+        if: steps.branch.outputs.exists == 'true'
         uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7.2.0
         with:
           commit_message: "docs: regenerate chart READMEs"
