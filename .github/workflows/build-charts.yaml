@@ -196,11 +196,19 @@ jobs:
   # back to a fork, so this just fails the check instead, flagging a stale
   # README on the PR. It doesn't block merging - the main ruleset has no
   # required-status-check rule - but it's visible to a reviewer.
+  #
+  # Skipped for branches in this repo: regenerate-docs fixes those itself,
+  # and a PR opened before that push lands would otherwise check the stale
+  # README and stay red. The docs commit does start a new PR run (actor
+  # github-actions[bot]); it only runs without manual approval because the
+  # repo's fork-PR approval policy is "first-time contributors", which the
+  # bot isn't - "all outside contributors" would leave it waiting.
   check-docs:
     needs: [detect-changed-folders, validate-charts]
     if: >
       github.event_name == 'pull_request' &&
       github.event.action != 'closed' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
       needs.detect-changed-folders.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     permissions:
