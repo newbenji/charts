@@ -3,7 +3,7 @@ appVersion: "2026.7.4"
 description: Web dashboard for building, flashing, and managing ESPHome firmware on ESP8266/ESP32 devices
 name: esphome-device-builder
 type: application
-version: 0.1.0
+version: 0.1.1
 keywords:
   - esphome
   - esp8266
@@ -27,9 +27,10 @@ annotations:
     - "[Fixed] liveness/readiness probes hit the full dashboard SPA (/) instead of the lightweight /version endpoint the upstream image's own Docker healthcheck uses"
     - "[Changed] Bumped default appVersion to 2026.7.4 (was stuck on 1.16.0); the image now bundles the actively-maintained esphome/device-builder dashboard (this chart's namesake) instead of the legacy dashboard"
     - "[Changed] Cleaned up the ingress template to the current Helm standard (dropped pre-1.19 Kubernetes compatibility branches)"
+    - "[Fixed] artifacthub.io/images listed the image without a tag, so Artifact Hub's security scan checked :latest instead of the deployed version. Now pinned to the appVersion"
   artifacthub.io/images: |
     - name: esphome-device-builder
-      image: ghcr.io/esphome/esphome
+      image: ghcr.io/esphome/esphome:2026.7.4
   artifacthub.io/links: |
     - name: ESPHome source repo
       url: https://github.com/esphome/esphome
