@@ -4,7 +4,6 @@ metadata:
   name: {{ include "home-assistant.fullname" . }}
   labels:
     {{- include "home-assistant.labels" . | nindent 4 }}
-    app.kubernetes.io/component: home-assistant
 spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
@@ -14,10 +13,14 @@ spec:
       {{- include "home-assistant.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        # Roll the pod when chart-rendered config changes: subPath mounts
+        # never see ConfigMap/Secret updates, and HA only reads most of
+        # these files at startup anyway.
+        checksum/config: {{ include "home-assistant.configChecksum" . }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         {{- include "home-assistant.selectorLabels" . | nindent 8 }}
     spec:
@@ -50,6 +53,21 @@ spec:
         - name: config-scripts
           configMap:
             name: config-scripts
+        - name: config-automations
+          configMap:
+            name: config-automations
+        {{- range $domain := list "automation" "script" }}
+        {{- with index $.Values.config.blueprints $domain }}
+        - name: config-blueprints-{{ $domain }}
+          configMap:
+            name: config-blueprints
+            items:
+              {{- range $file, $_ := . }}
+              - key: {{ printf "%s.%s" $domain $file }}
+                path: {{ $file }}
+              {{- end }}
+        {{- end }}
+        {{- end }}
         - name: config-telegram-bot
           configMap:
             name: config-telegram-bot
@@ -77,6 +95,20 @@ spec:
             - name: config-scripts
               mountPath: /config/scripts
               readOnly: true
+            # Not /config/automations.yaml: that file belongs to HA's UI
+            # automation editor, which needs it writable on the PVC.
+            - name: config-automations
+              mountPath: /config/automations
+              readOnly: true
+            # A helm/ subfolder per domain, so blueprints imported through
+            # the UI still land next to it on the PVC.
+            {{- range $domain := list "automation" "script" }}
+            {{- if index $.Values.config.blueprints $domain }}
+            - name: config-blueprints-{{ $domain }}
+              mountPath: /config/blueprints/{{ $domain }}/helm
+              readOnly: true
+            {{- end }}
+            {{- end }}
             - name: config-telegram-bot
               mountPath: /config/telegram_bot.yaml
               subPath: telegram_bot.yaml

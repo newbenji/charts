@@ -29,3 +29,5 @@
 README.md.gotmpl
 .prettierignore
 .vscode
+# helm-unittest suites
+tests/

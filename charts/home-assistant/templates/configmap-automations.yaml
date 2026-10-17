@@ -5,4 +5,4 @@ metadata:
   labels:
     {{- include "home-assistant.labels" . | nindent 4 }}
 data:
-  scripts.yaml: | {{ include "home-assistant.automations" . | nindent 4 }}
+  automations.yaml: | {{ include "home-assistant.automations" . | nindent 4 }}

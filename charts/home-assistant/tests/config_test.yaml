@@ -1,0 +1,135 @@
+suite: config files
+templates:
+  - templates/deployment.yaml
+  - templates/configmap-automations.yaml
+  - templates/configmap-blueprints.yaml
+  - templates/config-http.yaml
+  - templates/recorder.yaml
+  - templates/configmap-scripts.yaml
+  - templates/configmap-notify.yaml
+  - templates/configmap-telegram-bot.yaml
+tests:
+  - it: renders automations under automations.yaml, as an empty list by default
+    template: templates/configmap-automations.yaml
+    asserts:
+      - exists:
+          path: data["automations.yaml"]
+      - notExists:
+          path: data["scripts.yaml"]
+      - matchRegex:
+          path: data["automations.yaml"]
+          pattern: (?m)^\[\]$
+
+  - it: renders configured automations
+    template: templates/configmap-automations.yaml
+    set:
+      config.automations:
+        - alias: Hall light
+          triggers: [{ trigger: sun, event: sunset }]
+    asserts:
+      - matchRegex:
+          path: data["automations.yaml"]
+          pattern: "alias: Hall light"
+
+  - it: mounts automations beside, not over, the UI-owned automations.yaml
+    template: templates/deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: config-automations
+            mountPath: /config/automations
+            readOnly: true
+      - notContains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: config-automations
+            mountPath: /config/automations.yaml
+          any: true
+
+  - it: renders no blueprints ConfigMap or mounts by default
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/configmap-blueprints.yaml
+      - notContains:
+          path: spec.template.spec.volumes
+          content:
+            name: config-blueprints-automation
+          any: true
+        template: templates/deployment.yaml
+
+  - it: projects each blueprint domain into its own helm/ subfolder
+    set:
+      config.blueprints:
+        automation:
+          motion.yaml: "blueprint:\n  name: Motion\n"
+        script:
+          notify.yaml: "blueprint:\n  name: Notify\n"
+    asserts:
+      - equal:
+          path: data["automation.motion.yaml"]
+          value: "blueprint:\n  name: Motion\n"
+        template: templates/configmap-blueprints.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: config-blueprints-automation
+            configMap:
+              name: config-blueprints
+              items:
+                - key: automation.motion.yaml
+                  path: motion.yaml
+        template: templates/deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: config-blueprints-script
+            mountPath: /config/blueprints/script/helm
+            readOnly: true
+        template: templates/deployment.yaml
+
+  - it: unquotes HA tags in map-form blueprints, and only HA tags
+    template: templates/configmap-blueprints.yaml
+    set:
+      config.blueprints.automation:
+        motion.yaml:
+          blueprint:
+            name: Motion
+            input:
+              motion_entity: {}
+          triggers:
+            - trigger: state
+              entity_id: "!input motion_entity"
+          variables:
+            token: "!secret api_token"
+            note: "!important not a tag"
+    asserts:
+      - matchRegex:
+          path: data["automation.motion.yaml"]
+          pattern: "entity_id: !input motion_entity"
+      - matchRegex:
+          path: data["automation.motion.yaml"]
+          pattern: "token: !secret api_token"
+      - matchRegex:
+          path: data["automation.motion.yaml"]
+          pattern: "note: '!important not a tag'"
+
+  - it: sets a checksum/config annotation to roll the pod on config changes
+    template: templates/deployment.yaml
+    asserts:
+      - matchRegex:
+          path: spec.template.metadata.annotations["checksum/config"]
+          pattern: ^[0-9a-f]{64}$
+
+  - it: keeps user podAnnotations next to the checksum
+    template: templates/deployment.yaml
+    set:
+      podAnnotations:
+        foo: bar
+    asserts:
+      - equal:
+          path: spec.template.metadata.annotations.foo
+          value: bar
+      - exists:
+          path: spec.template.metadata.annotations["checksum/config"]
