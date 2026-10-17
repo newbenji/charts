@@ -74,6 +74,11 @@ spec:
         - name: config-notify
           configMap:
             name: {{ include "home-assistant.configName" (list $ "notify") }}
+        {{- if ne (include "home-assistant.configurationMode" .) "unmanaged" }}
+        - name: configuration
+          configMap:
+            name: {{ include "home-assistant.configName" (list $ "configuration") }}
+        {{- end }}
         {{- if .Values.config.packages }}
         - name: packages
           configMap:
@@ -89,8 +94,12 @@ spec:
             medium: Memory
         {{- end }}
         {{- end }}
-      {{- if and (include "home-assistant.secretsEnabled" .) (not .Values.config.secrets.fileKey) }}
+      {{- $renderSecrets := and (include "home-assistant.secretsEnabled" .) (not .Values.config.secrets.fileKey) }}
+      {{- $configMode := include "home-assistant.configurationMode" . }}
+      {{- if or $renderSecrets (ne $configMode "unmanaged") }}
       initContainers:
+      {{- end }}
+      {{- if $renderSecrets }}
         # Builds secrets.yaml from the Secret's keys, one `key: value` per
         # key. Reuses the Home Assistant image for its python3 rather than
         # pulling another image; values are JSON-encoded, which is valid
@@ -118,6 +127,43 @@ spec:
               readOnly: true
             - name: ha-secrets-rendered
               mountPath: /out
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+      {{- end }}
+      {{- if ne $configMode "unmanaged" }}
+        # seed: writes configuration.yaml only if it's missing. Both modes:
+        # creates the files the default configuration.yaml includes, which
+        # HA itself only writes when it creates configuration.yaml - and in
+        # these modes it never does, so a fresh volume would fail to load.
+        - name: init-config
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              {{- if eq $configMode "seed" }}
+              if [ ! -e /config/configuration.yaml ]; then
+                cp /seed/configuration.yaml /config/configuration.yaml
+                echo "Seeded configuration.yaml"
+              fi
+              {{- end }}
+              for f in 'automations.yaml:[]' 'scripts.yaml:{}' 'scenes.yaml:[]'; do
+                name="${f%%:*}"
+                if [ ! -e "/config/$name" ]; then
+                  echo "${f#*:}" > "/config/$name"
+                  echo "Created empty $name"
+                fi
+              done
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            {{- if eq $configMode "seed" }}
+            - name: configuration
+              mountPath: /seed
+              readOnly: true
+            {{- end }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
       {{- end }}
@@ -164,6 +210,12 @@ spec:
               mountPath: /config/notify.yaml
               subPath: notify.yaml
               readOnly: true
+            {{- if eq (include "home-assistant.configurationMode" .) "managed" }}
+            - name: configuration
+              mountPath: /config/configuration.yaml
+              subPath: configuration.yaml
+              readOnly: true
+            {{- end }}
             {{- if .Values.config.packages }}
             # A whole-directory mount, not subPath, so edits reach the pod
             # without a restart (a pod roll still follows via checksum/config).

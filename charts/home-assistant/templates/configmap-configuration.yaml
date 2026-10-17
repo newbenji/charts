@@ -1,0 +1,11 @@
+{{- if ne (include "home-assistant.configurationMode" .) "unmanaged" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "home-assistant.configName" (list . "configuration") }}
+  labels:
+    {{- include "home-assistant.labels" . | nindent 4 }}
+data:
+  configuration.yaml: |
+    {{- include "home-assistant.configurationYaml" . | nindent 4 }}
+{{- end }}

@@ -1,0 +1,154 @@
+suite: configuration.yaml modes
+templates:
+  - templates/deployment.yaml
+  - templates/configmap-configuration.yaml
+  # rendered into checksum/config
+  - templates/config-http.yaml
+  - templates/recorder.yaml
+  - templates/configmap-scripts.yaml
+  - templates/configmap-automations.yaml
+  - templates/configmap-blueprints.yaml
+  - templates/configmap-notify.yaml
+  - templates/configmap-telegram-bot.yaml
+  - templates/configmap-packages.yaml
+  - templates/secret-ha-secrets.yaml
+release:
+  name: ha
+tests:
+  - it: leaves configuration.yaml alone by default
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/configmap-configuration.yaml
+      - notExists:
+          path: spec.template.spec.initContainers
+        template: templates/deployment.yaml
+      - notContains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /config/configuration.yaml
+          any: true
+        template: templates/deployment.yaml
+
+  - it: rejects an unknown mode
+    set:
+      config.configuration.mode: owned
+    # surfaces in the deployment, which renders this first (checksum/config, init container)
+    template: templates/deployment.yaml
+    asserts:
+      - failedTemplate:
+          errorPattern: must be unmanaged, seed or managed
+
+  - it: renders HA's default configuration with the chart's homeassistant block
+    set:
+      config.configuration.mode: managed
+      config.configuration.homeassistant:
+        name: Home
+        customize: "!include customize.yaml"
+      config.packages:
+        a.yaml: "x: 1"
+    template: templates/configmap-configuration.yaml
+    asserts:
+      - matchRegex:
+          path: data["configuration.yaml"]
+          pattern: "(?m)^default_config:$"
+      - matchRegex:
+          path: data["configuration.yaml"]
+          pattern: "(?m)^automation: !include automations.yaml$"
+      - matchRegex:
+          path: data["configuration.yaml"]
+          pattern: "(?m)^homeassistant:\\n  customize: !include customize.yaml\\n  name: Home\\n  packages: !include_dir_named packages$"
+
+  - it: omits the homeassistant block when there's nothing to put in it
+    set:
+      config.configuration.mode: managed
+    template: templates/configmap-configuration.yaml
+    asserts:
+      - notMatchRegex:
+          path: data["configuration.yaml"]
+          pattern: "(?m)^homeassistant:"
+
+  - it: rejects content that defines its own homeassistant block
+    set:
+      config.configuration.mode: managed
+      config.configuration.content: |
+        default_config:
+        homeassistant:
+          name: Home
+    # surfaces in the deployment, which renders this first (checksum/config, init container)
+    template: templates/deployment.yaml
+    asserts:
+      - failedTemplate:
+          errorPattern: must not define homeassistant
+
+  - it: accepts content as a map
+    set:
+      config.configuration.mode: managed
+      config.configuration.content:
+        default_config: {}
+        automation: "!include automations.yaml"
+    template: templates/configmap-configuration.yaml
+    asserts:
+      - matchRegex:
+          path: data["configuration.yaml"]
+          pattern: "(?m)^automation: !include automations.yaml$"
+
+  - it: mounts the rendered file read-only in managed mode
+    set:
+      config.configuration.mode: managed
+    template: templates/deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: configuration
+            mountPath: /config/configuration.yaml
+            subPath: configuration.yaml
+            readOnly: true
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-config
+      - notMatchRegex:
+          path: spec.template.spec.initContainers[0].command[2]
+          pattern: /seed
+
+  - it: only seeds the file in seed mode, without mounting it over the PVC
+    set:
+      config.configuration.mode: seed
+    template: templates/deployment.yaml
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: configuration
+            mountPath: /config/configuration.yaml
+            subPath: configuration.yaml
+            readOnly: true
+      - matchRegex:
+          path: spec.template.spec.initContainers[0].command[2]
+          pattern: if \[ ! -e /config/configuration.yaml \]
+      - contains:
+          path: spec.template.spec.initContainers[0].volumeMounts
+          content:
+            name: configuration
+            mountPath: /seed
+            readOnly: true
+
+  - it: runs both initContainers when secrets and a config mode are set
+    set:
+      config.configuration.mode: managed
+      config.secrets.existingSecret: s
+    template: templates/deployment.yaml
+    asserts:
+      - lengthEqual:
+          path: spec.template.spec.initContainers
+          count: 2
+
+  - it: rolls the pod on configuration changes only in managed mode
+    template: templates/deployment.yaml
+    set:
+      config.configuration.mode: managed
+    asserts:
+      - matchRegex:
+          path: spec.template.metadata.annotations["checksum/config"]
+          pattern: ^[0-9a-f]{64}$

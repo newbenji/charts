@@ -10,6 +10,7 @@ templates:
   - templates/configmap-telegram-bot.yaml
   - templates/configmap-packages.yaml
   - templates/secret-ha-secrets.yaml
+  - templates/configmap-configuration.yaml
 release:
   name: ha
 tests:

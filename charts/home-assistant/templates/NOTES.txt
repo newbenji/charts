@@ -41,3 +41,10 @@ load it yet, add this once:
   homeassistant:
     packages: !include_dir_named packages
 {{- end }}
+
+{{- if eq (include "home-assistant.configurationMode" .) "managed" }}
+
+configuration.yaml is managed by this chart (config.configuration) and mounted
+read-only. Edit it in your values, not in Home Assistant. Files HA's UI editors
+write to (automations.yaml, scripts.yaml, scenes.yaml) stay writable on the PVC.
+{{- end }}
