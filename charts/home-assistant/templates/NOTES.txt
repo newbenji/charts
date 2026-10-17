@@ -48,3 +48,30 @@ configuration.yaml is managed by this chart (config.configuration) and mounted
 read-only. Edit it in your values, not in Home Assistant. Files HA's UI editors
 write to (automations.yaml, scripts.yaml, scenes.yaml) stay writable on the PVC.
 {{- end }}
+
+{{- /* Legacy per-block values, compared against their chart defaults */ -}}
+{{- $legacy := list }}
+{{- if ne (toJson .Values.config.http) (toJson (dict "use_x_forwarded_for" false "trusted_proxies" (list) "ip_ban_enabled" false "login_attempts_threshold" 5)) }}
+{{- $legacy = append $legacy "config.http          -> an `http:` section in a package" }}
+{{- end }}
+{{- if or .Values.hadbconfig (ne (toJson .Values.config.recorder) (toJson (dict "purge_keep_days" 30))) }}
+{{- $legacy = append $legacy "config.recorder / hadbconfig -> a `recorder:` package with `db_url: \"!secret hadbconfig\"`, hadbconfig in config.secrets" }}
+{{- end }}
+{{- if .Values.config.scripts }}
+{{- $legacy = append $legacy "config.scripts       -> a `script:` section in a package" }}
+{{- end }}
+{{- if .Values.config.automations }}
+{{- $legacy = append $legacy "config.automations   -> an `automation:` section in a package" }}
+{{- end }}
+{{- if .Values.config.notify }}
+{{- $legacy = append $legacy "config.notify        -> a `notify:` section in a package" }}
+{{- end }}
+{{- if $legacy }}
+
+DEPRECATED: these values only take effect through !include lines added to
+configuration.yaml by hand, and will be removed in a future release. Move them
+into config.packages (and drop the matching !include lines):
+{{- range $legacy }}
+  - {{ . }}
+{{- end }}
+{{- end }}
