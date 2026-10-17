@@ -207,7 +207,7 @@ quoted string.
 
 
 {{/*
-Hash of every chart-rendered config file, for the deployment's
+Hash of the data in every chart-rendered config file, for the deployment's
 checksum/config annotation.
 */}}
 {{- define "home-assistant.configChecksum" -}}
@@ -217,7 +217,9 @@ checksum/config annotation.
 {{- end -}}
 {{- $out := "" -}}
 {{- range $files -}}
-{{- $out = print $out (include (print $.Template.BasePath "/" .) $) -}}
+{{- /* Only the payload: metadata carries helm.sh/chart, which would roll the pod on every chart version bump */ -}}
+{{- $doc := include (print $.Template.BasePath "/" .) $ | fromYaml -}}
+{{- $out = print $out (pick $doc "data" "stringData" | toJson) -}}
 {{- end -}}
 {{- $out | sha256sum -}}
 {{- end }}

@@ -38,6 +38,7 @@ annotations:
     - "[Added] config.configuration.mode: `seed` writes a rendered configuration.yaml only if none exists, `managed` mounts it read-only so it lives in Git and changes roll the pod. Default `unmanaged` leaves it alone as before"
     - "[Added] config.configuration.content (HA's default configuration by default) and config.configuration.homeassistant, into which the chart merges the config.packages include. Content defining its own homeassistant: block is rejected - HA only warns on the duplicate key and silently drops one of them"
     - "[Added] In seed/managed mode, empty automations.yaml/scripts.yaml/scenes.yaml are created if missing, since HA only creates them alongside its own default configuration.yaml"
+    - "[Fixed] checksum/config hashed whole rendered objects, including the helm.sh/chart version label, so every chart upgrade restarted Home Assistant even without config changes. It now hashes only the config data (upgrading to this version restarts it one last time)"
   artifacthub.io/images: |
     - name: home-assistant
       image: homeassistant/home-assistant
