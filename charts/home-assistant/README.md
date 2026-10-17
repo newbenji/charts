@@ -5,7 +5,7 @@ HomeAssistant is an open source home automation that puts local control and priv
 Powered by a worldwide community of tinkerers and DIY enthusiasts.
 Perfect to run on a Raspberry Pi or a local server..
 
-![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
+![Version: 0.7.1](https://img.shields.io/badge/Version-0.7.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
 
 ## Installing the Chart
 
@@ -18,19 +18,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/home-assistant --version 0.7.0
+$ helm install my-release newbenji-charts/home-assistant --version 0.7.1
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.0
+$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.1
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.0
+$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.1
 ```
 
 ## Values
@@ -38,7 +38,7 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.0
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| config.automations | list | `[]` | List of automations, mounted read-only at /config/automations/automations.yaml - deliberately not /config/automations.yaml, which HA's UI automation editor writes to. Load them alongside the UI ones by adding `automation chart: !include automations/automations.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/automation/yaml/ |
+| config.automations | list | `[]` | DEPRECATED, to be removed: use an `automation:` section in config.packages instead. List of automations, mounted read-only at /config/automations/automations.yaml - deliberately not /config/automations.yaml, which HA's UI automation editor writes to. Load them alongside the UI ones by adding `automation chart: !include automations/automations.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/automation/yaml/ |
 | config.blueprints.automation | object | `{}` | Automation blueprints as a map of file name to blueprint, mounted read-only into /config/blueprints/automation/helm/. Each blueprint is either a YAML string, or a map in which HA tags must be quoted (`"!input motion_entity"`) since Helm drops unquoted custom tags. See https://www.home-assistant.io/docs/automation/using_blueprints/ |
 | config.blueprints.script | object | `{}` | Script blueprints, same format as blueprints.automation, mounted into /config/blueprints/script/helm/ |
 | config.configuration.content | string | `"# Loads default set of integrations. Do not remove.\ndefault_config:\n\n# Load frontend themes from the themes folder\nfrontend:\n  themes: !include_dir_merge_named themes\n\nautomation: !include automations.yaml\nscript: !include scripts.yaml\nscene: !include scenes.yaml\n"` | configuration.yaml body (seed/managed mode), as a YAML string (rendered as-is, comments kept) or a map with quoted HA tags. Must not define `homeassistant:` - use config.configuration.homeassistant. The default is Home Assistant's own default configuration. Keep the automation/script/scene includes so HA's UI editors keep working - they write to those files on the PVC |
@@ -47,11 +47,11 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.0
 | config.http.ip_ban_enabled | bool | `false` | Ban IPs after too many failed login attempts |
 | config.http.login_attempts_threshold | int | `5` | Number of failed login attempts before an IP is banned |
 | config.http.trusted_proxies | list | `[]` | CIDR ranges of reverse proxies trusted to set X-Forwarded-For/X-Forwarded-Proto |
-| config.http.use_x_forwarded_for | bool | `false` | Trust the X-Forwarded-For header from trusted_proxies. See https://www.home-assistant.io/integrations/http/ |
-| config.notify | list | `[]` | Rendered into configmap-notify.yaml as Home Assistant's notify platform config |
+| config.http.use_x_forwarded_for | bool | `false` | Trust the X-Forwarded-For header from trusted_proxies. See https://www.home-assistant.io/integrations/http/. DEPRECATED along with all of config.http, to be removed: use an `http:` section in config.packages instead |
+| config.notify | list | `[]` | DEPRECATED, to be removed: use a `notify:` section in config.packages instead. Rendered into configmap-notify.yaml as Home Assistant's notify platform config |
 | config.packages | object | `{}` | Home Assistant packages (https://www.home-assistant.io/docs/configuration/packages/) as a map of file name (must end in .yaml) to package, mounted read-only into /config/packages/. A package can hold any mix of integrations - automation, script, template, sensor, recorder, ... Each is either a YAML string (rendered as-is, comments kept), or a map in which HA tags must be quoted (`db_url: "!secret hadbconfig"`), since Helm silently drops unquoted custom tags from values. Load them all by adding this once to configuration.yaml: `homeassistant: {packages: !include_dir_named packages}`. Mounting this hides any packages/ directory already on the PVC. A change rolls the pod |
-| config.recorder.purge_keep_days | int | `30` | Number of days of history to keep in the recorder database. See https://www.home-assistant.io/integrations/recorder/ |
-| config.scripts | object | `{}` | Scripts, mounted read-only at /config/scripts/scripts.yaml. Load them by adding e.g. `script chart: !include scripts/scripts.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/scripts/ |
+| config.recorder.purge_keep_days | int | `30` | Number of days of history to keep in the recorder database. See https://www.home-assistant.io/integrations/recorder/. DEPRECATED along with all of config.recorder, to be removed: use a `recorder:` section in config.packages instead |
+| config.scripts | object | `{}` | DEPRECATED, to be removed: use a `script:` section in config.packages instead. Scripts, mounted read-only at /config/scripts/scripts.yaml. Load them by adding e.g. `script chart: !include scripts/scripts.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/scripts/ |
 | config.secrets.existingSecret | string | `""` | Mount /config/secrets.yaml (what `!secret` reads) from this existing Secret, e.g. one created by ExternalSecrets, SOPS or SealedSecrets. Each key in the Secret becomes one `key: value` entry, written by an initContainer at pod start (a single trailing newline is stripped from each value). Replaces any secrets.yaml already on the PVC - move its entries into the Secret first. Changes only apply on the next pod start; use e.g. Reloader via podAnnotations to restart automatically |
 | config.secrets.fileKey | string | `""` | Instead of building secrets.yaml from all keys, mount this one key of the Secret as the complete secrets.yaml file |
 | config.secrets.values | object | `{}` | Secrets to put in a chart-created Secret instead of existingSecret, as key: value. Convenient but lands in your values in plain text - prefer existingSecret for anything committed to Git |
@@ -60,7 +60,7 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.0
 | extraContainerPorts | list | `[]` | Additional ports to open on the Home Assistant container, e.g. for integrations that listen on their own port (ESPHome dashboard, Matter, HomeKit Bridge, etc). Set `count` greater than 1 to open a contiguous range starting at containerPort. Port names must stay within Kubernetes' 15-character limit and be unique |
 | extraManifests | list | `[]` | Additional arbitrary Kubernetes manifests to render alongside the chart, e.g. an ExternalSecret or a NetworkPolicy. Each entry is either a map (rendered via toYaml) or a string (rendered as-is); both are passed through tpl, so release/values templating works inside them |
 | fullnameOverride | string | `""` |  |
-| hadbconfig | string | `""` | Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. Must be set to a real connection string. |
+| hadbconfig | string | `""` | Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. DEPRECATED, to be removed: put it in config.secrets and reference it from a `recorder:` package as `db_url: "!secret hadbconfig"`. |
 | homeAssistant.persistence.volumeName | string | `""` | Bind the PVC to a specific pre-provisioned PersistentVolume by name. Leave empty to let the cluster's default provisioner handle it. |
 | hostNetwork | bool | `true` | Enables host networking (so that home assistant can scan devices automatically on the same network). If set to false, you might want to amend dnsPolicy value as well |
 | httpRoute.annotations | object | `{}` | Annotations to add to the HTTPRoute |
@@ -212,7 +212,7 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.0
 []
 </pre>
 </td>
-			<td>List of automations, mounted read-only at /config/automations/automations.yaml - deliberately not /config/automations.yaml, which HA's UI automation editor writes to. Load them alongside the UI ones by adding `automation chart: !include automations/automations.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/automation/yaml/</td>
+			<td>DEPRECATED, to be removed: use an `automation:` section in config.packages instead. List of automations, mounted read-only at /config/automations/automations.yaml - deliberately not /config/automations.yaml, which HA's UI automation editor writes to. Load them alongside the UI ones by adding `automation chart: !include automations/automations.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/automation/yaml/</td>
 		</tr>
 		<tr>
 			<td>config.blueprints.automation</td>
@@ -293,7 +293,7 @@ false
 false
 </pre>
 </td>
-			<td>Trust the X-Forwarded-For header from trusted_proxies. See https://www.home-assistant.io/integrations/http/</td>
+			<td>Trust the X-Forwarded-For header from trusted_proxies. See https://www.home-assistant.io/integrations/http/. DEPRECATED along with all of config.http, to be removed: use an `http:` section in config.packages instead</td>
 		</tr>
 		<tr>
 			<td>config.notify</td>
@@ -302,7 +302,7 @@ false
 []
 </pre>
 </td>
-			<td>Rendered into configmap-notify.yaml as Home Assistant's notify platform config</td>
+			<td>DEPRECATED, to be removed: use a `notify:` section in config.packages instead. Rendered into configmap-notify.yaml as Home Assistant's notify platform config</td>
 		</tr>
 		<tr>
 			<td>config.packages</td>
@@ -320,7 +320,7 @@ false
 30
 </pre>
 </td>
-			<td>Number of days of history to keep in the recorder database. See https://www.home-assistant.io/integrations/recorder/</td>
+			<td>Number of days of history to keep in the recorder database. See https://www.home-assistant.io/integrations/recorder/. DEPRECATED along with all of config.recorder, to be removed: use a `recorder:` section in config.packages instead</td>
 		</tr>
 		<tr>
 			<td>config.scripts</td>
@@ -329,7 +329,7 @@ false
 {}
 </pre>
 </td>
-			<td>Scripts, mounted read-only at /config/scripts/scripts.yaml. Load them by adding e.g. `script chart: !include scripts/scripts.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/scripts/</td>
+			<td>DEPRECATED, to be removed: use a `script:` section in config.packages instead. Scripts, mounted read-only at /config/scripts/scripts.yaml. Load them by adding e.g. `script chart: !include scripts/scripts.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/scripts/</td>
 		</tr>
 		<tr>
 			<td>config.secrets.existingSecret</td>
@@ -410,7 +410,7 @@ false
 ""
 </pre>
 </td>
-			<td>Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. Must be set to a real connection string.</td>
+			<td>Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. DEPRECATED, to be removed: put it in config.secrets and reference it from a `recorder:` package as `db_url: "!secret hadbconfig"`.</td>
 		</tr>
 		<tr>
 			<td>homeAssistant.persistence.volumeName</td>

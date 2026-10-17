@@ -349,15 +349,15 @@ matterServer:
   # -- Resource requests/limits for the matter-server container
   resources: {}
 
-# -- Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. Must be set to a real connection string.
+# -- Recorder database connection string, written into secrets.yaml as `hadbconfig` and referenced by config.recorder's db_url. DEPRECATED, to be removed: put it in config.secrets and reference it from a `recorder:` package as `db_url: "!secret hadbconfig"`.
 hadbconfig: ""
 
 config:
   recorder:
-    # -- Number of days of history to keep in the recorder database. See https://www.home-assistant.io/integrations/recorder/
+    # -- Number of days of history to keep in the recorder database. See https://www.home-assistant.io/integrations/recorder/. DEPRECATED along with all of config.recorder, to be removed: use a `recorder:` section in config.packages instead
     purge_keep_days: 30
   http:
-    # -- Trust the X-Forwarded-For header from trusted_proxies. See https://www.home-assistant.io/integrations/http/
+    # -- Trust the X-Forwarded-For header from trusted_proxies. See https://www.home-assistant.io/integrations/http/. DEPRECATED along with all of config.http, to be removed: use an `http:` section in config.packages instead
     use_x_forwarded_for: false
     # -- CIDR ranges of reverse proxies trusted to set X-Forwarded-For/X-Forwarded-Proto
     trusted_proxies: []
@@ -368,9 +368,9 @@ config:
     ip_ban_enabled: false
     # -- Number of failed login attempts before an IP is banned
     login_attempts_threshold: 5
-  # -- Scripts, mounted read-only at /config/scripts/scripts.yaml. Load them by adding e.g. `script chart: !include scripts/scripts.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/scripts/
+  # -- DEPRECATED, to be removed: use a `script:` section in config.packages instead. Scripts, mounted read-only at /config/scripts/scripts.yaml. Load them by adding e.g. `script chart: !include scripts/scripts.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/scripts/
   scripts: {}
-  # -- List of automations, mounted read-only at /config/automations/automations.yaml - deliberately not /config/automations.yaml, which HA's UI automation editor writes to. Load them alongside the UI ones by adding `automation chart: !include automations/automations.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/automation/yaml/
+  # -- DEPRECATED, to be removed: use an `automation:` section in config.packages instead. List of automations, mounted read-only at /config/automations/automations.yaml - deliberately not /config/automations.yaml, which HA's UI automation editor writes to. Load them alongside the UI ones by adding `automation chart: !include automations/automations.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/automation/yaml/
   automations: []
   blueprints:
     # -- Automation blueprints as a map of file name to blueprint, mounted read-only into /config/blueprints/automation/helm/. Each blueprint is either a YAML string, or a map in which HA tags must be quoted (`"!input motion_entity"`) since Helm drops unquoted custom tags. See https://www.home-assistant.io/docs/automation/using_blueprints/
@@ -379,7 +379,7 @@ config:
     script: {}
   # -- Rendered into configmap-telegram-bot.yaml as Home Assistant's telegram_bot platform config. DEPRECATED: current Home Assistant no longer supports YAML setup for telegram_bot and errors on load - set it up via Settings > Devices & Services instead
   telegram_bot: []
-  # -- Rendered into configmap-notify.yaml as Home Assistant's notify platform config
+  # -- DEPRECATED, to be removed: use a `notify:` section in config.packages instead. Rendered into configmap-notify.yaml as Home Assistant's notify platform config
   notify: []
   # -- Home Assistant packages (https://www.home-assistant.io/docs/configuration/packages/) as a map of file name (must end in .yaml) to package, mounted read-only into /config/packages/. A package can hold any mix of integrations - automation, script, template, sensor, recorder, ... Each is either a YAML string (rendered as-is, comments kept), or a map in which HA tags must be quoted (`db_url: "!secret hadbconfig"`), since Helm silently drops unquoted custom tags from values. Load them all by adding this once to configuration.yaml: `homeassistant: {packages: !include_dir_named packages}`. Mounting this hides any packages/ directory already on the PVC. A change rolls the pod
   packages: {}
