@@ -32,11 +32,14 @@ permissions:
   contents: read
 
 concurrency:
-  # PR-open activity (opened/synchronize/reopened) and the merge/release event
-  # share a ref but must not share a cancellation group - otherwise merging
-  # right after opening/pushing can cancel the still-running release job.
-  group: build-charts-${{ github.ref }}-${{ (github.event_name == 'pull_request' && github.event.action == 'closed') && 'release' || 'build' }}
-  cancel-in-progress: true
+  # One group per PR (or per branch for pushes), split into build and
+  # release so merging right after a push can't cancel the release.
+  # Keyed on the PR number, not github.ref: for a closed PR github.ref is
+  # the base branch, so every merge's release used to share one group and a
+  # second merge cancelled the first one's release. Releases are never
+  # cancelled; superseded builds are.
+  group: build-charts-${{ github.event.pull_request.number || github.ref }}-${{ (github.event_name == 'pull_request' && github.event.action == 'closed') && 'release' || 'build' }}
+  cancel-in-progress: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed') }}
 
 env:
   CHART_REGISTRY: ghcr.io/${{ github.repository_owner }}/charts
@@ -353,6 +356,13 @@ jobs:
     needs: [detect-changed-folders, build-and-publish]
     if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # Releases of different PRs now run in parallel, but they all push
+    # index.yaml to gh-pages, so serialize just this job. If several queue
+    # up, GitHub drops all but the newest pending one - fine, since
+    # chart-releaser releases every chart changed since the last release tag.
+    concurrency:
+      group: release-to-pages
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:
