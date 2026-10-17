@@ -7,7 +7,7 @@ description: |
 type: application
 version: 0.6.0
 appVersion: "2026.8.0"
-icon: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/519px-Home_Assistant_Logo.svg.png
+icon: https://brands.home-assistant.io/homeassistant/icon.png
 keywords:
   - homeassistant
   - home-assistant
@@ -34,6 +34,7 @@ annotations:
     - "[Added] config.packages: Home Assistant packages as a map of file name to YAML (string, or map with quoted HA tags), mounted into /config/packages/. One `homeassistant: {packages: !include_dir_named packages}` line in configuration.yaml loads them all"
     - "[Added] config.secrets: mount /config/secrets.yaml from an existing Secret (e.g. ExternalSecrets/SOPS), built from its keys by an initContainer or taken from a single fileKey, or from inline config.secrets.values"
     - "[Changed] Chart-rendered config objects are now prefixed with the release fullname (e.g. recorder -> <release>-home-assistant-recorder, config-http -> <release>-home-assistant-http), so two releases in one namespace no longer collide. Mount paths inside the pod are unchanged, so existing configuration.yaml includes keep working"
+    - "[Fixed] Chart icon pointed at a Wikimedia thumbnail URL that Artifact Hub can't fetch (HTTP 400); now uses Home Assistant's official brands icon"
   artifacthub.io/images: |
     - name: home-assistant
       image: homeassistant/home-assistant
