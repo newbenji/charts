@@ -1,5 +1,7 @@
 # charts
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/newbenji-charts)](https://artifacthub.io/packages/search?repo=newbenji-charts)
+
 Helm charts, published two ways:
 
 - **Classic Helm repo, via GitHub Pages** — supports `helm repo add`. Only
