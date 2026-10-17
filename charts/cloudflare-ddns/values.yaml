@@ -1,0 +1,121 @@
+# Default values for cloudflare-ddns.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  # -- Docker registry/repository to pull the image from
+  repository: favonia/cloudflare-ddns
+  # -- Docker image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the default tag (appVersion) used in Chart.yaml. Defaults to the chart's appVersion (1.17.1) when left empty. See available tags at https://hub.docker.com/r/favonia/cloudflare-ddns/tags
+  tag: ""
+  # -- Pin the image by digest (e.g. `sha256:...`). When set, it's used in addition to the tag (`repo:tag@digest`), so the tag stays readable but can't be silently re-pointed
+  digest: ""
+
+# -- Docker image pull secrets
+imagePullSecrets: []
+
+# -- Overrides the name of resources
+nameOverride: ""
+# -- Overrides the Full Name of resources
+fullnameOverride: ""
+
+# -- Labels added to every resource the chart creates
+commonLabels: {}
+# -- Annotations added to every resource the chart creates
+commonAnnotations: {}
+
+# -- Annotations to add to the Deployment
+deploymentAnnotations: {}
+
+# -- Number of old ReplicaSets to keep for rollback
+revisionHistoryLimit: 3
+
+cloudflare:
+  # -- Cloudflare API token. The chart stores it in a Secret. Needs only `Zone - DNS - Edit` on the zone(s) of the managed domains. Leave empty when using `cloudflare.existingSecret`
+  apiToken: ""
+  existingSecret:
+    # -- Name of an existing Secret holding the API token. Takes the place of `cloudflare.apiToken`; set exactly one of the two
+    name: ""
+    # -- Key in that Secret holding the token
+    key: api-token
+
+# -- Domains whose A and AAAA records are managed (`DOMAINS`). Wildcards like `*.example.com` are supported. At least one of `domains`, `ip4Domains` or `ip6Domains` must be set
+domains: []
+# -- Extra domains managed for A (IPv4) records only (`IP4_DOMAINS`)
+ip4Domains: []
+# -- Extra domains managed for AAAA (IPv6) records only (`IP6_DOMAINS`)
+ip6Domains: []
+
+# -- How the public IPv4 address is detected (`IP4_PROVIDER`), e.g. `cloudflare.trace`, `cloudflare.doh`, `url:<url>`, or `none` to not manage A records. `local` needs `hostNetwork: true`
+ip4Provider: cloudflare.trace
+# -- How the public IPv6 address is detected (`IP6_PROVIDER`). Set to `none` to not manage AAAA records, e.g. when pods have no IPv6 or the records shouldn't be published
+ip6Provider: cloudflare.trace
+
+# -- Update schedule (`UPDATE_CRON`): a cron expression, `@every <duration>`, or `@once`
+updateCron: "@every 5m"
+# -- Check and update immediately on start (`UPDATE_ON_START`)
+updateOnStart: true
+# -- Delete the managed records when the updater stops (`DELETE_ON_STOP`). Keep this off in Kubernetes: every pod restart or rollout would briefly remove the records
+deleteOnStop: false
+
+# -- Proxy status for the records (`PROXIED`): `true`, `false`, or a domain expression (see the upstream docs)
+proxied: "false"
+# -- TTL in seconds for the records (`TTL`). `1` means automatic
+ttl: 1
+# -- Comment set on records the updater creates (`RECORD_COMMENT`)
+recordComment: ""
+# -- Only manage existing records whose comment matches this RE2 regex (`MANAGED_RECORDS_COMMENT_REGEX`). Empty means all records of the listed domains
+managedRecordsCommentRegex: ""
+
+# -- Timezone for log timestamps and cron parsing (`TZ`)
+timezone: UTC
+# -- Emoji in log lines (`EMOJI`). Off by default so log collectors get plain text
+emoji: false
+# -- Reduce logging to errors and changes (`QUIET`)
+quiet: false
+
+# -- Extra environment variables for the container, e.g. `HEALTHCHECKS` / `UPTIMEKUMA` monitoring URLs (put those in a Secret and use `valueFrom`)
+extraEnv: []
+
+# -- Run the pod in the node's network namespace. Only needed for the `local` / `local.iface` IP providers
+hostNetwork: false
+
+# -- Annotations to add to the pod
+podAnnotations: {}
+# -- Labels to add to the pod
+podLabels: {}
+
+# -- Pod-level security context. The image runs as any non-root UID; fsGroup makes the mounted token file readable
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Container-level security context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# -- Resource requests and limits. The updater is a small Go binary that sleeps between checks
+resources:
+  requests:
+    cpu: 5m
+    memory: 16Mi
+  limits:
+    memory: 64Mi
+
+# -- Priority class for the pod
+priorityClassName: ""
+# -- Node labels for pod assignment
+nodeSelector: {}
+# -- Tolerations for pod assignment
+tolerations: []
+# -- Affinity for pod assignment
+affinity: {}

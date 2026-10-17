@@ -1,0 +1,155 @@
+suite: deployment
+templates:
+  - templates/deployment.yaml
+set:
+  cloudflare.apiToken: test-token
+  domains:
+    - example.com
+    - "*.example.com"
+tests:
+  - it: runs a single replica with Recreate
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.replicas
+          value: 1
+      - equal:
+          path: spec.strategy.type
+          value: Recreate
+
+  - it: defaults the image tag to appVersion
+    chart:
+      appVersion: 9.9.9
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: favonia/cloudflare-ddns:9.9.9
+
+  - it: appends the digest when set
+    set:
+      image.tag: "1.2.3"
+      image.digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: favonia/cloudflare-ddns:1.2.3@sha256:0000000000000000000000000000000000000000000000000000000000000000
+
+  - it: joins the domain lists into DOMAINS
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DOMAINS
+            value: example.com,*.example.com
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: IP4_DOMAINS
+          any: true
+
+  - it: reads the token from a mounted file, not the environment
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CLOUDFLARE_API_TOKEN_FILE
+            value: /run/secrets/cloudflare/api-token
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CLOUDFLARE_API_TOKEN
+          any: true
+      - equal:
+          path: spec.template.spec.volumes[0].secret.secretName
+          value: RELEASE-NAME-cloudflare-ddns
+      - equal:
+          path: spec.template.spec.volumes[0].secret.items[0].key
+          value: api-token
+
+  - it: uses an existing Secret when given
+    set:
+      cloudflare.apiToken: ""
+      cloudflare.existingSecret.name: my-token
+      cloudflare.existingSecret.key: token
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes[0].secret.secretName
+          value: my-token
+      - equal:
+          path: spec.template.spec.volumes[0].secret.items[0].key
+          value: token
+      - notExists:
+          path: spec.template.metadata.annotations.checksum/secret
+
+  - it: fails without any token
+    set:
+      cloudflare.apiToken: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: "a Cloudflare API token is required: set cloudflare.apiToken or cloudflare.existingSecret.name"
+
+  - it: fails with both a token and an existing Secret
+    set:
+      cloudflare.existingSecret.name: my-token
+    asserts:
+      - failedTemplate:
+          errorMessage: "set either cloudflare.apiToken or cloudflare.existingSecret.name, not both"
+
+  - it: fails without any domain
+    set:
+      domains: []
+    asserts:
+      - failedTemplate:
+          errorMessage: "nothing to manage: set at least one of domains, ip4Domains, ip6Domains"
+
+  - it: passes the updater settings through
+    set:
+      ip6Provider: none
+      proxied: "true"
+      ttl: 300
+      updateCron: "@every 10m"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content: { name: IP6_PROVIDER, value: none }
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content: { name: PROXIED, value: "true" }
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content: { name: TTL, value: "300" }
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content: { name: UPDATE_CRON, value: "@every 10m" }
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content: { name: DELETE_ON_STOP, value: "false" }
+
+  - it: is hardened by default
+    asserts:
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.capabilities.drop
+          value: [ALL]
+      - notExists:
+          path: spec.template.spec.hostNetwork
+
+  - it: switches to host networking for the local providers
+    set:
+      hostNetwork: true
+    asserts:
+      - equal:
+          path: spec.template.spec.hostNetwork
+          value: true
+      - equal:
+          path: spec.template.spec.dnsPolicy
+          value: ClusterFirstWithHostNet

@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "cloudflare-ddns chart values",
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": {
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "domainList": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "properties": {
+    "global": { "type": "object" },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "pullPolicy": { "type": "string", "enum": ["Always", "IfNotPresent", "Never"] },
+        "tag": { "type": "string" },
+        "digest": { "type": "string", "pattern": "^$|^sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "imagePullSecrets": { "type": "array" },
+    "nameOverride": { "type": "string" },
+    "fullnameOverride": { "type": "string" },
+    "commonLabels": { "$ref": "#/definitions/stringMap" },
+    "commonAnnotations": { "$ref": "#/definitions/stringMap" },
+    "deploymentAnnotations": { "$ref": "#/definitions/stringMap" },
+    "revisionHistoryLimit": { "type": "integer", "minimum": 0 },
+    "cloudflare": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apiToken": { "type": "string" },
+        "existingSecret": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string" },
+            "key": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "domains": { "$ref": "#/definitions/domainList" },
+    "ip4Domains": { "$ref": "#/definitions/domainList" },
+    "ip6Domains": { "$ref": "#/definitions/domainList" },
+    "ip4Provider": { "type": "string", "minLength": 1 },
+    "ip6Provider": { "type": "string", "minLength": 1 },
+    "updateCron": { "type": "string", "minLength": 1 },
+    "updateOnStart": { "type": "boolean" },
+    "deleteOnStop": { "type": "boolean" },
+    "proxied": { "type": "string", "minLength": 1 },
+    "ttl": { "type": "integer", "minimum": 1 },
+    "recordComment": { "type": "string" },
+    "managedRecordsCommentRegex": { "type": "string" },
+    "timezone": { "type": "string", "minLength": 1 },
+    "emoji": { "type": "boolean" },
+    "quiet": { "type": "boolean" },
+    "extraEnv": { "type": "array" },
+    "hostNetwork": { "type": "boolean" },
+    "podAnnotations": { "$ref": "#/definitions/stringMap" },
+    "podLabels": { "$ref": "#/definitions/stringMap" },
+    "podSecurityContext": { "type": "object" },
+    "securityContext": { "type": "object" },
+    "resources": { "type": "object" },
+    "priorityClassName": { "type": "string" },
+    "nodeSelector": { "$ref": "#/definitions/stringMap" },
+    "tolerations": { "type": "array" },
+    "affinity": { "type": "object" }
+  }
+}
