@@ -207,14 +207,19 @@ quoted string.
 
 
 {{/*
-Hash of every chart-rendered config file, for the deployment's
+Hash of the data in every chart-rendered config file, for the deployment's
 checksum/config annotation.
 */}}
 {{- define "home-assistant.configChecksum" -}}
 {{- $files := list "config-http.yaml" "recorder.yaml" "configmap-scripts.yaml" "configmap-automations.yaml" "configmap-blueprints.yaml" "configmap-notify.yaml" "configmap-telegram-bot.yaml" "configmap-packages.yaml" "secret-ha-secrets.yaml" -}}
+{{- if eq (include "home-assistant.configurationMode" .) "managed" }}
+{{- $files = append $files "configmap-configuration.yaml" }}
+{{- end -}}
 {{- $out := "" -}}
 {{- range $files -}}
-{{- $out = print $out (include (print $.Template.BasePath "/" .) $) -}}
+{{- /* Only the payload: metadata carries helm.sh/chart, which would roll the pod on every chart version bump */ -}}
+{{- $doc := include (print $.Template.BasePath "/" .) $ | fromYaml -}}
+{{- $out = print $out (pick $doc "data" "stringData" | toJson) -}}
 {{- end -}}
 {{- $out | sha256sum -}}
 {{- end }}
@@ -240,3 +245,41 @@ Whether /config/secrets.yaml comes from a Secret (config.secrets).
 {{- define "home-assistant.secretsName" -}}
 {{- .Values.config.secrets.existingSecret | default (include "home-assistant.configName" (list . "secrets")) -}}
 {{- end }}
+
+
+{{/*
+config.configuration.mode, validated.
+*/}}
+{{- define "home-assistant.configurationMode" -}}
+{{- $mode := .Values.config.configuration.mode | default "unmanaged" -}}
+{{- if not (has $mode (list "unmanaged" "seed" "managed")) -}}
+{{- fail (printf "config.configuration.mode must be unmanaged, seed or managed, not %q" $mode) -}}
+{{- end -}}
+{{- $mode -}}
+{{- end }}
+
+{{/*
+The rendered configuration.yaml: config.configuration.content, plus a
+homeassistant: block built from config.configuration.homeassistant with the
+packages include added when config.packages is set. The chart owns that
+block, so content defining its own homeassistant: key is rejected - HA would
+fail on the duplicate key at startup instead.
+*/}}
+{{- define "home-assistant.configurationYaml" -}}
+{{- $c := .Values.config.configuration -}}
+{{- $body := include "home-assistant.haYaml" ($c.content | default "") -}}
+{{- if regexMatch "(?m)^homeassistant\\s*:" $body -}}
+{{- fail "config.configuration.content must not define homeassistant: - put those settings in config.configuration.homeassistant instead, which the chart merges with the packages include" -}}
+{{- end -}}
+{{- $ha := deepCopy ($c.homeassistant | default dict) -}}
+{{- if .Values.config.packages -}}
+{{- $_ := set $ha "packages" "!include_dir_named packages" -}}
+{{- end -}}
+# Rendered by the home-assistant Helm chart from config.configuration
+# (mode: {{ include "home-assistant.configurationMode" . }}).
+{{ $body | trim }}
+{{- if $ha }}
+
+{{ include "home-assistant.haYaml" (dict "homeassistant" $ha) | trim }}
+{{- end }}
+{{ end }}

@@ -5,7 +5,7 @@ HomeAssistant is an open source home automation that puts local control and priv
 Powered by a worldwide community of tinkerers and DIY enthusiasts.
 Perfect to run on a Raspberry Pi or a local server..
 
-![Version: 0.6.0](https://img.shields.io/badge/Version-0.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
+![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
 
 ## Installing the Chart
 
@@ -18,19 +18,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/home-assistant --version 0.6.0
+$ helm install my-release newbenji-charts/home-assistant --version 0.7.0
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.6.0
+$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.0
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.6.0
+$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.0
 ```
 
 ## Values
@@ -41,6 +41,9 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.6.0
 | config.automations | list | `[]` | List of automations, mounted read-only at /config/automations/automations.yaml - deliberately not /config/automations.yaml, which HA's UI automation editor writes to. Load them alongside the UI ones by adding `automation chart: !include automations/automations.yaml` to configuration.yaml. See https://www.home-assistant.io/docs/automation/yaml/ |
 | config.blueprints.automation | object | `{}` | Automation blueprints as a map of file name to blueprint, mounted read-only into /config/blueprints/automation/helm/. Each blueprint is either a YAML string, or a map in which HA tags must be quoted (`"!input motion_entity"`) since Helm drops unquoted custom tags. See https://www.home-assistant.io/docs/automation/using_blueprints/ |
 | config.blueprints.script | object | `{}` | Script blueprints, same format as blueprints.automation, mounted into /config/blueprints/script/helm/ |
+| config.configuration.content | string | `"# Loads default set of integrations. Do not remove.\ndefault_config:\n\n# Load frontend themes from the themes folder\nfrontend:\n  themes: !include_dir_merge_named themes\n\nautomation: !include automations.yaml\nscript: !include scripts.yaml\nscene: !include scenes.yaml\n"` | configuration.yaml body (seed/managed mode), as a YAML string (rendered as-is, comments kept) or a map with quoted HA tags. Must not define `homeassistant:` - use config.configuration.homeassistant. The default is Home Assistant's own default configuration. Keep the automation/script/scene includes so HA's UI editors keep working - they write to those files on the PVC |
+| config.configuration.homeassistant | object | `{}` | Settings for the `homeassistant:` block of configuration.yaml (seed/managed mode), e.g. name, time_zone, customize. The chart adds `packages: !include_dir_named packages` here when config.packages is set. HA tags must be quoted, e.g. `customize: "!include customize.yaml"` |
+| config.configuration.mode | string | `"unmanaged"` | Who owns /config/configuration.yaml. `unmanaged`: the chart doesn't touch it (HA writes its default on first boot; add includes by hand). `seed`: an initContainer writes the rendered file only if none exists yet, after which it's yours to edit. `managed`: the rendered file is mounted read-only and every change rolls the pod - configuration.yaml lives in Git. In seed and managed mode, empty automations.yaml/scripts.yaml/scenes.yaml are created if missing, since HA only creates those alongside its own default configuration.yaml. Switching an existing install to managed hides the configuration.yaml on the PVC - paste it into content first |
 | config.http.ip_ban_enabled | bool | `false` | Ban IPs after too many failed login attempts |
 | config.http.login_attempts_threshold | int | `5` | Number of failed login attempts before an IP is banned |
 | config.http.trusted_proxies | list | `[]` | CIDR ranges of reverse proxies trusted to set X-Forwarded-For/X-Forwarded-Proto |
@@ -228,6 +231,33 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.6.0
 </pre>
 </td>
 			<td>Script blueprints, same format as blueprints.automation, mounted into /config/blueprints/script/helm/</td>
+		</tr>
+		<tr>
+			<td>config.configuration.content</td>
+			<td>string</td>
+			<td><pre lang="json">
+"# Loads default set of integrations. Do not remove.\ndefault_config:\n\n# Load frontend themes from the themes folder\nfrontend:\n  themes: !include_dir_merge_named themes\n\nautomation: !include automations.yaml\nscript: !include scripts.yaml\nscene: !include scenes.yaml\n"
+</pre>
+</td>
+			<td>configuration.yaml body (seed/managed mode), as a YAML string (rendered as-is, comments kept) or a map with quoted HA tags. Must not define `homeassistant:` - use config.configuration.homeassistant. The default is Home Assistant's own default configuration. Keep the automation/script/scene includes so HA's UI editors keep working - they write to those files on the PVC</td>
+		</tr>
+		<tr>
+			<td>config.configuration.homeassistant</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Settings for the `homeassistant:` block of configuration.yaml (seed/managed mode), e.g. name, time_zone, customize. The chart adds `packages: !include_dir_named packages` here when config.packages is set. HA tags must be quoted, e.g. `customize: "!include customize.yaml"`</td>
+		</tr>
+		<tr>
+			<td>config.configuration.mode</td>
+			<td>string</td>
+			<td><pre lang="json">
+"unmanaged"
+</pre>
+</td>
+			<td>Who owns /config/configuration.yaml. `unmanaged`: the chart doesn't touch it (HA writes its default on first boot; add includes by hand). `seed`: an initContainer writes the rendered file only if none exists yet, after which it's yours to edit. `managed`: the rendered file is mounted read-only and every change rolls the pod - configuration.yaml lives in Git. In seed and managed mode, empty automations.yaml/scripts.yaml/scenes.yaml are created if missing, since HA only creates those alongside its own default configuration.yaml. Switching an existing install to managed hides the configuration.yaml on the PVC - paste it into content first</td>
 		</tr>
 		<tr>
 			<td>config.http.ip_ban_enabled</td>

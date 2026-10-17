@@ -392,6 +392,23 @@ config:
   #   recorder:
   #     db_url: "!secret hadbconfig"
   #     purge_keep_days: 30
+  configuration:
+    # -- Who owns /config/configuration.yaml. `unmanaged`: the chart doesn't touch it (HA writes its default on first boot; add includes by hand). `seed`: an initContainer writes the rendered file only if none exists yet, after which it's yours to edit. `managed`: the rendered file is mounted read-only and every change rolls the pod - configuration.yaml lives in Git. In seed and managed mode, empty automations.yaml/scripts.yaml/scenes.yaml are created if missing, since HA only creates those alongside its own default configuration.yaml. Switching an existing install to managed hides the configuration.yaml on the PVC - paste it into content first
+    mode: unmanaged
+    # -- configuration.yaml body (seed/managed mode), as a YAML string (rendered as-is, comments kept) or a map with quoted HA tags. Must not define `homeassistant:` - use config.configuration.homeassistant. The default is Home Assistant's own default configuration. Keep the automation/script/scene includes so HA's UI editors keep working - they write to those files on the PVC
+    content: |
+      # Loads default set of integrations. Do not remove.
+      default_config:
+
+      # Load frontend themes from the themes folder
+      frontend:
+        themes: !include_dir_merge_named themes
+
+      automation: !include automations.yaml
+      script: !include scripts.yaml
+      scene: !include scenes.yaml
+    # -- Settings for the `homeassistant:` block of configuration.yaml (seed/managed mode), e.g. name, time_zone, customize. The chart adds `packages: !include_dir_named packages` here when config.packages is set. HA tags must be quoted, e.g. `customize: "!include customize.yaml"`
+    homeassistant: {}
   secrets:
     # -- Mount /config/secrets.yaml (what `!secret` reads) from this existing Secret, e.g. one created by ExternalSecrets, SOPS or SealedSecrets. Each key in the Secret becomes one `key: value` entry, written by an initContainer at pod start (a single trailing newline is stripped from each value). Replaces any secrets.yaml already on the PVC - move its entries into the Secret first. Changes only apply on the next pod start; use e.g. Reloader via podAnnotations to restart automatically
     existingSecret: ""

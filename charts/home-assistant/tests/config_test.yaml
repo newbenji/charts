@@ -10,6 +10,7 @@ templates:
   - templates/configmap-telegram-bot.yaml
   - templates/configmap-packages.yaml
   - templates/secret-ha-secrets.yaml
+  - templates/configmap-configuration.yaml
 release:
   name: ha
 tests:
@@ -137,3 +138,12 @@ tests:
           value: bar
       - exists:
           path: spec.template.metadata.annotations["checksum/config"]
+
+  - it: keeps the checksum stable across chart version bumps
+    template: templates/deployment.yaml
+    chart:
+      version: 99.0.0
+    asserts:
+      - equal:
+          path: spec.template.metadata.annotations["checksum/config"]
+          value: 852c6a8f277c3fc6182ac3b02a9d5ce244893b7735f05eb22b8a555aac342683
