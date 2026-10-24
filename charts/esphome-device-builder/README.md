@@ -3,7 +3,7 @@
 
 Web dashboard for building, flashing, and managing ESPHome firmware on ESP8266/ESP32 devices
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.7.4](https://img.shields.io/badge/AppVersion-2026.7.4-informational?style=flat-square)
+![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.10.0](https://img.shields.io/badge/AppVersion-2026.10.0-informational?style=flat-square)
 
 This chart installs the [ESPHome Device Builder](https://github.com/esphome/device-builder) dashboard on Kubernetes, for building and flashing ESPHome firmware to ESP8266/ESP32 devices. As of ESPHome 2026.6.0, this is the dashboard bundled in the standard `ghcr.io/esphome/esphome` image.
 
@@ -47,19 +47,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/esphome-device-builder --version 0.1.1
+$ helm install my-release newbenji-charts/esphome-device-builder --version 0.1.2
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.1
+$ helm install my-release oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.2
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.1
+$ helm pull oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.2
 ```
 
 ## Maintainers
@@ -89,7 +89,7 @@ $ helm pull oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.1
 | httpRoute.parentRefs | list | `[{"name":""}]` | References to the Gateway(s) this route attaches to |
 | image.pullPolicy | string | `"IfNotPresent"` | Docker image pull policy |
 | image.repository | string | `"ghcr.io/esphome/esphome"` | Docker registry/repository to pull the image from |
-| image.tag | string | `""` | Overrides the default tag (appVersion) used in Chart.yaml. Defaults to the chart's appVersion (2026.7.4) when left empty. See available tags at https://github.com/esphome/esphome/pkgs/container/esphome |
+| image.tag | string | `""` | Overrides the default tag (appVersion) used in Chart.yaml. Defaults to the chart's appVersion (2026.10.0) when left empty. See available tags at https://github.com/esphome/esphome/pkgs/container/esphome |
 | imagePullSecrets | list | `[]` | Docker image pull secrets |
 | ingress.annotations | object | `{}` | annotations to configure your Ingress. See your Ingress Controller's Docs for more info. |
 | ingress.className | string | `""` | ingressClassName for using on clusters with multiple ingresses, default is null |
@@ -120,6 +120,7 @@ $ helm pull oci://ghcr.io/newbenji/charts/esphome-device-builder --version 0.1.1
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
+| strategyType | string | `"Recreate"` | Upgrade strategy type (Recreate or RollingUpdate). Recreate stops the old pod before the new one starts, so it releases its ReadWriteOnce volumes and the host port 6052. RollingUpdate deadlocks with ReadWriteOnce volumes when the new pod lands on another node |
 | tolerations | list | `[]` | Node toleration configuration |
 
 ----------------------------------------------
