@@ -2,6 +2,9 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# -- Upgrade strategy type (Recreate or RollingUpdate). Recreate stops the old pod before the new one starts, so it releases its ReadWriteOnce volumes and the host port 6052. RollingUpdate deadlocks with ReadWriteOnce volumes when the new pod lands on another node
+strategyType: Recreate
+
 # -- Number of replicas to run. The dashboard keeps no shared state between replicas, so anything beyond 1 requires a shared persistence.config volume with a ReadWriteMany access mode
 replicaCount: 1
 
@@ -10,7 +13,7 @@ image:
   repository: ghcr.io/esphome/esphome
   # -- Docker image pull policy
   pullPolicy: IfNotPresent
-  # -- Overrides the default tag (appVersion) used in Chart.yaml. Defaults to the chart's appVersion (2026.7.4) when left empty. See available tags at https://github.com/esphome/esphome/pkgs/container/esphome
+  # -- Overrides the default tag (appVersion) used in Chart.yaml. Defaults to the chart's appVersion (2026.10.0) when left empty. See available tags at https://github.com/esphome/esphome/pkgs/container/esphome
   tag: ""
 
 # -- Docker image pull secrets
