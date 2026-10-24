@@ -38,6 +38,45 @@ entries:
   esphome-device-builder:
   - annotations:
       artifacthub.io/changes: |
+        - "[Changed] Default upgrade strategy is Recreate (new value strategyType). RollingUpdate deadlocked when the new pod landed on another node, because the ReadWriteOnce config/cache volumes stay attached to the old pod"
+        - "[Changed] Bumped default appVersion to 2026.10.0"
+      artifacthub.io/images: |
+        - name: esphome-device-builder
+          image: ghcr.io/esphome/esphome:2026.10.0
+      artifacthub.io/links: |
+        - name: ESPHome source repo
+          url: https://github.com/esphome/esphome
+        - name: Device Builder dashboard source repo
+          url: https://github.com/esphome/device-builder
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 2026.10.0
+    created: "2026-10-24T08:40:55.620114522Z"
+    description: Web dashboard for building, flashing, and managing ESPHome firmware
+      on ESP8266/ESP32 devices
+    digest: a3a3b1ecdb1dd3bdc2ce8bf241008f2086218c4128006a5a5cd25a2c09b80241
+    home: https://github.com/newbenji/charts/tree/main/charts/esphome-device-builder
+    icon: https://esphome.io/images/logo.svg
+    keywords:
+    - esphome
+    - esp8266
+    - esp32
+    - iot
+    - smart home
+    maintainers:
+    - email: benji@newbenji.dk
+      name: newbenji
+    name: esphome-device-builder
+    sources:
+    - https://github.com/esphome/esphome
+    - https://github.com/esphome/device-builder
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/esphome-device-builder-0.1.2/esphome-device-builder-0.1.2.tgz
+    version: 0.1.2
+  - annotations:
+      artifacthub.io/changes: |
         - "[Added] Recovered this chart from an old ChartMuseum devel repo (its source repository was lost) and republished it here going forward"
         - "[Added] Gateway API HTTPRoute support as an alternative to Ingress"
         - "[Added] Persistence for /config (device configs, secrets, and dashboard state - previously lost on every pod restart) and optionally /cache (PlatformIO toolchain downloads)"
@@ -783,4 +822,4 @@ entries:
     urls:
     - https://github.com/newbenji/charts/releases/download/music-assistant-0.1.0/music-assistant-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-17T09:19:57.054686636Z"
+generated: "2026-10-24T08:40:55.620137897Z"
