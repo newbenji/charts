@@ -1,9 +1,9 @@
 apiVersion: v2
-appVersion: "2026.7.4"
+appVersion: "2026.10.0"
 description: Web dashboard for building, flashing, and managing ESPHome firmware on ESP8266/ESP32 devices
 name: esphome-device-builder
 type: application
-version: 0.1.1
+version: 0.1.2
 keywords:
   - esphome
   - esp8266
@@ -20,17 +20,11 @@ maintainers:
     email: benji@newbenji.dk
 annotations:
   artifacthub.io/changes: |
-    - "[Added] Recovered this chart from an old ChartMuseum devel repo (its source repository was lost) and republished it here going forward"
-    - "[Added] Gateway API HTTPRoute support as an alternative to Ingress"
-    - "[Added] Persistence for /config (device configs, secrets, and dashboard state - previously lost on every pod restart) and optionally /cache (PlatformIO toolchain downloads)"
-    - "[Added] env/envFromSecrets support, e.g. for ESPHOME_TRUSTED_DOMAINS (needed behind a reverse proxy/ingress that doesn't forward the original Host header) or ESPHOME_USERNAME/ESPHOME_PASSWORD"
-    - "[Fixed] liveness/readiness probes hit the full dashboard SPA (/) instead of the lightweight /version endpoint the upstream image's own Docker healthcheck uses"
-    - "[Changed] Bumped default appVersion to 2026.7.4 (was stuck on 1.16.0); the image now bundles the actively-maintained esphome/device-builder dashboard (this chart's namesake) instead of the legacy dashboard"
-    - "[Changed] Cleaned up the ingress template to the current Helm standard (dropped pre-1.19 Kubernetes compatibility branches)"
-    - "[Fixed] artifacthub.io/images listed the image without a tag, so Artifact Hub's security scan checked :latest instead of the deployed version. Now pinned to the appVersion"
+    - "[Changed] Default upgrade strategy is Recreate (new value strategyType). RollingUpdate deadlocked when the new pod landed on another node, because the ReadWriteOnce config/cache volumes stay attached to the old pod"
+    - "[Changed] Bumped default appVersion to 2026.10.0"
   artifacthub.io/images: |
     - name: esphome-device-builder
-      image: ghcr.io/esphome/esphome:2026.7.4
+      image: ghcr.io/esphome/esphome:2026.10.0
   artifacthub.io/links: |
     - name: ESPHome source repo
       url: https://github.com/esphome/esphome
