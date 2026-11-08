@@ -324,6 +324,36 @@ entries:
   home-assistant:
   - annotations:
       artifacthub.io/changes: |
+        - "[Added] macvlan: a Multus + macvlan attachment as an alternative to hostNetwork. The pod gets a second interface directly in a LAN/VLAN for mDNS, SSDP, Cast and Matter/Thread discovery, and eth0 stays a normal pod interface. The chart renders the k8s.v1.cni.cncf.io/networks pod annotation (fixed IPs and MAC) and, by default, its own NetworkAttachmentDefinition <fullname>-macvlan, with the IPv6 router advertisement sysctls that Thread needs"
+        - "[Added] matterServer gets --primary-interface <macvlan.interface> when the macvlan attachment is on, unless matterServer.extraArgs sets it"
+        - "[Added] The render fails if hostNetwork and macvlan.enabled are both on, or if podAnnotations also sets k8s.v1.cni.cncf.io/networks"
+      artifacthub.io/images: |
+        - name: home-assistant
+          image: homeassistant/home-assistant:2026.8.0
+      artifacthub.io/links: |
+        - name: Home assistant source repo
+          url: https://github.com/home-assistant
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 2026.8.0
+    created: "2026-11-08T10:44:44.417708356Z"
+    description: 'HomeAssistant is an open source home automation that puts local
+      control and privacy first. Powered by a worldwide community of tinkerers and
+      DIY enthusiasts. Perfect to run on a Raspberry Pi or a local server.. '
+    digest: b9e08c70d5eb34b56e94ed8d99b6f74a77c53b867e28e572f35e64473e3c0107
+    icon: https://brands.home-assistant.io/homeassistant/icon.png
+    keywords:
+    - homeassistant
+    - home-assistant
+    - smart home
+    name: home-assistant
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/home-assistant-0.8.0/home-assistant-0.8.0.tgz
+    version: 0.8.0
+  - annotations:
+      artifacthub.io/changes: |
         - "[Changed] Bumped default appVersion to 2026.8.0"
         - "[Added] Optional whisper (speech-to-text) and piper (text-to-speech) Wyoming services, disabled by default"
         - "[Changed] Cleaned up the ingress template to the current Helm standard and added Gateway API httpRoute support as an alternative"
@@ -822,4 +852,4 @@ entries:
     urls:
     - https://github.com/newbenji/charts/releases/download/music-assistant-0.1.0/music-assistant-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-24T08:40:55.620137897Z"
+generated: "2026-11-08T10:44:44.41773766Z"
