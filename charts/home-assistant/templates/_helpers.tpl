@@ -283,3 +283,47 @@ fail on the duplicate key at startup instead.
 {{ include "home-assistant.haYaml" (dict "homeassistant" $ha) | trim }}
 {{- end }}
 {{ end }}
+
+{{/*
+Name of the NetworkAttachmentDefinition the macvlan attachment uses: the
+chart's own (<fullname>-macvlan, or macvlan.networkAttachmentDefinition.name)
+when it creates one, else the name of an existing one, which is then required.
+*/}}
+{{- define "home-assistant.macvlanName" -}}
+{{- $nad := .Values.macvlan.networkAttachmentDefinition -}}
+{{- if $nad.create -}}
+{{- $nad.name | default (printf "%s-macvlan" (include "home-assistant.fullname" .)) -}}
+{{- else -}}
+{{- required "macvlan.networkAttachmentDefinition.name is required when macvlan.networkAttachmentDefinition.create is false" $nad.name -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Checks the macvlan values. Called from the Deployment, so a bad combination
+fails the render.
+*/}}
+{{- define "home-assistant.macvlanValidate" -}}
+{{- if .Values.macvlan.enabled -}}
+{{- if .Values.hostNetwork -}}
+{{- fail "hostNetwork and macvlan.enabled are mutually exclusive: the macvlan attachment gives a normal pod its LAN interface, set hostNetwork: false" -}}
+{{- end -}}
+{{- if hasKey (.Values.podAnnotations | default dict) "k8s.v1.cni.cncf.io/networks" -}}
+{{- fail "podAnnotations must not set k8s.v1.cni.cncf.io/networks when macvlan.enabled is true: the chart renders that annotation itself" -}}
+{{- end -}}
+{{- if and .Values.macvlan.networkAttachmentDefinition.create (not .Values.macvlan.master) -}}
+{{- fail "macvlan.master (the host interface, e.g. iot0) is required when macvlan.networkAttachmentDefinition.create is true" -}}
+{{- end -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+The Multus pod annotation (k8s.v1.cni.cncf.io/networks) for the macvlan
+attachment, as a JSON list with one entry.
+*/}}
+{{- define "home-assistant.macvlanAnnotation" -}}
+{{- $m := .Values.macvlan -}}
+{{- $net := dict "name" (include "home-assistant.macvlanName" .) "interface" $m.interface -}}
+{{- with $m.ips }}{{- $_ := set $net "ips" . -}}{{- end -}}
+{{- with $m.mac }}{{- $_ := set $net "mac" . -}}{{- end -}}
+{{- list $net | toJson -}}
+{{- end }}

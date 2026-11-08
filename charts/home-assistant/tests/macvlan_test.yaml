@@ -1,0 +1,167 @@
+suite: macvlan attachment
+templates:
+  - templates/deployment.yaml
+  - templates/networkattachmentdefinition.yaml
+  # deployment.yaml's checksum/config includes these
+  - templates/configmap-automations.yaml
+  - templates/configmap-blueprints.yaml
+  - templates/config-http.yaml
+  - templates/recorder.yaml
+  - templates/configmap-scripts.yaml
+  - templates/configmap-notify.yaml
+  - templates/configmap-telegram-bot.yaml
+  - templates/configmap-packages.yaml
+  - templates/secret-ha-secrets.yaml
+  - templates/configmap-configuration.yaml
+release:
+  name: ha
+  namespace: home
+values:
+  - values/macvlan.yaml
+tests:
+  - it: renders nothing extra when disabled
+    set:
+      macvlan.enabled: false
+      hostNetwork: true
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/networkattachmentdefinition.yaml
+      - notExists:
+          path: spec.template.metadata.annotations["k8s.v1.cni.cncf.io/networks"]
+        template: templates/deployment.yaml
+
+  - it: renders the Multus pod annotation with IP and MAC
+    template: templates/deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.metadata.annotations["k8s.v1.cni.cncf.io/networks"]
+          value: '[{"interface":"net1","ips":["192.168.20.5/24"],"mac":"02:00:c0:a8:14:05","name":"ha-home-assistant-macvlan"}]'
+      - equal:
+          path: spec.template.spec.hostNetwork
+          value: false
+
+  - it: leaves out ips and mac when not set
+    template: templates/deployment.yaml
+    set:
+      macvlan.ips: []
+      macvlan.mac: ""
+    asserts:
+      - equal:
+          path: spec.template.metadata.annotations["k8s.v1.cni.cncf.io/networks"]
+          value: '[{"interface":"net1","name":"ha-home-assistant-macvlan"}]'
+
+  - it: creates the NetworkAttachmentDefinition with macvlan and the IPv6 tuning sysctls
+    template: templates/networkattachmentdefinition.yaml
+    asserts:
+      - isKind:
+          of: NetworkAttachmentDefinition
+      - equal:
+          path: metadata.name
+          value: ha-home-assistant-macvlan
+      - matchRegex:
+          path: spec.config
+          pattern: '"master": "iot0"'
+      - matchRegex:
+          path: spec.config
+          pattern: '"net.ipv6.conf.net1.accept_ra_rt_info_max_plen": "64"'
+      - matchRegex:
+          path: spec.config
+          pattern: '"net.ipv6.conf.net1.accept_ra_defrtr": "0"'
+      - matchRegex:
+          path: spec.config
+          pattern: '"type": "tuning"'
+
+  - it: leaves out the tuning plugin without IPv6 and extra sysctls
+    template: templates/networkattachmentdefinition.yaml
+    set:
+      macvlan.ipv6.enabled: false
+    asserts:
+      - notMatchRegex:
+          path: spec.config
+          pattern: tuning
+
+  - it: names the sysctls after the pod interface
+    template: templates/networkattachmentdefinition.yaml
+    set:
+      macvlan.interface: lan0
+      macvlan.extraSysctls:
+        net.ipv4.conf.lan0.arp_ignore: 1
+    asserts:
+      - matchRegex:
+          path: spec.config
+          pattern: '"net.ipv6.conf.lan0.accept_ra": "2"'
+      - matchRegex:
+          path: spec.config
+          pattern: '"net.ipv4.conf.lan0.arp_ignore": "1"'
+
+  - it: uses an existing NetworkAttachmentDefinition when create is false
+    set:
+      macvlan.networkAttachmentDefinition.create: false
+      macvlan.networkAttachmentDefinition.name: iot-macvlan
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/networkattachmentdefinition.yaml
+      - matchRegex:
+          path: spec.template.metadata.annotations["k8s.v1.cni.cncf.io/networks"]
+          pattern: '"name":"iot-macvlan"'
+        template: templates/deployment.yaml
+
+  - it: adds --primary-interface to matter-server
+    template: templates/deployment.yaml
+    set:
+      matterServer.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "matter-server")].args
+          content: --primary-interface
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "matter-server")].args
+          content: net1
+
+  - it: keeps a --primary-interface from matterServer.extraArgs
+    template: templates/deployment.yaml
+    set:
+      matterServer.enabled: true
+      matterServer.extraArgs: ["--primary-interface", "eth9"]
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[?(@.name == "matter-server")].args
+          content: net1
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "matter-server")].args
+          content: eth9
+
+  - it: fails with hostNetwork
+    template: templates/deployment.yaml
+    set:
+      hostNetwork: true
+    asserts:
+      - failedTemplate:
+          errorPattern: hostNetwork and macvlan.enabled are mutually exclusive
+
+  - it: fails when podAnnotations also sets the Multus annotation
+    template: templates/deployment.yaml
+    set:
+      podAnnotations:
+        k8s.v1.cni.cncf.io/networks: other
+    asserts:
+      - failedTemplate:
+          errorPattern: podAnnotations must not set k8s.v1.cni.cncf.io/networks
+
+  - it: fails without a master interface when it creates the NetworkAttachmentDefinition
+    template: templates/deployment.yaml
+    set:
+      macvlan.master: ""
+    asserts:
+      - failedTemplate:
+          errorPattern: macvlan.master .* is required
+
+  - it: fails without a name when create is false
+    template: templates/deployment.yaml
+    set:
+      macvlan.networkAttachmentDefinition.create: false
+    asserts:
+      - failedTemplate:
+          errorPattern: macvlan.networkAttachmentDefinition.name is required
