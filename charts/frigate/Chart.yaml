@@ -3,7 +3,7 @@ appVersion: "0.17.2"
 description: NVR With Realtime Object Detection for IP Cameras
 name: frigate
 type: application
-version: 7.11.0
+version: 7.11.1
 keywords:
   - tensorflow
   - coral
@@ -22,7 +22,7 @@ maintainers:
     email: benji@newbenji.dk
 annotations:
   artifacthub.io/changes: |
-    - "[Added] networkPolicy: an optional NetworkPolicy that blocks incoming traffic to the Frigate pod, except from the same namespace (allowSameNamespace) and from extra ingress rules. Outgoing traffic is not restricted. Disabled by default"
+    - "[Added] helm-unittest cases for the config persistence modes: the default ConfigMap mount, persistence.config.enabled (overwrite on every start), seedOnly (copy only when config.yml does not exist), and ephemeralWritableConfigYaml false. No change to the rendered manifests"
   artifacthub.io/images: |
     - name: frigate
       image: ghcr.io/blakeblackshear/frigate:0.17.2
