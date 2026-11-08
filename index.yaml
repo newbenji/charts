@@ -167,6 +167,45 @@ entries:
   frigate:
   - annotations:
       artifacthub.io/changes: |
+        - "[Fixed] checksum/configmap hashes only the ConfigMap data, not its labels, so a new chart version alone no longer restarts the pod"
+      artifacthub.io/images: |
+        - name: frigate
+          image: ghcr.io/blakeblackshear/frigate:0.18.2
+      artifacthub.io/links: |
+        - name: Frigate source repo
+          url: https://github.com/blakeblackshear/frigate
+        - name: Upstream chart (blakeshome-charts)
+          url: https://github.com/blakeblackshear/blakeshome-charts
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 0.18.2
+    created: "2026-11-08T20:58:49.550525865Z"
+    description: NVR With Realtime Object Detection for IP Cameras
+    digest: fae68a4369e10ca3700b7abf21c025bd4d640bc4971b02f1c853257f3588b4c6
+    home: https://github.com/newbenji/charts/tree/main/charts/frigate
+    icon: https://raw.githubusercontent.com/blakeblackshear/frigate/dev/web/public/images/android-chrome-512x512.png
+    keywords:
+    - tensorflow
+    - coral
+    - ml
+    maintainers:
+    - email: blakeb@blakeshome.com
+      name: blakeblackshear
+    - email: jeff@billimek.com
+      name: billimek
+    - email: benji@newbenji.dk
+      name: newbenji
+    name: frigate
+    sources:
+    - https://github.com/blakeblackshear/frigate
+    - https://github.com/blakeblackshear/blakeshome-charts
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/frigate-7.12.1/frigate-7.12.1.tgz
+    version: 7.12.1
+  - annotations:
+      artifacthub.io/changes: |
         - "[Changed] Default image (appVersion) is Frigate 0.18.2. Frigate 0.18 changes the config format; see Upgrading in the README"
         - "[Added] helm-unittest cases for the config persistence modes: the default ConfigMap mount, persistence.config.enabled (overwrite on every start), seedOnly (copy only when config.yml does not exist), and ephemeralWritableConfigYaml false"
         - "[Fixed] README minimum config: remove the rtmp role, which Frigate no longer supports"
@@ -1000,4 +1039,4 @@ entries:
     urls:
     - https://github.com/newbenji/charts/releases/download/music-assistant-0.1.0/music-assistant-0.1.0.tgz
     version: 0.1.0
-generated: "2026-11-08T20:46:02.156949374Z"
+generated: "2026-11-08T20:58:49.550608008Z"
