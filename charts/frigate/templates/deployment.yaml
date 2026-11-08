@@ -20,7 +20,8 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
       annotations:
       {{- if not (and .Values.persistence.config.enabled .Values.persistence.config.seedOnly) }}
-        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- /* Only the ConfigMap data, not its labels: a new chart version alone must not restart the pod */}}
+        checksum/configmap: {{ (include (print $.Template.BasePath "/configmap.yaml") . | fromYaml).data | toYaml | sha256sum }}
       {{- end }}
       {{- if .Values.podAnnotations }}
         {{- range $key, $value := .Values.podAnnotations }}

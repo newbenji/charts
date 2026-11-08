@@ -1,0 +1,33 @@
+suite: config checksum
+templates:
+  - templates/deployment.yaml
+  - templates/configmap.yaml
+release:
+  name: rel
+tests:
+  - it: has the same checksum for another chart version
+    template: templates/deployment.yaml
+    chart:
+      version: 1.0.0
+    asserts:
+      - equal:
+          path: spec.template.metadata.annotations["checksum/configmap"]
+          value: ed797ba6557a6d22eafd8a619cd1ee3b080df8796fb8314a1d2f5b78987ec152
+
+  - it: has the same checksum for a different chart version
+    template: templates/deployment.yaml
+    chart:
+      version: 99.0.0
+    asserts:
+      - equal:
+          path: spec.template.metadata.annotations["checksum/configmap"]
+          value: ed797ba6557a6d22eafd8a619cd1ee3b080df8796fb8314a1d2f5b78987ec152
+
+  - it: changes the checksum when the config changes
+    template: templates/deployment.yaml
+    set:
+      config.mqtt.host: other.example.com
+    asserts:
+      - notEqual:
+          path: spec.template.metadata.annotations["checksum/configmap"]
+          value: ed797ba6557a6d22eafd8a619cd1ee3b080df8796fb8314a1d2f5b78987ec152
