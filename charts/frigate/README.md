@@ -3,7 +3,7 @@
 
 NVR With Realtime Object Detection for IP Cameras
 
-![Version: 7.11.0](https://img.shields.io/badge/Version-7.11.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.17.2](https://img.shields.io/badge/AppVersion-0.17.2-informational?style=flat-square)
+![Version: 7.12.0](https://img.shields.io/badge/Version-7.12.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.18.2](https://img.shields.io/badge/AppVersion-0.18.2-informational?style=flat-square)
 
 This chart installs [Frigate](https://frigate.video/) on Kubernetes.
 
@@ -26,19 +26,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/frigate --version 7.11.0
+$ helm install my-release newbenji-charts/frigate --version 7.12.0
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/frigate --version 7.11.0
+$ helm install my-release oci://ghcr.io/newbenji/charts/frigate --version 7.12.0
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/frigate --version 7.11.0
+$ helm pull oci://ghcr.io/newbenji/charts/frigate --version 7.12.0
 ```
 
 #### Minimum Config
@@ -61,13 +61,18 @@ config:
           - path: rtsp://viewer:{FRIGATE_RTSP_PASSWORD}@10.0.10.10:554/cam/realmonitor?channel=1&subtype=2
             roles:
               - detect
-              - rtmp
       detect:
         width: 1280
         height: 720
 ```
 
 `config` accepts either a native YAML map (as above) or a `|`-block string, if you prefer to paste Frigate's config verbatim.
+
+## Upgrading
+
+### 7.12.0
+
+The default image is Frigate 0.18.2. Frigate 0.18 changes the config format for GenAI (a map of providers with `roles`), zones and masks (`enabled` and `friendly_name`), and removes `snapshots.clean_copy`. Frigate migrates a writable `config.yml` itself. With the default read-only ConfigMap, update `config` in your values. See the [0.18.0 release notes](https://github.com/blakeblackshear/frigate/releases/tag/v0.18.0). To stay on 0.17, set `image.tag: "0.17.2"`.
 
 ## Maintainers
 

@@ -1,0 +1,110 @@
+suite: config persistence
+templates:
+  - templates/deployment.yaml
+  - templates/configmap.yaml
+release:
+  name: rel
+tests:
+  - it: mounts the ConfigMap read-only and restarts on config changes by default
+    template: templates/deployment.yaml
+    asserts:
+      - notExists:
+          path: spec.template.spec.initContainers
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /config/config.yml
+            subPath: config.yml
+            name: configmap
+      - exists:
+          path: spec.template.metadata.annotations["checksum/configmap"]
+
+  - it: overwrites config.yml on every start with persistence.config.enabled
+    template: templates/deployment.yaml
+    set:
+      persistence.config.enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: copyconfig
+      - equal:
+          path: spec.template.spec.initContainers[0].args
+          value: ["-v", "/config.yml", "/config/config.yml"]
+      - notContains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /config/config.yml
+            subPath: config.yml
+            name: configmap
+      - exists:
+          path: spec.template.metadata.annotations["checksum/configmap"]
+
+  - it: copies config.yml only when it does not exist with seedOnly
+    template: templates/deployment.yaml
+    set:
+      persistence.config.enabled: true
+      persistence.config.seedOnly: true
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].args
+          value: ["-v", "-n", "/config.yml", "/config/config.yml"]
+      - notContains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /config/config.yml
+            subPath: config.yml
+            name: configmap
+      - notExists:
+          path: spec.template.metadata.annotations["checksum/configmap"]
+
+  - it: ignores seedOnly without persistence.config.enabled
+    template: templates/deployment.yaml
+    set:
+      persistence.config.seedOnly: true
+    asserts:
+      - notExists:
+          path: spec.template.spec.initContainers
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /config/config.yml
+            subPath: config.yml
+            name: configmap
+      - exists:
+          path: spec.template.metadata.annotations["checksum/configmap"]
+
+  - it: mounts the ConfigMap over the PVC without ephemeralWritableConfigYaml
+    template: templates/deployment.yaml
+    set:
+      persistence.config.enabled: true
+      persistence.config.ephemeralWritableConfigYaml: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.initContainers
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /config/config.yml
+            subPath: config.yml
+            name: configmap
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /config
+            name: config
+
+  - it: keeps extra init containers next to copyconfig
+    template: templates/deployment.yaml
+    set:
+      persistence.config.enabled: true
+      persistence.config.seedOnly: true
+      extraInitContainers:
+        - name: extra
+          image: busybox
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: extra
+      - equal:
+          path: spec.template.spec.initContainers[1].name
+          value: copyconfig
