@@ -3,7 +3,7 @@
 
 Music Assistant server - a music library manager that connects your streaming services to a wide range of connected speakers (Chromecast/Google Cast, AirPlay, Sonos, DLNA, Squeezebox, ...)
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.10.6](https://img.shields.io/badge/AppVersion-2.10.6-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.10.6](https://img.shields.io/badge/AppVersion-2.10.6-informational?style=flat-square)
 
 This chart installs the [Music Assistant](https://music-assistant.io/) server on Kubernetes. Upstream only
 supports running it as a standalone, host-networked container; this chart
@@ -98,19 +98,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/music-assistant --version 0.1.0
+$ helm install my-release newbenji-charts/music-assistant --version 0.2.0
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/music-assistant --version 0.1.0
+$ helm install my-release oci://ghcr.io/newbenji/charts/music-assistant --version 0.2.0
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/music-assistant --version 0.1.0
+$ helm pull oci://ghcr.io/newbenji/charts/music-assistant --version 0.2.0
 ```
 
 ## Maintainers
@@ -162,6 +162,9 @@ $ helm pull oci://ghcr.io/newbenji/charts/music-assistant --version 0.1.0
 | lifecycle | object | `{}` | Lifecycle hooks for the Music Assistant container |
 | logLevel | string | `"info"` | Log level passed as LOG_LEVEL (critical, error, warning, info, debug) |
 | nameOverride | string | `""` | Overrides the name of resources |
+| networkPolicy.allowSameNamespace | bool | `true` | Allow incoming traffic from all pods in the release namespace |
+| networkPolicy.enabled | bool | `false` | Create a NetworkPolicy that blocks incoming traffic to the Music Assistant pod, except what is allowed below. Outgoing traffic is not restricted. Traffic from an Ingress controller or a Gateway in another namespace must be allowed in ingress. With Cilium's Gateway API, Envoy uses the reserved identity "ingress", which a NetworkPolicy cannot match: allow it with a CiliumClusterwideNetworkPolicy (fromEntities: [ingress]) instead. Kubelet probes from the node are allowed by most CNIs (Cilium always allows the local node). |
+| networkPolicy.ingress | list | `[]` | More NetworkPolicy ingress rules, added as-is, e.g. [{from: [{namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: monitoring}}}], ports: [{port: 8123, protocol: TCP}]}] |
 | nodeSelector | object | `{}` | Node Selector configuration |
 | persistence.data.accessMode | string | `"ReadWriteOnce"` | access mode to use for the PVC |
 | persistence.data.annotations | object | `{}` | Annotations to add to the PVC, e.g. for a backup tool |

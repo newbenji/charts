@@ -3,7 +3,7 @@
 
 NVR With Realtime Object Detection for IP Cameras
 
-![Version: 7.10.2](https://img.shields.io/badge/Version-7.10.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.17.2](https://img.shields.io/badge/AppVersion-0.17.2-informational?style=flat-square)
+![Version: 7.11.0](https://img.shields.io/badge/Version-7.11.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.17.2](https://img.shields.io/badge/AppVersion-0.17.2-informational?style=flat-square)
 
 This chart installs [Frigate](https://frigate.video/) on Kubernetes.
 
@@ -26,19 +26,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/frigate --version 7.10.2
+$ helm install my-release newbenji-charts/frigate --version 7.11.0
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/frigate --version 7.10.2
+$ helm install my-release oci://ghcr.io/newbenji/charts/frigate --version 7.11.0
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/frigate --version 7.10.2
+$ helm pull oci://ghcr.io/newbenji/charts/frigate --version 7.11.0
 ```
 
 #### Minimum Config
@@ -115,6 +115,9 @@ config:
 | ingress.ingressClassName | string | `nil` | ingressClassName for using on clusters with multiple ingresses, default is null |
 | ingress.tls | list | `[]` | list of TLS configurations |
 | nameOverride | string | `""` | Overrides the name of resources |
+| networkPolicy.allowSameNamespace | bool | `true` | Allow incoming traffic from all pods in the release namespace |
+| networkPolicy.enabled | bool | `false` | Create a NetworkPolicy that blocks incoming traffic to the Frigate pod, except what is allowed below. Outgoing traffic is not restricted. Traffic from an Ingress controller or a Gateway in another namespace must be allowed in ingress. With Cilium's Gateway API, Envoy uses the reserved identity "ingress", which a NetworkPolicy cannot match: allow it with a CiliumClusterwideNetworkPolicy (fromEntities: [ingress]) instead. Kubelet probes from the node are allowed by most CNIs (Cilium always allows the local node). |
+| networkPolicy.ingress | list | `[]` | More NetworkPolicy ingress rules, added as-is, e.g. [{from: [{namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: monitoring}}}], ports: [{port: 8123, protocol: TCP}]}] |
 | nodeSelector | object | `{}` | Node Selector configuration |
 | persistence.config.accessMode | string | `"ReadWriteOnce"` | [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes) to use for the PVC |
 | persistence.config.enabled | bool | `false` | Enables persistence for the config directory |
@@ -448,6 +451,33 @@ null
 </pre>
 </td>
 			<td>Overrides the name of resources</td>
+		</tr>
+		<tr>
+			<td>networkPolicy.allowSameNamespace</td>
+			<td>bool</td>
+			<td><pre lang="json">
+true
+</pre>
+</td>
+			<td>Allow incoming traffic from all pods in the release namespace</td>
+		</tr>
+		<tr>
+			<td>networkPolicy.enabled</td>
+			<td>bool</td>
+			<td><pre lang="json">
+false
+</pre>
+</td>
+			<td>Create a NetworkPolicy that blocks incoming traffic to the Frigate pod, except what is allowed below. Outgoing traffic is not restricted. Traffic from an Ingress controller or a Gateway in another namespace must be allowed in ingress. With Cilium's Gateway API, Envoy uses the reserved identity "ingress", which a NetworkPolicy cannot match: allow it with a CiliumClusterwideNetworkPolicy (fromEntities: [ingress]) instead. Kubelet probes from the node are allowed by most CNIs (Cilium always allows the local node).</td>
+		</tr>
+		<tr>
+			<td>networkPolicy.ingress</td>
+			<td>list</td>
+			<td><pre lang="json">
+[]
+</pre>
+</td>
+			<td>More NetworkPolicy ingress rules, added as-is, e.g. [{from: [{namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: monitoring}}}], ports: [{port: 8123, protocol: TCP}]}]</td>
 		</tr>
 		<tr>
 			<td>nodeSelector</td>
