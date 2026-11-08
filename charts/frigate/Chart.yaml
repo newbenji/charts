@@ -1,9 +1,9 @@
 apiVersion: v2
-appVersion: "0.17.2"
+appVersion: "0.18.2"
 description: NVR With Realtime Object Detection for IP Cameras
 name: frigate
 type: application
-version: 7.11.1
+version: 7.12.0
 keywords:
   - tensorflow
   - coral
@@ -22,10 +22,12 @@ maintainers:
     email: benji@newbenji.dk
 annotations:
   artifacthub.io/changes: |
-    - "[Added] helm-unittest cases for the config persistence modes: the default ConfigMap mount, persistence.config.enabled (overwrite on every start), seedOnly (copy only when config.yml does not exist), and ephemeralWritableConfigYaml false. No change to the rendered manifests"
+    - "[Changed] Default image (appVersion) is Frigate 0.18.2. Frigate 0.18 changes the config format; see Upgrading in the README"
+    - "[Added] helm-unittest cases for the config persistence modes: the default ConfigMap mount, persistence.config.enabled (overwrite on every start), seedOnly (copy only when config.yml does not exist), and ephemeralWritableConfigYaml false"
+    - "[Fixed] README minimum config: remove the rtmp role, which Frigate no longer supports"
   artifacthub.io/images: |
     - name: frigate
-      image: ghcr.io/blakeblackshear/frigate:0.17.2
+      image: ghcr.io/blakeblackshear/frigate:0.18.2
   artifacthub.io/links: |
     - name: Frigate source repo
       url: https://github.com/blakeblackshear/frigate
