@@ -253,3 +253,11 @@ tests:
     repository: docker.io/library/busybox
     # -- Test image tag
     tag: "1.37"
+
+networkPolicy:
+  # -- Create a NetworkPolicy that blocks incoming traffic to the Music Assistant pod, except what is allowed below. Outgoing traffic is not restricted. Traffic from an Ingress controller or a Gateway in another namespace must be allowed in ingress. With Cilium's Gateway API, Envoy uses the reserved identity "ingress", which a NetworkPolicy cannot match: allow it with a CiliumClusterwideNetworkPolicy (fromEntities: [ingress]) instead. Kubelet probes from the node are allowed by most CNIs (Cilium always allows the local node).
+  enabled: false
+  # -- Allow incoming traffic from all pods in the release namespace
+  allowSameNamespace: true
+  # -- More NetworkPolicy ingress rules, added as-is, e.g. [{from: [{namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: monitoring}}}], ports: [{port: 8123, protocol: TCP}]}]
+  ingress: []
