@@ -18,6 +18,10 @@ spec:
         # never see ConfigMap/Secret updates, and HA only reads most of
         # these files at startup anyway.
         checksum/config: {{ include "home-assistant.configChecksum" . }}
+        {{- include "home-assistant.macvlanValidate" . }}
+        {{- if .Values.macvlan.enabled }}
+        k8s.v1.cni.cncf.io/networks: {{ include "home-assistant.macvlanAnnotation" . | quote }}
+        {{- end }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -312,6 +316,11 @@ spec:
             - /data
             - --port
             - {{ .Values.matterServer.port | quote }}
+            {{- /* Matter mDNS on the macvlan interface, unless extraArgs picks one */}}
+            {{- if and .Values.macvlan.enabled (not (has "--primary-interface" .Values.matterServer.extraArgs)) }}
+            - --primary-interface
+            - {{ .Values.macvlan.interface | quote }}
+            {{- end }}
             {{- with .Values.matterServer.extraArgs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

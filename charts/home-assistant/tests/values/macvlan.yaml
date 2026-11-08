@@ -1,0 +1,7 @@
+hostNetwork: false
+dnsPolicy: ClusterFirst
+macvlan:
+  enabled: true
+  master: iot0
+  ips: ["192.168.20.5/24"]
+  mac: "02:00:c0:a8:14:05"

@@ -1,0 +1,33 @@
+{{- if and .Values.macvlan.enabled .Values.macvlan.networkAttachmentDefinition.create }}
+{{- $m := .Values.macvlan }}
+{{- $plugins := list }}
+{{- $ipam := $m.ipam | default (dict "type" "static") }}
+{{- $plugins = append $plugins (dict "type" "macvlan" "master" $m.master "mode" $m.mode "capabilities" (dict "ips" true "mac" true) "ipam" $ipam) }}
+{{- $sysctl := dict }}
+{{- if $m.ipv6.enabled }}
+{{- $prefix := printf "net.ipv6.conf.%s." $m.interface }}
+{{- $_ := set $sysctl (print $prefix "disable_ipv6") "0" }}
+{{- $_ := set $sysctl (print $prefix "accept_ra") "2" }}
+{{- $_ := set $sysctl (print $prefix "accept_ra_defrtr") (ternary "1" "0" $m.ipv6.defaultRoute) }}
+{{- $_ := set $sysctl (print $prefix "accept_ra_rt_info_max_plen") (toString $m.ipv6.routeInfoMaxPrefixLength) }}
+{{- end }}
+{{- range $k, $v := $m.extraSysctls }}
+{{- $_ := set $sysctl $k (toString $v) }}
+{{- end }}
+{{- if $sysctl }}
+{{- $plugins = append $plugins (dict "type" "tuning" "sysctl" $sysctl) }}
+{{- end }}
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: {{ include "home-assistant.macvlanName" . }}
+  labels:
+    {{- include "home-assistant.labels" . | nindent 4 }}
+  {{- with $m.networkAttachmentDefinition.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  config: |
+    {{- dict "cniVersion" "1.0.0" "name" (include "home-assistant.macvlanName" .) "plugins" $plugins | toPrettyJson | nindent 4 }}
+{{- end }}
