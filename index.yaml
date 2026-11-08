@@ -167,6 +167,45 @@ entries:
   frigate:
   - annotations:
       artifacthub.io/changes: |
+        - "[Added] networkPolicy: an optional NetworkPolicy that blocks incoming traffic to the Frigate pod, except from the same namespace (allowSameNamespace) and from extra ingress rules. Outgoing traffic is not restricted. Disabled by default"
+      artifacthub.io/images: |
+        - name: frigate
+          image: ghcr.io/blakeblackshear/frigate:0.17.2
+      artifacthub.io/links: |
+        - name: Frigate source repo
+          url: https://github.com/blakeblackshear/frigate
+        - name: Upstream chart (blakeshome-charts)
+          url: https://github.com/blakeblackshear/blakeshome-charts
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 0.17.2
+    created: "2026-11-08T12:39:08.74031706Z"
+    description: NVR With Realtime Object Detection for IP Cameras
+    digest: 7dc5dc54462c0d9ff8b2c5bcabae1ad233d1a58a3e897675759634956d0f044c
+    home: https://github.com/newbenji/charts/tree/main/charts/frigate
+    icon: https://raw.githubusercontent.com/blakeblackshear/frigate/dev/web/public/images/android-chrome-512x512.png
+    keywords:
+    - tensorflow
+    - coral
+    - ml
+    maintainers:
+    - email: blakeb@blakeshome.com
+      name: blakeblackshear
+    - email: jeff@billimek.com
+      name: billimek
+    - email: benji@newbenji.dk
+      name: newbenji
+    name: frigate
+    sources:
+    - https://github.com/blakeblackshear/frigate
+    - https://github.com/blakeblackshear/blakeshome-charts
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/frigate-7.11.0/frigate-7.11.0.tgz
+    version: 7.11.0
+  - annotations:
+      artifacthub.io/changes: |
         - "[Changed] Forked from blakeblackshear/blakeshome-charts (unmaintained since 2025-11), to be maintained and improved here going forward"
         - "[Fixed] go2rtc admin service port (1984) was routed to the wrong container port (webrtc-tcp instead of go2rtc-admin)"
         - "[Fixed] liveness/readiness/startup probes hit the full web UI (/) instead of a lightweight endpoint (/api/)"
@@ -322,6 +361,34 @@ entries:
     - https://github.com/newbenji/charts/releases/download/frigate-7.10.0/frigate-7.10.0.tgz
     version: 7.10.0
   home-assistant:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Added] networkPolicy: an optional NetworkPolicy that blocks incoming traffic to the Home Assistant pods (incl. whisper, piper, zigbee2mqtt), except from the same namespace (allowSameNamespace) and from extra ingress rules. Outgoing traffic is not restricted. Disabled by default"
+      artifacthub.io/images: |
+        - name: home-assistant
+          image: homeassistant/home-assistant:2026.8.0
+      artifacthub.io/links: |
+        - name: Home assistant source repo
+          url: https://github.com/home-assistant
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 2026.8.0
+    created: "2026-11-08T12:39:08.885785406Z"
+    description: 'HomeAssistant is an open source home automation that puts local
+      control and privacy first. Powered by a worldwide community of tinkerers and
+      DIY enthusiasts. Perfect to run on a Raspberry Pi or a local server.. '
+    digest: 8dfa2dad6da97c307866ce149a481cf2aa5a01dac1ccc059ff052340c4f64f1d
+    icon: https://brands.home-assistant.io/homeassistant/icon.png
+    keywords:
+    - homeassistant
+    - home-assistant
+    - smart home
+    name: home-assistant
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/home-assistant-0.9.0/home-assistant-0.9.0.tgz
+    version: 0.9.0
   - annotations:
       artifacthub.io/changes: |
         - "[Added] macvlan: a Multus + macvlan attachment as an alternative to hostNetwork. The pod gets a second interface directly in a LAN/VLAN for mDNS, SSDP, Cast and Matter/Thread discovery, and eth0 stays a normal pod interface. The chart renders the k8s.v1.cni.cncf.io/networks pod annotation (fixed IPs and MAC) and, by default, its own NetworkAttachmentDefinition <fullname>-macvlan, with the IPv6 router advertisement sysctls that Thread needs"
@@ -814,6 +881,46 @@ entries:
   music-assistant:
   - annotations:
       artifacthub.io/changes: |
+        - "[Added] networkPolicy: an optional NetworkPolicy that blocks incoming traffic to the Music Assistant pod, except from the same namespace (allowSameNamespace) and from extra ingress rules. Outgoing traffic is not restricted. Disabled by default"
+      artifacthub.io/images: |
+        - name: music-assistant-server
+          image: ghcr.io/music-assistant/server:2.10.6
+      artifacthub.io/links: |
+        - name: Music Assistant source repo
+          url: https://github.com/music-assistant/server
+        - name: Music Assistant docs
+          url: https://music-assistant.io/
+        - name: Helm Repo
+          url: https://github.com/newbenji/charts
+    apiVersion: v2
+    appVersion: 2.10.6
+    created: "2026-11-08T12:39:09.049562418Z"
+    description: Music Assistant server - a music library manager that connects your
+      streaming services to a wide range of connected speakers (Chromecast/Google
+      Cast, AirPlay, Sonos, DLNA, Squeezebox, ...)
+    digest: b60cc512504f998e370e2e8e04e1fd3700178790ae14b4fb1cf4c230160df768
+    home: https://github.com/newbenji/charts/tree/main/charts/music-assistant
+    icon: https://raw.githubusercontent.com/music-assistant/server/main/music_assistant/logo.png
+    keywords:
+    - music-assistant
+    - music
+    - audio
+    - multiroom-audio
+    - chromecast
+    - home-assistant
+    - smart home
+    maintainers:
+    - email: benji@newbenji.dk
+      name: newbenji
+    name: music-assistant
+    sources:
+    - https://github.com/music-assistant/server
+    type: application
+    urls:
+    - https://github.com/newbenji/charts/releases/download/music-assistant-0.2.0/music-assistant-0.2.0.tgz
+    version: 0.2.0
+  - annotations:
+      artifacthub.io/changes: |
         - "[Added] Initial chart: host-networked Music Assistant server with a ClusterIP Service for in-cluster clients (e.g. the Home Assistant integration), optional Ingress or Gateway API HTTPRoute for the web UI, persistence for /data, and optional /media library mount"
       artifacthub.io/images: |
         - name: music-assistant-server
@@ -852,4 +959,4 @@ entries:
     urls:
     - https://github.com/newbenji/charts/releases/download/music-assistant-0.1.0/music-assistant-0.1.0.tgz
     version: 0.1.0
-generated: "2026-11-08T10:44:44.41773766Z"
+generated: "2026-11-08T12:39:09.049662376Z"
