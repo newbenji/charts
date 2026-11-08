@@ -5,7 +5,7 @@ HomeAssistant is an open source home automation that puts local control and priv
 Powered by a worldwide community of tinkerers and DIY enthusiasts.
 Perfect to run on a Raspberry Pi or a local server..
 
-![Version: 0.7.2](https://img.shields.io/badge/Version-0.7.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
+![Version: 0.9.0](https://img.shields.io/badge/Version-0.9.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026.8.0](https://img.shields.io/badge/AppVersion-2026.8.0-informational?style=flat-square)
 
 ## Installing the Chart
 
@@ -18,19 +18,19 @@ Via the classic repo:
 ```console
 $ helm repo add newbenji-charts https://newbenji.github.io/charts/
 $ helm repo update
-$ helm install my-release newbenji-charts/home-assistant --version 0.7.2
+$ helm install my-release newbenji-charts/home-assistant --version 0.9.0
 ```
 
 Via OCI:
 
 ```console
-$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.2
+$ helm install my-release oci://ghcr.io/newbenji/charts/home-assistant --version 0.9.0
 ```
 
 To just download the chart package:
 
 ```console
-$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.2
+$ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.9.0
 ```
 
 ## Values
@@ -78,8 +78,22 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.2
 | ingress.enabled | bool | `false` | Expose Home Assistant via a classic Ingress resource. Mutually exclusive with httpRoute.enabled |
 | ingress.hosts | list | `[{"host":"chart-example.local","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Host/path rules routed to the Home Assistant service |
 | ingress.tls | list | `[]` | TLS configuration for the Ingress |
+| macvlan.enabled | bool | `false` | Give the pod a second interface directly in a LAN/VLAN with Multus + macvlan, as an alternative to hostNetwork: mDNS, SSDP, Cast and Matter/Thread discovery work on that interface, while eth0 stays a normal CNI pod interface (Services, NetworkPolicies, Gateway API). Needs Multus in the cluster and hostNetwork: false (the render fails otherwise). The chart renders the k8s.v1.cni.cncf.io/networks pod annotation, so don't set it in podAnnotations. Set Home Assistant's network adapter (Settings > System > Network) to this interface only, and its local URL to the interface IP, so Cast devices can fetch TTS and media from it |
+| macvlan.extraSysctls | object | `{}` | Additional sysctls for the tuning plugin, e.g. {"net.ipv4.conf.net1.arp_ignore": "1"} |
+| macvlan.interface | string | `"net1"` |  |
+| macvlan.ipam | object | `{"type":"static"}` | IPAM block of the macvlan plugin. The default static IPAM takes the addresses from ips above and adds no default route, so only the interface's own subnet goes through it |
+| macvlan.ips | list | `[]` | Fixed addresses for the interface (CIDR), e.g. ["192.168.20.5/24"]. Keep them outside the network's DHCP range. With replicas: 1 and strategy: Recreate, the address is never in use twice |
+| macvlan.ipv6.defaultRoute | bool | `false` | Accept an IPv6 default route from the RAs. Off by default, so internet traffic stays on eth0 |
+| macvlan.ipv6.enabled | bool | `true` | Turn IPv6 on for the interface and accept router advertisements (via the CNI tuning plugin, since these sysctls are per interface and the interface only exists after pod start). Needed for Matter over Thread: the Thread border router announces the route to the Thread mesh in its RAs |
+| macvlan.ipv6.routeInfoMaxPrefixLength | int | `64` | accept_ra_rt_info_max_plen: the longest prefix accepted from RA Route Information Options. The kernel default 0 ignores them, which drops the route to the Thread mesh (a /64) |
+| macvlan.mac | string | `""` | Fixed MAC address, e.g. a locally administered one (02:...), so the router/controller keeps seeing one client across pod restarts. Empty = a random MAC per pod |
+| macvlan.master | string | `""` | Host interface the macvlan sits on, e.g. a VLAN subinterface (iot0) that exists with the same name on every node HA can run on. Required when the chart creates the NetworkAttachmentDefinition |
+| macvlan.mode | string | `"bridge"` | macvlan mode |
+| macvlan.networkAttachmentDefinition.annotations | object | `{}` | Annotations for the NetworkAttachmentDefinition, e.g. an Argo CD sync wave so it exists before the pod starts |
+| macvlan.networkAttachmentDefinition.create | bool | `true` | Create the NetworkAttachmentDefinition in the release namespace. Set to false to use an existing one, named in name below |
+| macvlan.networkAttachmentDefinition.name | string | `""` | Name of the NetworkAttachmentDefinition. Defaults to <fullname>-macvlan when the chart creates it; required when create is false |
 | matterServer.enabled | bool | `false` | IMPORTANT: the image runs as a non-root user (uid 1000). If the Home Assistant container runs as root (the chart's default - see securityContext above), that user can't write to the shared config volume unless you set podSecurityContext.fsGroup: 1000 (or matching whatever uid the image uses) - otherwise this crash-loops on "EACCES: permission denied, mkdir '/data/config'" and, since Kubernetes requires every container in the pod Ready before the pod joins its Service, takes Home Assistant itself offline too even though it isn't the one failing |
-| matterServer.extraArgs | list | `[]` | Additional command-line arguments, e.g. ["--primary-interface", "eth0"] if host network binds to the wrong interface for mDNS |
+| matterServer.extraArgs | list | `[]` |  |
 | matterServer.extraEnv | object | `{}` | Additional environment variables for the matter-server container |
 | matterServer.image.pullPolicy | string | `"IfNotPresent"` | matterjs-server image pull policy |
 | matterServer.image.repository | string | `"ghcr.io/matter-js/matterjs-server"` | matterjs-server image repository |
@@ -88,6 +102,9 @@ $ helm pull oci://ghcr.io/newbenji/charts/home-assistant --version 0.7.2
 | matterServer.resources | object | `{}` | Resource requests/limits for the matter-server container |
 | matterServer.securityContext | object | `{}` | Security context for the matter-server container. Add capabilities: [NET_RAW] here if you need its device-ping functionality |
 | nameOverride | string | `""` |  |
+| networkPolicy.allowSameNamespace | bool | `true` | Allow incoming traffic from all pods in the release namespace |
+| networkPolicy.enabled | bool | `false` | Create a NetworkPolicy that blocks incoming traffic to all pods of the release (Home Assistant and the optional whisper, piper and zigbee2mqtt), except what is allowed below. Outgoing traffic is not restricted. Traffic from an Ingress controller or a Gateway in another namespace must be allowed in ingress. With Cilium's Gateway API, Envoy uses the reserved identity "ingress", which a NetworkPolicy cannot match: allow it with a CiliumClusterwideNetworkPolicy (fromEntities: [ingress]) instead. Kubelet probes from the node are allowed by most CNIs (Cilium always allows the local node). Traffic on the macvlan interface (macvlan.enabled) does not pass through the cluster CNI, so this policy does not apply to it. |
+| networkPolicy.ingress | list | `[]` | More NetworkPolicy ingress rules, added as-is, e.g. [{from: [{namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: monitoring}}}], ports: [{port: 8123, protocol: TCP}]}] |
 | nodeSelector | object | `{}` |  |
 | persistence.accessMode | string | `"ReadWriteOnce"` | Access mode for the Home Assistant config PVC |
 | persistence.additionalMounts | list | `[]` | Additional volume mounts to add to the Home Assistant container |
@@ -585,6 +602,134 @@ false
 			<td>TLS configuration for the Ingress</td>
 		</tr>
 		<tr>
+			<td>macvlan.enabled</td>
+			<td>bool</td>
+			<td><pre lang="json">
+false
+</pre>
+</td>
+			<td>Give the pod a second interface directly in a LAN/VLAN with Multus + macvlan, as an alternative to hostNetwork: mDNS, SSDP, Cast and Matter/Thread discovery work on that interface, while eth0 stays a normal CNI pod interface (Services, NetworkPolicies, Gateway API). Needs Multus in the cluster and hostNetwork: false (the render fails otherwise). The chart renders the k8s.v1.cni.cncf.io/networks pod annotation, so don't set it in podAnnotations. Set Home Assistant's network adapter (Settings > System > Network) to this interface only, and its local URL to the interface IP, so Cast devices can fetch TTS and media from it</td>
+		</tr>
+		<tr>
+			<td>macvlan.extraSysctls</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Additional sysctls for the tuning plugin, e.g. {"net.ipv4.conf.net1.arp_ignore": "1"}</td>
+		</tr>
+		<tr>
+			<td>macvlan.interface</td>
+			<td>string</td>
+			<td><pre lang="json">
+"net1"
+</pre>
+</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>macvlan.ipam</td>
+			<td>object</td>
+			<td><pre lang="json">
+{
+  "type": "static"
+}
+</pre>
+</td>
+			<td>IPAM block of the macvlan plugin. The default static IPAM takes the addresses from ips above and adds no default route, so only the interface's own subnet goes through it</td>
+		</tr>
+		<tr>
+			<td>macvlan.ips</td>
+			<td>list</td>
+			<td><pre lang="json">
+[]
+</pre>
+</td>
+			<td>Fixed addresses for the interface (CIDR), e.g. ["192.168.20.5/24"]. Keep them outside the network's DHCP range. With replicas: 1 and strategy: Recreate, the address is never in use twice</td>
+		</tr>
+		<tr>
+			<td>macvlan.ipv6.defaultRoute</td>
+			<td>bool</td>
+			<td><pre lang="json">
+false
+</pre>
+</td>
+			<td>Accept an IPv6 default route from the RAs. Off by default, so internet traffic stays on eth0</td>
+		</tr>
+		<tr>
+			<td>macvlan.ipv6.enabled</td>
+			<td>bool</td>
+			<td><pre lang="json">
+true
+</pre>
+</td>
+			<td>Turn IPv6 on for the interface and accept router advertisements (via the CNI tuning plugin, since these sysctls are per interface and the interface only exists after pod start). Needed for Matter over Thread: the Thread border router announces the route to the Thread mesh in its RAs</td>
+		</tr>
+		<tr>
+			<td>macvlan.ipv6.routeInfoMaxPrefixLength</td>
+			<td>int</td>
+			<td><pre lang="json">
+64
+</pre>
+</td>
+			<td>accept_ra_rt_info_max_plen: the longest prefix accepted from RA Route Information Options. The kernel default 0 ignores them, which drops the route to the Thread mesh (a /64)</td>
+		</tr>
+		<tr>
+			<td>macvlan.mac</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>Fixed MAC address, e.g. a locally administered one (02:...), so the router/controller keeps seeing one client across pod restarts. Empty = a random MAC per pod</td>
+		</tr>
+		<tr>
+			<td>macvlan.master</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>Host interface the macvlan sits on, e.g. a VLAN subinterface (iot0) that exists with the same name on every node HA can run on. Required when the chart creates the NetworkAttachmentDefinition</td>
+		</tr>
+		<tr>
+			<td>macvlan.mode</td>
+			<td>string</td>
+			<td><pre lang="json">
+"bridge"
+</pre>
+</td>
+			<td>macvlan mode</td>
+		</tr>
+		<tr>
+			<td>macvlan.networkAttachmentDefinition.annotations</td>
+			<td>object</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Annotations for the NetworkAttachmentDefinition, e.g. an Argo CD sync wave so it exists before the pod starts</td>
+		</tr>
+		<tr>
+			<td>macvlan.networkAttachmentDefinition.create</td>
+			<td>bool</td>
+			<td><pre lang="json">
+true
+</pre>
+</td>
+			<td>Create the NetworkAttachmentDefinition in the release namespace. Set to false to use an existing one, named in name below</td>
+		</tr>
+		<tr>
+			<td>macvlan.networkAttachmentDefinition.name</td>
+			<td>string</td>
+			<td><pre lang="json">
+""
+</pre>
+</td>
+			<td>Name of the NetworkAttachmentDefinition. Defaults to <fullname>-macvlan when the chart creates it; required when create is false</td>
+		</tr>
+		<tr>
 			<td>matterServer.enabled</td>
 			<td>bool</td>
 			<td><pre lang="json">
@@ -600,7 +745,7 @@ false
 []
 </pre>
 </td>
-			<td>Additional command-line arguments, e.g. ["--primary-interface", "eth0"] if host network binds to the wrong interface for mDNS</td>
+			<td></td>
 		</tr>
 		<tr>
 			<td>matterServer.extraEnv</td>
@@ -673,6 +818,33 @@ false
 </pre>
 </td>
 			<td></td>
+		</tr>
+		<tr>
+			<td>networkPolicy.allowSameNamespace</td>
+			<td>bool</td>
+			<td><pre lang="json">
+true
+</pre>
+</td>
+			<td>Allow incoming traffic from all pods in the release namespace</td>
+		</tr>
+		<tr>
+			<td>networkPolicy.enabled</td>
+			<td>bool</td>
+			<td><pre lang="json">
+false
+</pre>
+</td>
+			<td>Create a NetworkPolicy that blocks incoming traffic to all pods of the release (Home Assistant and the optional whisper, piper and zigbee2mqtt), except what is allowed below. Outgoing traffic is not restricted. Traffic from an Ingress controller or a Gateway in another namespace must be allowed in ingress. With Cilium's Gateway API, Envoy uses the reserved identity "ingress", which a NetworkPolicy cannot match: allow it with a CiliumClusterwideNetworkPolicy (fromEntities: [ingress]) instead. Kubelet probes from the node are allowed by most CNIs (Cilium always allows the local node). Traffic on the macvlan interface (macvlan.enabled) does not pass through the cluster CNI, so this policy does not apply to it.</td>
+		</tr>
+		<tr>
+			<td>networkPolicy.ingress</td>
+			<td>list</td>
+			<td><pre lang="json">
+[]
+</pre>
+</td>
+			<td>More NetworkPolicy ingress rules, added as-is, e.g. [{from: [{namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: monitoring}}}], ports: [{port: 8123, protocol: TCP}]}]</td>
 		</tr>
 		<tr>
 			<td>nodeSelector</td>

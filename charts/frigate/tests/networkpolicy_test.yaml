@@ -1,0 +1,59 @@
+suite: networkPolicy
+templates:
+  - templates/networkpolicy.yaml
+release:
+  name: rel
+tests:
+  - it: renders nothing by default
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: allows the same namespace by default
+    set:
+      networkPolicy.enabled: true
+    asserts:
+      - isKind:
+          of: NetworkPolicy
+      - equal:
+          path: spec.podSelector
+          value:
+            matchLabels:
+              app.kubernetes.io/name: frigate
+              app.kubernetes.io/instance: rel
+      - equal:
+          path: spec.policyTypes
+          value: [Ingress]
+      - equal:
+          path: spec.ingress
+          value:
+            - from:
+                - podSelector: {}
+
+  - it: adds the extra ingress rules after the same-namespace rule
+    set:
+      networkPolicy.enabled: true
+      networkPolicy.ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: monitoring
+          ports:
+            - port: 9000
+              protocol: TCP
+    asserts:
+      - lengthEqual:
+          path: spec.ingress
+          count: 2
+      - equal:
+          path: spec.ingress[1].ports[0].port
+          value: 9000
+
+  - it: denies all incoming traffic without rules
+    set:
+      networkPolicy.enabled: true
+      networkPolicy.allowSameNamespace: false
+    asserts:
+      - equal:
+          path: spec.ingress
+          value: []

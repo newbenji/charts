@@ -3,7 +3,7 @@ appVersion: "2.10.6"
 description: Music Assistant server - a music library manager that connects your streaming services to a wide range of connected speakers (Chromecast/Google Cast, AirPlay, Sonos, DLNA, Squeezebox, ...)
 name: music-assistant
 type: application
-version: 0.1.0
+version: 0.2.0
 keywords:
   - music-assistant
   - music
@@ -21,7 +21,7 @@ maintainers:
     email: benji@newbenji.dk
 annotations:
   artifacthub.io/changes: |
-    - "[Added] Initial chart: host-networked Music Assistant server with a ClusterIP Service for in-cluster clients (e.g. the Home Assistant integration), optional Ingress or Gateway API HTTPRoute for the web UI, persistence for /data, and optional /media library mount"
+    - "[Added] networkPolicy: an optional NetworkPolicy that blocks incoming traffic to the Music Assistant pod, except from the same namespace (allowSameNamespace) and from extra ingress rules. Outgoing traffic is not restricted. Disabled by default"
   artifacthub.io/images: |
     - name: music-assistant-server
       image: ghcr.io/music-assistant/server:2.10.6
